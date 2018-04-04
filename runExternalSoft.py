@@ -77,14 +77,31 @@ def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
 
 
 
-def RComputeCor(pfilin1D2D, pfilin3D, prout, valcor = 0.9, maxquantile=80):
+def Rstat(pfilin1D2D, paff, prout, valcor = 0.9, maxquantile=80):
 
-    cmdplotPCA = "./ComputeCoords.R " + str(pfilin1D2D) + " " + str(pfilin3D) + " " + str(prout) + " " + str(valcor) + " " + str(maxquantile)
+    cmdStat = "./descAnalysis.R " + str(pfilin1D2D) + " " + str(paff) + " " + str(prout) + " " + str(valcor) + " " + str(maxquantile)
 
-    print cmdplotPCA
-    system(cmdplotPCA)
+    print cmdStat
+    system(cmdStat)
 
     return
+
+
+
+
+def corplotR(pfilin):
+
+    cmdCorplot = "./corplot.R " + str(pfilin)
+    print cmdCorplot
+    system(cmdCorplot)
+
+
+
+def plotAC50(pAC50, prout, typeAssays):
+
+    cmdhist = "./distributions.R " + str(pAC50) + " " + str(prout) + " " + str(typeAssays)
+    print cmdhist
+    system(cmdhist)
 
 
 
@@ -101,6 +118,10 @@ def molconvert(pfilin, pfilout= ""):
 
 
 
+def plotResponsiveCurve(prresponse, pAC50, prout):
 
+    cmd = "./responseCurves.R " + str(prresponse) + " " + str(pAC50) + " " + str(prout)
+    print cmd
+    system(cmd)
 
 

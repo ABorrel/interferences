@@ -46,5 +46,27 @@ def renameHeaderSDF(pfilin):
     filout.write("".join(llines))
     filout.close()
 
+import multiprocessing
+import time
+
+def timeFunction(funct, mol):
+
+    manager = multiprocessing.Manager()
+    lout = manager.list()
+
+    p = multiprocessing.Process(target=funct, args=(mol, lout))
+    p.start()
+    time.sleep(2)
+
+    if p.is_alive():
+        p.terminate()
+        p.join()
+        return "ERROR"
+    else:
+        p.join()
+        #print lout
+        return lout[0]
+
+
 
 

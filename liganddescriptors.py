@@ -19,11 +19,15 @@ import runExternalSoft
 
 
 
+LSALTDEF="[Cl,Br,I]\n[Li,Na,K,Ca,Mg]\n[O,N]\n[N](=O)(O)O\n[P](=O)(O)(O)O\n[P](F)(F)(F)(F)(F)F\n[S](=O)(=O)(O)O\n[CH3][S](=O)(=O)(O)\nc1cc([CH3])ccc1[S](=O)(=O)(O)\n[CH3]C(=O)O\nFC(F)(F)C(=O)O\nOC(=O)C=CC(=O)O\nOC(=O)C(=O)O\nOC(=O)C(O)C(O)C(=O)O\nC1CCCCC1[NH]C1CCCCC1\n"
 LSALT="[Co]"
+
+
 LSMILESREMOVE=["[C-]#N", "[Al+3]", "[Gd+3]", "[Pt+2]", "[Au+3]", "[Bi+3]", "[Al]", "[Si+4]", "[Fe]", "[Zn]", "[Fe+2]",
                "[Ru+8]", "[Fe+]", "[Sr++]", "[Fe+3]", "[O--]", "[OH-]", "[Mn++]", "[La+3]", "[Lu+3]", "[SH-]", "[Pt+4]",
                "[Fe++]", "[W]", "[Cu+2]", "[Cr+3]", "[Tc+7]", "[Xe]", "[Tl+]", "[Zn+2]", "[F-]", "[C]", "[He]", "N#N",
-               "O=O", "Cl[Ra]Cl", "[Mn+2]", "N#[N+][O-]", "II", "[Ga+3]", "[Mo+10]", "[Zn]", "[Fe]", "[Si+4]", "[Al]"]
+               "O=O", "Cl[Ra]Cl", "[Mn+2]", "N#[N+][O-]", "II", "[Ga+3]", "[Mo+10]", "[Zn]", "[Fe]", "[Si+4]", "[Al]",
+               "[B+3]"]
 
 
 LKAPA = ['kappa1', 'kappa2', 'kappa3', 'kappam1', 'kappam2', 'kappam3', 'phi']
@@ -77,6 +81,15 @@ LMOE = ['EstateVSA8', 'EstateVSA9', 'EstateVSA4', 'EstateVSA5', 'EstateVSA6', 'E
         'slogPVSA11', 'MRVSA8', 'MRVSA7', 'MRVSA6', 'EstateVSA10', 'slogPVSA2', 'slogPVSA3', 'slogPVSA0', 'slogPVSA1',
         'slogPVSA6', 'slogPVSA7', 'slogPVSA4', 'slogPVSA5', 'slogPVSA8', 'slogPVSA9', 'VSAEstate9', 'VSAEstate10']
 
+loader = pydrug.PyDrug()
+
+
+def normalize(mol, lout):
+    s = Standardizer()
+    molstandardized = s.standardize(mol)
+    print molstandardized
+    lout.append(molstandardized)
+
 
 class Descriptors:
 
@@ -85,18 +98,20 @@ class Descriptors:
         self.prout = prout
         self.namek = namek
         self.descFiles = dfiles
-        loader = pydrug.PyDrug()
+        self.logfile = logfile
+
+    def prepareChemical(self):
+        self.log="OK"
 
         # folder with SDF and SMI
         prCpdSmi = pathFolder.createFolder(self.prout + "SMI/")
         prCpdSDF = pathFolder.createFolder(self.prout + "SDF/")
 
-        psdf = prCpdSDF + self.compound[namek] + ".sdf"
-        psmi = prCpdSmi + self.compound[namek] + ".smi"
-
+        psdf = prCpdSDF + self.compound[self.namek] + ".sdf"
+        psmi = prCpdSmi + self.compound[self.namek] + ".smi"
         # already clean and SMILES desalt
         if path.exists(psdf) and path.exists(psmi):
-            print "Already clean", self.compound[namek]
+            print "Already clean", self.compound[self.namek]
             fsmile = open(psmi, "r")
             smile = fsmile.readlines()[0].strip()
             fsmile.close()
@@ -104,39 +119,49 @@ class Descriptors:
             self.log = "OK"
             self.mol = loader.ReadMolFromSmile(self.compound["SMILES"])
         else:
-
-            if not "SMILES" in dcompound.keys():
+            if not "SMILES" in self.compound.keys():
                 try:
-                    smile = runExternalSoft.babelConvertSDFtoSMILE(dcompound["sdf"])
+                    smile = runExternalSoft.babelConvertSDFtoSMILE(self.compound["sdf"])
                     self.compound["SMILES"] = smile
                     #print smile
                 except:
                     print "ERROR INPUT SDF - l33"
                     self.log = "ERROR"
-                    try:logfile.write(
-                        self.compound[namek] + "\t---\tERROR-SDF ORIGINAL INPUT\n")
+                    try:self.logfile.write(self.compound[self.namek] + "\t---\tERROR-SDF ORIGINAL INPUT\n")
                     except:pass
-
                     return
 
 
             #Standardize smile code
-            try: smilestandadized = standardize_smiles(self.compound["SMILES"])
-            except:
-                logfile.write(self.compound[namek] + "\t" + str(self.compound["SMILES"]) + "\tERROR-SMILES INPUT"
-                                                                                            "\n")
+            smiles = self.compound["SMILES"]
+            print smiles, "***"
+            if smiles == "" or smiles == "FAIL":
+                self.logfile.write(self.compound[self.namek] + "\t" + str(self.compound["SMILES"]) + "\tERROR-SMILES INPUT\n")
                 self.log = "ERROR"
                 return
+            #return
 
             #Standardize using molvs (http://molvs.readthedocs.io/en/latest/api.html#molvs-fragment)
             s = Standardizer()
-            mol = Chem.MolFromSmiles(smilestandadized)
-            molstandardized = s.standardize(mol)
+            mol = Chem.MolFromSmiles(smiles)
+
+            try:
+                out = toolbox.timeFunction(normalize, mol)
+                if out == "ERROR":
+                    self.log = "ERROR"
+                    return
+                else:
+                    molstandardized = out
+            except:
+                self.logfile.write(self.compound[self.namek] + "\t" + str(self.compound["SMILES"]) + "\tERROR-SMILES INPUT\n")
+                self.log = "ERROR"
+                return
+
             smilestandadized = Chem.MolToSmiles(molstandardized)
 
             # remove salt
-            # 1.defaultre
-            remover = SaltRemover()
+            # 1.default
+            remover = SaltRemover(defnFilename="Salts.txt")
             mol = Chem.MolFromSmiles(smilestandadized)
             molcleandefault = remover(mol)
             # 2. Personal remover
@@ -158,7 +183,7 @@ class Descriptors:
                 else:
                     # 4. Fragments
                     #Case of fragment -> stock in log file, check after to control
-                    logfile.write(self.compound[namek] + "\t" + str(self.compound["SMILES"]) + "\tFRAGMENT IN INPUT"
+                    self.logfile.write(self.compound[self.namek] + "\t" + str(self.compound["SMILES"]) + "\tFRAGMENT IN INPUT"
                                                                                                        "\n")
                     print ".".join(lelem), " - FRAGMENTS - l66"
                     self.log = "ERROR"
@@ -172,7 +197,7 @@ class Descriptors:
 
             # case where only salt are included
             if smilesclean == "":
-                logfile.write(self.compound[namek] + "\t" + str(self.compound["SMILES"]) + "\tEMPTY SMILES AFTER "
+                self.logfile.write(self.compound[self.namek] + "\t" + str(self.compound["SMILES"]) + "\tEMPTY SMILES AFTER "
                                                                                                "STANDARDIZATION\n")
                 print "EMPTY SMILES AFTER STANDARDIZATION - l84"
                 print self.compound[self.namek]
@@ -184,13 +209,13 @@ class Descriptors:
 
 
             #write clean SMILES and split sdf
-            pfileSMILES = prCpdSmi + str(dcompound[namek]) + ".smi"
+            pfileSMILES = prCpdSmi + str(self.compound[self.namek]) + ".smi"
             fileSMILES = open(pfileSMILES, "w")
             fileSMILES.write(self.compound["SMILES"])
             fileSMILES.close()
 
             #SDF input
-            pfileSDF = prCpdSDF + str(dcompound[namek]) + ".sdf"
+            pfileSDF = prCpdSDF + str(self.compound[self.namek]) + ".sdf"
             fileSDF = open(pfileSDF, "w")
             fileSDF.write(self.compound["sdf"])
             fileSDF.close()

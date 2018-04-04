@@ -31,8 +31,8 @@ class sdfDB:
             i = 0
             nblines = len(llines)
             while i < nblines:
-                if search(">  <", llines[i]):
-                    kin = llines[i].split(">  <")[1]
+                if search(">*.<", llines[i]):
+                    kin = llines[i].split("<")[1]
                     kin = kin.split(">")[0]
                     valuek = llines[i+1].strip()
                     dcompound[kin] = valuek
@@ -42,7 +42,7 @@ class sdfDB:
 
 
         self.lc=lout
-        print len(lout)
+        print "Len list sdf parsed:", len(lout)
 
     def writeTable(self, filname):
 
