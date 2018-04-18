@@ -68,5 +68,38 @@ def timeFunction(funct, mol):
         return lout[0]
 
 
+from scipy import stats
+from numpy import delete
+def rankList(lin):
+
+    liNA =  [i for i,x in enumerate(lin) if x == 'NA']
+    linWithoutNA = deepcopy(lin)
+    linWithoutNA = delete(linWithoutNA, liNA).tolist()
+
+
+    linWithoutNA = [float(i) for i in linWithoutNA]
+    n = len(linWithoutNA)
+
+    lrank = stats.rankdata(linWithoutNA)
+    lrank = [int(abs(i-n)) for i in lrank]
+
+    for i in liNA:
+        lrank.insert(i, "NA")
+
+    return lrank
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

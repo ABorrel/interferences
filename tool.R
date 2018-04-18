@@ -439,7 +439,6 @@ openData = function (pfilin, valcor, prout, vexclude){
   return (list((desc),colnames (desc)))
 }
 
-
 delete.na = function(DF, n=0) {
   #print(which(rowSums(is.na(DF)) <= n))
   DF = DF[which(rowSums(is.na(DF)) <= n),]
@@ -513,6 +512,30 @@ delnohomogeniousdistribution = function(din, cutoff = 80){
   return(dwork)
 }
 
+
+delSDNull = function(desc){
+  
+  sd_desc = apply (desc[,1:(dim(desc)[2])], 2, sd)
+  
+  #print (sd_desc)
+  #print ("--------")
+  sd_0 = which (sd_desc == 0)
+  
+  #print (sd_0)
+  
+  #print ("------------")
+  #print (mode(sd_0))
+  #print (length (sd_0))
+  #print ("------------")
+  if (length(sd_0) != 0){
+    #print (as.factor (sd_0))
+    #desc = desc[,-sd_0]
+    desc=subset(desc,select=-sd_0)
+    #cexclude = subset(cexclude,select=-sd_0)
+    #print(dim(desc_new))
+  }
+  return(desc)
+}
 
 #######################
 # order data rownames #

@@ -62,17 +62,18 @@ dendogramCluster = function(ddes, daff, dcluster, prout){
     daff[which(daff[,i] == max(daff[,i])), i] = maxMatrix
     daff[which(daff[,i] == min(daff[,i])), i] = minMatrix
   }
-  daff = daff[,c("Escherichia.coli", "Pseudomonas.aeruginosa",  "Staphylococcus.aureus" , "Streptococcus.pneumoniae")]
+  #daff = daff[,c("Escherichia.coli", "Pseudomonas.aeruginosa",  "Staphylococcus.aureus" , "Streptococcus.pneumoniae")]
   
   daff = as.data.frame(daff)
   daff = cbind(rownames(daff), daff)
   dcluster[,2] = as.character(dcluster[,2])
   
+  print(daff)
   
   matTrans1 <- scale(ddes)
   d <- dist(matTrans1, method = "euc")
   tupgma2 <- upgma(d, method="ward.D2")
-  tupgma2 <- groupOTU(tupgma2, 35)
+  tupgma2 <- groupOTU(tupgma2, max(dcluster[,2]))
 
   pfilout = paste(prout, "dendo_cluster_name.png", sep = "")
     
@@ -85,29 +86,8 @@ dendogramCluster = function(ddes, daff, dcluster, prout){
                    color = "white", linesize = 1E-100, fontsize = 1E-100)
   
   
-  #daff = daff[,-1]
-  t2 = gheatmap(t1, daff, font.size = 2, offset = 3, width = 0.2, colnames_offset_x = 2, colnames_offset_y = 0, low = "red", high = "lightgreen") +
-    #scale_color_continuous(low='red', high='lightgreen') +
-    theme_tree()
-  #print (t2)
-  open_tree(t2, 15) %>% rotate_tree(15)
-  ggsave(pfilout, dpi=300, height = 11, width = 11)
-  
-  
-  
-  pfilout = paste(prout, "dendo_cluster.png", sep = "")
-  
-  t1 <- ggtree(tupgma2, layout="circular", size=0.8, aes(color=cluster))
-  t1 <- t1 %<+% dcluster +
-    geom_tippoint(aes(color=cluster), alpha=0.75, size=1)+
-    #theme(legend.position="right")+
-    theme(plot.margin = unit(c(0,0,0,0), "cm")) + 
-    geom_treescale(x = 40, y = 40, width = NULL, offset = NULL,
-                   color = "white", linesize = 1E-100, fontsize = 1E-100)
-  
-  
   daff = daff[,-1]
-  t2 = gheatmap(t1, daff, font.size =0 , offset = 3, width = 0.2, colnames_offset_x = 2, colnames_offset_y = -0.5, low = "red", high = "lightgreen") +
+  t2 = gheatmap(t1, daff, font.size = 2, offset = 3, width = 0.5, colnames_offset_x = 2, colnames_offset_y = 0, low = "red", high = "lightgreen") +
     #scale_color_continuous(low='red', high='lightgreen') +
     theme_tree()
   #print (t2)
@@ -116,9 +96,23 @@ dendogramCluster = function(ddes, daff, dcluster, prout){
   
   
   
+  #pfilout = paste(prout, "dendo_cluster.png", sep = "")
   
+  #t1 <- ggtree(tupgma2, layout="circular", size=0.8, aes(color=cluster))
+  #t1 <- t1 %<+% dcluster +
+  #  geom_tippoint(aes(color=cluster), alpha=0.75, size=1)+
+    #theme(legend.position="right")+
+  #  theme(plot.margin = unit(c(0,0,0,0), "cm")) + 
+  #  geom_treescale(x = 40, y = 40, width = NULL, offset = NULL,
+  #                 color = "white", linesize = 1E-100, fontsize = 1E-100)
   
-  
+  #daff = daff[,-1]
+  #t2 = gheatmap(t1, daff, font.size =0 , offset = 3, width = 0.2, colnames_offset_x = 2, colnames_offset_y = -0.5, low = "red", high = "lightgreen") +
+    #scale_color_continuous(low='red', high='lightgreen') +
+  #  theme_tree()
+  #print (t2)
+  #open_tree(t2, 15) %>% rotate_tree(15)
+  #ggsave(pfilout, dpi=300, height = 11, width = 11)
 }
 
 

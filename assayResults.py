@@ -1,13 +1,19 @@
 import pathFolder
 import runExternalSoft
+import loadDB
 from os import path
 
 class assays:
-    def __init__(self, pfilin, prout):
+    def __init__(self, pfilin, prout, prlog):
         self.pfilin = pfilin
         self.name = pfilin.split("/")[-1].split(".")[0]
         self.loadAssay()
+        proutSP = prout + pfilin.split("/")[-1].split(".")[0] + "/"
+        pathFolder.createFolder(proutSP)
+
+        self.proutSP = proutSP
         self.prout = prout
+        self.prlog = prlog
 
 
     def loadAssay(self):
@@ -55,7 +61,7 @@ class assays:
         dAC50 = {}
         lsample = []
 
-        pfilout = self.prout + "AC50_sample"
+        pfilout = self.proutSP + "AC50_sample"
         if path.exists(pfilout):
             self.pAC50 = pfilout
             return pfilout
@@ -148,8 +154,135 @@ class assays:
 
 
 
+    def AC50Distribution(self):
+
+        prIC50 = self.proutSP + "histIC50/"
+        pathFolder.createFolder(prIC50)
+
+        # load table
+        pAC50 = self.writeAC50()
+
+        # run hist plot
+        runExternalSoft.plotAC50(pAC50, prIC50, self.name.split("-")[1])
 
 
 
+    def responseCurves(self):
+
+        prresponse = self.proutSP + "responseCurve/"
+        pathFolder.createFolder(prresponse)
+
+        dresponse = {}
+        for chem in self.lchem:
+            casID = chem["CAS"]
+            if casID == '':
+                continue
+            typein = chem["SAMPLE_DATA_TYPE"]
+
+            if not casID in dresponse.keys():
+                dresponse[casID] = {}
+            dresponse[casID][typein] = {}
+            dresponse[casID][typein]["DATA"] = []
+            dresponse[casID][typein]["CONC"] = []
+
+            if chem["AC50"] != "":
+                dresponse[casID][typein]["AC50"] = chem["AC50"]
+            else:
+                dresponse[casID][typein]["AC50"] = "NA"
+
+            i = 0
+            while i < 16:
+                kdata = "DATA" + str(i)
+                kconc = "CONC" + str(i)
+                if not kdata in chem.keys() or chem[kdata] == "":
+                    dresponse[casID][typein]["DATA"].append("NA")
+                else:
+                    dresponse[casID][typein]["DATA"].append(chem["DATA" + str(i)])
+
+                if not kconc in chem.keys() or chem[kconc] == "":
+                    dresponse[casID][typein]["CONC"].append("NA")
+                else:
+                    dresponse[casID][typein]["CONC"].append(chem["CONC" + str(i)])
+
+                i += 1
+
+        # compute response curves
+        for CASID in dresponse.keys():
+            pCASout = prresponse + str(CASID)
+            print pCASout
+            filout = open(pCASout, "w")
+            filout.write("CONC\tDATA\tFluorophores\n")
+
+            i = 0
+            while i < 16:
+                for sample in dresponse[CASID].keys():
+                    filout.write(str(dresponse[CASID][sample]["CONC"][i]) + "\t" + str(
+                        dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\n")
+                i += 1
+            filout.close()
+
+        pAC50 = self.writeAC50()
+        runExternalSoft.plotResponsiveCurve(prresponse, pAC50, self.proutSP)
 
 
+
+    #not used
+    def cor3assays(self, cassay2, cassay3):
+
+        self.corAssay(cassay2)
+        self.corAssay(cassay3)
+        cassay2.corAssay(cassay3)
+
+
+
+    def extractChemical(self, pSDFTox21):
+
+        prSMI = self.prout + "SMI/"
+        pathFolder.createFolder(prSMI)
+
+        prSDF = self.prout + "SDF/"
+        pathFolder.createFolder(prSDF)
+
+        # load DB
+        db = loadDB.sdfDB(pSDFTox21, "CASRN", self.prout)
+        db.parseAll()
+
+        # extract chemical
+        lnotfind = []
+        for chem in self.lchem:
+            # print chem.keys()
+            cas = chem["CAS"]
+            if cas == "":
+                continue
+
+
+            flag = 0
+            for cpdDB in db.lc:
+                if cpdDB["CASRN"] == cas:
+                    # sdf
+                    pfilSDF = prSDF + str(cas) + ".sdf"
+                    if not path.exists(pfilSDF):
+                        filsdf = open(pfilSDF, "w")
+                        filsdf.write(cpdDB["sdf"])
+                        filsdf.close()
+
+                    #Smile
+                    pfilSMI = prSMI + str(cas) + ".smi"
+                    if cpdDB["SMILES"] != "":
+                        if not path.exists(pfilSMI) and cpdDB["SMILES"] != "":
+                            filSMI = open(pfilSMI, "w")
+                            filSMI.write(cpdDB["SMILES"])
+                            filSMI.close()
+                        flag = 1
+                        break
+
+            if flag == 0 and not cas in lnotfind:
+                lnotfind.append(cas)
+
+
+        logfile = open(self.prlog + self.name + "-extract.log", "w")
+        logfile.write("\n".join(lnotfind))
+        logfile.close()
+
+        self.prSMI = prSMI
+        self.prSDF = prSDF

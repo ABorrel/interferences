@@ -125,3 +125,59 @@ def plotResponsiveCurve(prresponse, pAC50, prout):
     system(cmd)
 
 
+
+def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
+
+    cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 1 " + str(prout)
+    print cmd
+    system(cmd)
+
+    pfilout = prout + "DescClean.txt"
+
+    if path.exists(pfilout):
+        return pfilout
+    else:
+        return 0
+
+
+def clustering(pdesc, pAC50, prresult, dist, aggreg, clusteringMeth, optClusterMeth):
+
+
+    pcluster = prresult + "cluster.csv"
+    if path.exists(pcluster):
+        if pAC50 == "0":
+            return pcluster
+        else:
+            cmd = "./clusterAnalysis.R " + pdesc + " " + pAC50 + " " + pcluster + " " + prresult + " " + dist + " " + clusteringMeth + " " + aggreg + " " + optClusterMeth
+    else:
+        cmd = "./clusterAnalysis.R " + pdesc + " " + pAC50 + " 0 " + prresult + " " + dist + " " + clusteringMeth + " " + aggreg + " " + optClusterMeth
+
+    print cmd
+    system(cmd)
+
+    if path.exists(pcluster):
+        return pcluster
+    else:
+        return 0
+
+
+def drawSOM(pdesc1D2Dclean, prSOM):
+
+
+    print pdesc1D2Dclean
+    print prSOM
+
+    return
+
+
+
+def CrossClusterIC50(pdesc, pAC50, pclust, prout):
+
+
+    cmd = "./clusterIC50.R " + pdesc + " " + pAC50 + " " + pclust + " " + str(prout)
+    print cmd
+
+
+
+    return
+

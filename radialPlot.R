@@ -228,13 +228,19 @@ radialByCluster = function(daffCluster, pfilout){
   
   daffCluster = as.matrix(daffCluster)
   
+  #print(min(daffCluster, na.rm = TRUE))
+  daffCluster[which(is.na(daffCluster))] = -3.5
+  print(daffCluster)
+  
   svg(pfilout, 25, 25)
-  radial.plot(daffCluster[,1], labels = rownames(daffCluster), rp.type="p", radial.lim=c(-2.5, 2.5), cex.lab = 1, mar=c(25,25,25,25), line.col = "blue", lwd = 10)
+  radial.plot(daffCluster[,1], labels = rownames(daffCluster), rp.type="p", radial.lim=c(-3.5, 3.5), cex.lab = 1, mar=c(25,25,25,25), line.col = "blue", lwd = 10)
   par(new=TRUE)
-  radial.plot(daffCluster[,2], labels = "", rp.type="p", radial.lim=c(-2.5, 2.5), mar=c(25,25,25,25), line.col = "red", lwd = 10)
-  par(new=TRUE)
-  radial.plot(daffCluster[,3], labels = "", rp.type="p", radial.lim=c(-2.5, 2.5), mar=c(25,25,25,25), line.col = "green", lwd = 10)
-  par(new=TRUE)
-  radial.plot(daffCluster[,4], labels = "", rp.type="p", radial.lim=c(-2.5, 2.5), mar=c(25,25,25,25), line.col = "#D4DB16", lwd = 10)
+  
+  i = 1
+  while(i <= dim(daffCluster)[2]){
+    radial.plot(daffCluster[,i], labels = "", rp.type="p", radial.lim=c(-3.5, 3.5), mar=c(25,25,25,25), line.col = i, lwd = 10)
+    par(new=TRUE)
+    i = i + 1
+  }
   dev.off()
 }

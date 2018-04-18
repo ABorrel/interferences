@@ -5,11 +5,53 @@ require(cluster)
 library(RootsExtremaInflections)
 
 
+affByCluster = function(dIC50, dclust, prresult){
+  
+  
+  dMCluster = NULL
+  lclust = unique(dclust[,2])
+  lIC50 = colnames(dIC50)
+  
+  for(clust in lclust){
+    lval = c(clust)
+    dclustIC50 = dIC50[dcluster[which(dcluster[,2] == clust),1],]
+    for (i in seq(1,length(lIC50))){
+      vclustIC50 = dclustIC50[-which(is.na(dclustIC50[,i])),i]
+      Msp = mean(vclustIC50)
+      SDsp = sd(vclustIC50)
+      nchem = length(vclustIC50)
+      
+      lval = append(lval, Msp)
+      lval = append(lval, SDsp)
+      lval = append(lval, nchem)
+    }
+    dMCluster = rbind(dMCluster, lval)
+  }
+  
+  
+  rownames(dMCluster) = dMCluster[,1]
+  dMCluster = dMCluster[,-1]
+  
+  lcolnames = NULL
+  for(n in colnames(dIC50)){
+    cname = c(paste("M", n, sep = ""), paste("SD", n, sep = ""), paste("n", n, sep = ""))
+    lcolnames = append(lcolnames, cname)
+  }
+  
+  colnames(dMCluster) = lcolnames  
+  write.csv(dMCluster, paste(prresult, "clusterIC50.csv", sep = ""))
+  
+}
+
+
+
+
 optimalCluters = function (din, prout, metcluster, metOptNB, metagregation){
   
-  
   # scale data in input
+  #print(head(din))
   din = scale (din)
+  print(head(din))
   if (metcluster == "hclust"){
     p = fviz_nbclust(din, hcut, hcut_metho = metagregation, method = metOptNB, k.max = 50)
     ggsave(paste(prout, metcluster, "_" , metagregation, "_", metOptNB, ".png", sep = ""), dpi=300, height = 8, width = 15)
@@ -54,13 +96,13 @@ optimalCluters = function (din, prout, metcluster, metOptNB, metagregation){
   
   # dendogram old
   dcluster2 = cbind(names(outclust$cluster),outclust$cluster)
-  colnames(dcluster2) = c("names", "cluster")
+  colnames(dcluster2) = c("ID", "cluster")
   dcluster2 = as.data.frame(dcluster2)
   rownames(dcluster2) = names(outclust$cluster)
   dcluster2 = dcluster2[rownames(din),]
   
   # save cluster
-  write.csv(dcluster2, paste(prout, "Table_", metcluster, "_",  metagregation, "_", metOptNB, ".csv", sep = ""), row.names = FALSE)
+  write.csv(dcluster2, paste(prout, "cluster.csv", sep = ""), row.names = FALSE)
   
   
   
@@ -94,7 +136,7 @@ optimalCluters = function (din, prout, metcluster, metOptNB, metagregation){
                    color = "white", linesize = 1E-100, fontsize = 1E-100)
   #print(t4)
   ggsave(paste(prout, "dendo_cluster", metcluster, "_",  metagregation, "_", metOptNB, ".png", sep = ""), dpi=300, height = 8, width = 15)
-  return(dcluster2)
+  return(paste(prout, "cluster.csv", sep = ""))
 }
 
 
