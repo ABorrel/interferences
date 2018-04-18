@@ -62,7 +62,7 @@ lcluster = unique(dcluster[,2])
 prRadialplots = paste(prresult, "Radial/", sep = "")
 dir.create(prRadialplots)
 
-for(clust in lclust){
+for(clust in lcluster){
   dtemp = dIC50[which(dcluster[,2] == clust),]
   radialByCluster(dtemp, paste(prRadialplots, clust, ".svg", sep = ""))
 }
