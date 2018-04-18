@@ -1,5 +1,6 @@
 from os import path, listdir
 from re import search
+from shutil import copyfile
 
 import runExternalSoft
 import pathFolder
@@ -142,8 +143,8 @@ class clustering:
         prclusterApplied = prout + self.prCluster.split("/")[-2] + "/"
         pathFolder.createFolder(prclusterApplied)
 
-        runExternalSoft.CrossClusterIC50(self.pdesclean, pAC50, self.pclusters, prclusterApplied)
-        ddd
+        # first level of cluster
+        #runExternalSoft.CrossClusterIC50(self.pdesclean, pAC50, self.pclusters, prclusterApplied)
 
         dclust = {}
         fcluster = open(self.pclusters, "r")
@@ -154,14 +155,28 @@ class clustering:
         for chem in lchem:
             chem = chem.strip().replace("\"", "").split("\t")
             chemID = chem[0]
-            dclust[chemID] = [chem[1], chem[2]]
-            if nbclust < chem[1]:
-                nbclust = chem[1]
+            cluster = str(chem[1])
 
+            if not cluster in dclust.keys():
+                dclust[cluster] = []
+            dclust[cluster].append(chemID)
 
+        prclusterSub = prclusterApplied + "clusterSub/"
+        pathFolder.createFolder(prclusterSub)
 
+        for clust in dclust.keys():
+            print clust
+            prbyclust = prclusterSub + "clust" + str(clust) + "/"
+            pathFolder.createFolder(prbyclust)
 
+            #file to copy
+            pdescsub = prbyclust + "descClean.csv"
+            pclustsub = prbyclust + "cluster.csv"
 
+            copyfile(self.prCluster + "Clust" + str(clust) + "/descClean.csv", pdescsub)
+            copyfile(self.prCluster + "Clust" + str(clust) + "/cluster.csv", pclustsub)
+
+            runExternalSoft.CrossClusterIC50(pdescsub, pAC50, pclustsub, prbyclust)
 
 
 

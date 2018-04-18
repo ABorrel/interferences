@@ -1,7 +1,9 @@
 import pathFolder
 import runExternalSoft
 import loadDB
+
 from os import path
+from numpy import mean
 
 class assays:
     def __init__(self, pfilin, prout, prlog):
@@ -79,6 +81,8 @@ class assays:
         filout = open(pfilout, "w")
         filout.write("CAS\t" + "\t".join(lsample) + "\n")
         for casID in dAC50.keys():
+            if casID == "":
+                continue
             lw = []
             for sample in lsample:
                 if sample in dAC50[casID].keys():
@@ -90,6 +94,49 @@ class assays:
         self.pAC50 = pfilout
 
         return pfilout
+
+
+    def combineAC50(self):
+
+        dAC50 = {}
+        lsample = []
+
+        pfilout = self.proutSP + "AC50_combine"
+        if path.exists(pfilout):
+            self.pAC50 = pfilout
+            return pfilout
+
+        for chem in self.lchem:
+            if chem["AC50"] == "":
+                chem["AC50"] = "NA"
+            CAS = chem["CAS"]
+            if not CAS in dAC50.keys():
+                dAC50[CAS] = {}
+            dAC50[CAS][chem["SAMPLE_DATA_TYPE"]] = chem["AC50"]
+            if not chem["SAMPLE_DATA_TYPE"] in lsample:
+                lsample.append(chem["SAMPLE_DATA_TYPE"])
+
+        filout = open(pfilout, "w")
+        filout.write("CAS\tIC50\n")
+        for casID in dAC50.keys():
+            if casID == "":
+                continue
+
+            lM = []
+            for sample in lsample:
+                if sample in dAC50[casID].keys():
+                    if dAC50[casID][sample] != "NA":
+                        lM.append(float(dAC50[casID][sample]))
+            if lM == []:
+                M = "NA"
+            else:
+                M = mean(lM)
+
+            filout.write(str(casID) + "\t" + str(M) + "\n")
+        filout.close()
+        self.pAC50 = pfilout
+
+
 
 
     def corAssay(self, assay2):

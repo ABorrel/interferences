@@ -108,6 +108,7 @@ pathFolder.createFolder(prSOM)
 ################
 # prep
 cluc.writeAC50()
+cluc.combineAC50()
 pranalysis = cluc.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
 out = cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, pranalysis)
@@ -132,6 +133,8 @@ optimalCluster = "gap_stat"
 ######################
 
 cclust.applyMainClusters(cluc.pAC50, cluc.proutSP)
+#cclust.applyMainClusters(chek293.pAC50, chek293.proutSP)
+#cclust.applyMainClusters(chepg2.pAC50, chepg2.proutSP)
 
 
 
@@ -192,3 +195,4 @@ optimalCluster = "gap_stat"
 ## cross clustering for all data ##
 ###################################
 
+# cross color red/green/blue with luc
