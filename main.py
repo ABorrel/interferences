@@ -70,10 +70,12 @@ pathFolder.createFolder(prDesc)
 prlogDesc = prDesc + "log/"
 pathFolder.createFolder(prlogDesc)
 
-cDesc = analyseDB.Descriptors(prSMI, prDesc, prresults, prlogDesc)
+prPNG = prresults + "PNG/"
+pathFolder.createFolder(prPNG)
+
+cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
 cDesc.computeDesc()
 cDesc.generatePNG()
-kkk
 
 
 #####################
@@ -97,7 +99,7 @@ optimalCluster = "gap_stat"#"silhouette", "wss", "gap_stat"
 
 prcluster = prresults + "clusters/"
 pathFolder.createFolder(prcluster)
-cclust = clusteringDB.clustering(cDesc.pdesc1D2D, prcluster, corval, maxQuantile)
+cclust = clusteringDB.clustering(cDesc.pdesc1D2D, prcluster, cDesc.prPNG, corval, maxQuantile)
 cclust.createMainClustering(disttype, aggregtype, clusterType, optimalCluster)
 
 prSOM = prresults + "SOM/"
@@ -198,6 +200,5 @@ cclust.applyMainClusters(cluc.pAC50, cluc.proutSP)
 ###################################
 
 # cross color red/green/blue with luc
-
 
 cclust.corelAllAssays(cluc, chepg2, chek293)

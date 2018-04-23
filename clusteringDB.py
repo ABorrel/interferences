@@ -10,13 +10,14 @@ import pathFolder
 
 class clustering:
 
-    def __init__(self, pdesc, prout, corval, maxQuantile):
+    def __init__(self, pdesc, prout, prPNG, corval, maxQuantile):
 
 
         self.prout = prout
         self.corval = corval
         self.maxquantile = maxQuantile
         self.pdesc = pdesc
+        self.prPNG = prPNG
 
 
 
@@ -208,6 +209,38 @@ class clustering:
                 dclust[clustname] = []
 
             dclust[clustname].append(chemID)
+
+        #open descriptors
+        fdesc = open(self.pdesc, "r")
+        lchemdesc = fdesc.readlines()
+        fdesc.close()
+
+        ddesc = {}
+        for chemdesc in lchemdesc[1:]:
+            chemID = chemdesc.split("/t")[0]
+            ddesc[chemID] = chemdesc
+
+
+        for cluster in dclust.keys():
+            prclustsub = pathFolder.createFolder(prInterfer + str(cluster) + "/")
+
+            #file descriptors
+            filedesc = open(prclustsub + "desc.csv", "w")
+            filedesc.write(lchemdesc[0])
+
+            for chemical in dclust[cluster]:
+                #png
+                ppng = self.prPNG + chemical + ".png"
+                if path.exists(ppng):
+                    copyfile(ppng, prclustsub + chemical + ".png")
+                #desc
+                filedesc.write(ddesc[chemical])
+            fdesc.close()
+
+        
+
+
+
 
 
 

@@ -8,11 +8,12 @@ import toolbox
 
 class Descriptors:
 
-    def __init__(self, prSMI, prDesc, prout, prlog):
+    def __init__(self, prSMI, prDesc, prPNG, prout, prlog):
         self.prSMI = prSMI
         self.prDesc = prDesc
         self.prlog = prlog
         self.prout = prout
+        self.prPNG = prPNG
 
     def computeDesc(self):
 
@@ -61,11 +62,12 @@ class Descriptors:
 
     def generatePNG(self):
 
-        prPNG = self.prout + "PNG/"
-        pathFolder.createFolder(prPNG)
+        pathFolder.createFolder(self.prPNG)
         lnSMIs = listdir(self.pSMIclean)
+
         for nSMI in lnSMIs:
-            runExternalSoft.molconvert(self.pSMIclean + nSMI, prPNG + nSMI[:-3] + "png")
+            runExternalSoft.molconvert(self.pSMIclean + nSMI, self.prPNG + nSMI[:-3] + "png")
+
 
 
 
