@@ -176,7 +176,7 @@ def CrossClusterIC50(pdesc, pAC50, pclust, prout):
 
     cmd = "./clusterIC50.R " + pdesc + " " + pAC50 + " " + pclust + " " + str(prout)
     print cmd
-
+    system(cmd)
 
 
     return

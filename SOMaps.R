@@ -2,9 +2,9 @@
 require(kohonen)
 
 
-generateModelSOM = function(ddesc, ){
+generateModelSOM = function(ddesc){
   
-  
+  return()
   
 }
 

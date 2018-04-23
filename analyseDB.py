@@ -8,17 +8,25 @@ import toolbox
 
 class Descriptors:
 
-    def __init__(self, prSMI, prDesc, prlog):
+    def __init__(self, prSMI, prDesc, prout, prlog):
         self.prSMI = prSMI
-        self.prout = prDesc
+        self.prDesc = prDesc
         self.prlog = prlog
-
+        self.prout = prout
 
     def computeDesc(self):
 
 
-        pdesc1D2D = self.prout + "tableDesc1D2D"
+        pdesc1D2D = self.prDesc + "tableDesc1D2D"
         self.pdesc1D2D = pdesc1D2D
+
+        prSMIclean = self.prDesc + "SMIclean/"
+        pathFolder.createFolder(prSMIclean)
+        self.pSMIclean = prSMIclean
+
+        prDescbyCAS = self.prDesc + "DESCbyCAS/"
+        pathFolder.createFolder(prDescbyCAS)
+
 
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
             return pdesc1D2D
@@ -27,11 +35,7 @@ class Descriptors:
             ldesc = chemical.getLdesc("1D2D")
             fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
 
-        prSMIclean = self.prout + "SMIclean/"
-        pathFolder.createFolder(prSMIclean)
 
-        prDescbyCAS = self.prout + "DESCbyCAS/"
-        pathFolder.createFolder(prDescbyCAS)
 
         for pSMI in listdir(self.prSMI):
         #for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
@@ -53,6 +57,15 @@ class Descriptors:
                 #Write in the table
                 chem.writeDesc(ldesc, fdesc1D2D)
         fdesc1D2D.close()
+
+
+    def generatePNG(self):
+
+        prPNG = self.prout + "PNG/"
+        pathFolder.createFolder(prPNG)
+        lnSMIs = listdir(self.pSMIclean)
+        for nSMI in lnSMIs:
+            runExternalSoft.molconvert(self.pSMIclean + nSMI, prPNG + nSMI[:-3] + "png")
 
 
 

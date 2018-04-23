@@ -57,14 +57,14 @@ class clustering:
         pclustersFinal = self.prCluster + "clusterMain.csv"
         if not path.exists(pclustersFinal):
             fclustersFinal = open(pclustersFinal, "w")
-            fclustersFinal.write("ID\tCluster1\tCluster2\n")
+            fclustersFinal.write("ID,Cluster1,Cluster2\n")
 
             fcluster1 = open(pcluster, "r")
             lchemCluster1 = fcluster1.readlines()
             fcluster1.close()
 
             dclust = {}
-            for chemCluster1 in lchemCluster1:
+            for chemCluster1 in lchemCluster1[1:]:
                 chemCluster1 = chemCluster1.strip().replace("\"", "").split(",")
                 chemID = chemCluster1[0]
                 clust = chemCluster1[1]
@@ -89,7 +89,7 @@ class clustering:
             for chemID in dclust.keys():
                 if len(dclust[chemID]) == 1:
                     dclust[chemID].append("1")
-                fclustersFinal.write(str(chemID) + "\t" + "\t".join(dclust[chemID]) + "\n")
+                fclustersFinal.write(str(chemID) + "," + ",".join(dclust[chemID]) + "\n")
             fclustersFinal.close()
 
         self.pclusters = pclustersFinal
@@ -144,22 +144,22 @@ class clustering:
         pathFolder.createFolder(prclusterApplied)
 
         # first level of cluster
-        #runExternalSoft.CrossClusterIC50(self.pdesclean, pAC50, self.pclusters, prclusterApplied)
+        runExternalSoft.CrossClusterIC50(self.pdesclean, pAC50, self.pclusters, prclusterApplied)
 
         dclust = {}
         fcluster = open(self.pclusters, "r")
         lchem = fcluster.readlines()
         fcluster.close()
 
-        nbclust = 0
-        for chem in lchem:
-            chem = chem.strip().replace("\"", "").split("\t")
+        for chem in lchem[1:]:
+            chem = chem.strip().replace("\"", "").split(",")
             chemID = chem[0]
             cluster = str(chem[1])
 
             if not cluster in dclust.keys():
                 dclust[cluster] = []
             dclust[cluster].append(chemID)
+        print dclust
 
         prclusterSub = prclusterApplied + "clusterSub/"
         pathFolder.createFolder(prclusterSub)
@@ -174,9 +174,41 @@ class clustering:
             pclustsub = prbyclust + "cluster.csv"
 
             copyfile(self.prCluster + "Clust" + str(clust) + "/descClean.csv", pdescsub)
-            copyfile(self.prCluster + "Clust" + str(clust) + "/cluster.csv", pclustsub)
+            if not path.exists(self.prCluster + "Clust" + str(clust) + "/cluster.csv"):
+                fclustsub = open(pclustsub, "w")
+                fclustsub.write('\"ID\",\"cluster\"\n')
+                for chem in dclust[clust]: fclustsub.write('\"' + str(chem) + '\"' + "," + '\"1\"\n')
+                fclustsub.close()
+            else:
+                copyfile(self.prCluster + "Clust" + str(clust) + "/cluster.csv", pclustsub)
 
             runExternalSoft.CrossClusterIC50(pdescsub, pAC50, pclustsub, prbyclust)
+
+
+
+        return
+
+    def corelAllAssays(self, cluc, chepg2, chek293):
+
+
+        prInterfer = self.prout + "interfer/"
+        pathFolder.createFolder(prInterfer)
+
+        # cluster main
+        fcluster = open(self.pclusters, "r")
+        lclusters = fcluster.readlines()
+
+        dclust = {}
+        for clusters in lclusters:
+            clusters = clusters.strip().split(",")
+
+            chemID =clusters[0]
+            clustname = str(clusters[1]) + "_" + str(clusters[2])
+            if not clustname in dclust.keys():
+                dclust[clustname] = []
+
+            dclust[clustname].append(chemID)
+
 
 
 

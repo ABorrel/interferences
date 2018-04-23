@@ -55,20 +55,17 @@ dendogramCluster = function(ddes, daff, dcluster, prout){
   
   
   #calibrate affinity for color
-  minMatrix = min(daff)
-  maxMatrix = max(daff)
+  #minMatrix = min(daff)
+  #maxMatrix = max(daff)
   
-  for(i in seq(1, dim(daff)[2])){
-    daff[which(daff[,i] == max(daff[,i])), i] = maxMatrix
-    daff[which(daff[,i] == min(daff[,i])), i] = minMatrix
-  }
-  #daff = daff[,c("Escherichia.coli", "Pseudomonas.aeruginosa",  "Staphylococcus.aureus" , "Streptococcus.pneumoniae")]
-  
+  daff[which(daff == max(daff))] = 3.5
+  daff[which(daff == min(daff))] = -3.5
+
+  #for(i in seq(1, dim(daff)[2])){
+  #  daff[which(daff[,i] == max(daff[,i])), i] = maxMatrix
+  #  daff[which(daff[,i] == min(daff[,i])), i] = minMatrix
+  #}
   daff = as.data.frame(daff)
-  daff = cbind(rownames(daff), daff)
-  dcluster[,2] = as.character(dcluster[,2])
-  
-  print(daff)
   
   matTrans1 <- scale(ddes)
   d <- dist(matTrans1, method = "euc")
@@ -80,16 +77,20 @@ dendogramCluster = function(ddes, daff, dcluster, prout){
   t1 <- ggtree(tupgma2, layout="circular", size=0.8, aes(color=cluster))
   t1 <- t1 %<+% dcluster + geom_text(aes(color=cluster, label = cluster, angle=angle,  fontface="bold"), hjust=-1.5, size=1.2) +
     geom_tippoint(aes(color=cluster), alpha=0.75, size=1)+
-    #theme(legend.position="right")+
+    scale_colour_gradientn(colours=rainbow(20))+
     theme(plot.margin = unit(c(0,0,0,0), "cm")) + 
     geom_treescale(x = 40, y = 40, width = NULL, offset = NULL,
                    color = "white", linesize = 1E-100, fontsize = 1E-100)
   
   
-  daff = daff[,-1]
-  t2 = gheatmap(t1, daff, font.size = 2, offset = 3, width = 0.5, colnames_offset_x = 2, colnames_offset_y = 0, low = "red", high = "lightgreen") +
+  #daff = daff[,-1]
+  t2 = gheatmap(t1, daff, font.size = 2, offset = 3, width = 0.5, colnames_offset_x = 2, colnames_offset_y = 0,low='red', high='lightgreen')
     #scale_color_continuous(low='red', high='lightgreen') +
-    theme_tree()
+    #scale_colour_gradientn(colours = c("#DF541E", "#D4621A", "#CA7116", "#BF7F12", "#AA9D0B", "#A0AB07", "#95BA03", "#8BC900"),
+    #                       values=c(-4.0,-3.0, -2.0, -1.0, 0, 1.0, 2.0, 3.0,4.0))
+    #theme(legend.position="right")+
+
+    #theme_tree()
   #print (t2)
   open_tree(t2, 15) %>% rotate_tree(15)
   ggsave(pfilout, dpi=300, height = 11, width = 11)
@@ -114,7 +115,4 @@ dendogramCluster = function(ddes, daff, dcluster, prout){
   #open_tree(t2, 15) %>% rotate_tree(15)
   #ggsave(pfilout, dpi=300, height = 11, width = 11)
 }
-
-
-
 

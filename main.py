@@ -70,8 +70,10 @@ pathFolder.createFolder(prDesc)
 prlogDesc = prDesc + "log/"
 pathFolder.createFolder(prlogDesc)
 
-cDesc = analyseDB.Descriptors(prSMI, prDesc, prlogDesc)
+cDesc = analyseDB.Descriptors(prSMI, prDesc, prresults, prlogDesc)
 cDesc.computeDesc()
+cDesc.generatePNG()
+kkk
 
 
 #####################
@@ -129,14 +131,6 @@ optimalCluster = "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
 
-# apply main cluster #
-######################
-
-cclust.applyMainClusters(cluc.pAC50, cluc.proutSP)
-#cclust.applyMainClusters(chek293.pAC50, chek293.proutSP)
-#cclust.applyMainClusters(chepg2.pAC50, chepg2.proutSP)
-
-
 
 # for HEPG #
 ############
@@ -190,9 +184,20 @@ optimalCluster = "gap_stat"
 
 
 
+# apply main cluster #
+######################
+
+cclust.applyMainClusters(cluc.pAC50, cluc.proutSP)
+#cclust.applyMainClusters(chek293.pAC50, chek293.proutSP)
+#cclust.applyMainClusters(chepg2.pAC50, chepg2.proutSP)
+
+
 
 ###################################
 ## cross clustering for all data ##
 ###################################
 
 # cross color red/green/blue with luc
+
+
+cclust.corelAllAssays(cluc, chepg2, chek293)
