@@ -1,48 +1,14 @@
-from os import system, path, remove
+from os import system, path, remove, chdir
 from re import search
 from time import sleep
 
-LIGPREP = "/opt/schrodinger2017-3/ligprep"
-PADEL = "/home/aborrel/softwares/padel/PaDEL-Descriptor.jar"
 
+def runRCMD(cmd):
 
-def runLigprep(psmilin, forcefield="OPLS3", stereoisoster=1):
-
-    """Maybe fix more option"""
-
-    if forcefield == "OPLS3":
-        bff = "16"
-    else:
-        bff = "14"
-
-    cmd = LIGPREP + " -ismi " + psmilin + " -osd " + psmilin[0:-4] + ".sdf" + " -bff " + str(bff) + " -epik -s " + str(stereoisoster) + " -WAIT -NJOBS 3"
-
+    chdir("./../Rscripts/")
     print cmd
     system(cmd)
-
-    # control if file exist
-    if not path.exists(psmilin[0:-4] + ".sdf"):
-        return "Ligprep ERROR"
-    else:
-        try:remove("tem.log")
-        except:pass
-        try:remove("tem-dropped.smi")
-        except: pass
-        try:remove("tem-dropped-indices.txt")
-        except: pass
-
-    return psmilin[0:-4] + ".sdf"
-
-def runPadel(prin=""):
-    """Input include a folder of sdf file"""
-    if prin == "":
-        return "ERROR - Padel Input"
-    else:
-        cmd = "java -jar " + PADEL + " -maxruntime 10000 -3d -dir " + str(prin) + " -file " + prin + "tem.desc"
-        print cmd
-        system(cmd)
-
-    return prin + "tem.desc"
+    chdir("./../fluo/")
 
 
 def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
@@ -80,9 +46,7 @@ def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
 def Rstat(pfilin1D2D, paff, prout, valcor = 0.9, maxquantile=80):
 
     cmdStat = "./descAnalysis.R " + str(pfilin1D2D) + " " + str(paff) + " " + str(prout) + " " + str(valcor) + " " + str(maxquantile)
-
-    print cmdStat
-    system(cmdStat)
+    runRCMD(cmdStat)
 
     return
 
@@ -92,16 +56,14 @@ def Rstat(pfilin1D2D, paff, prout, valcor = 0.9, maxquantile=80):
 def corplotR(pfilin):
 
     cmdCorplot = "./corplot.R " + str(pfilin)
-    print cmdCorplot
-    system(cmdCorplot)
+    runRCMD(cmdCorplot)
 
 
 
 def plotAC50(pAC50, prout, typeAssays):
 
     cmdhist = "./distributions.R " + str(pAC50) + " " + str(prout) + " " + str(typeAssays)
-    print cmdhist
-    system(cmdhist)
+    runRCMD(cmdhist)
 
 
 
@@ -112,7 +74,8 @@ def molconvert(pfilin, pfilout= ""):
 
     if path.exists(pfilout):
         return pfilout
-    cmdconvert = "molconvert \"png:w500,Q100,#00000000\" " + pfilin + " -o " + pfilout
+    #cmdconvert = "molconvert \"png:w500,Q100,#00000000\" " + pfilin + " -o " + pfilout  # for transparent background
+    cmdconvert = "molconvert \"png:w500,Q100\" " + pfilin + " -o " + pfilout
     system(cmdconvert)
     return pfilout
 
@@ -121,16 +84,16 @@ def molconvert(pfilin, pfilout= ""):
 def plotResponsiveCurve(prresponse, pAC50, prout):
 
     cmd = "./responseCurves.R " + str(prresponse) + " " + str(pAC50) + " " + str(prout)
-    print cmd
-    system(cmd)
+    print(cmd)
+    ddd
+    runRCMD(cmd)
 
 
 
 def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
 
     cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 1 " + str(prout)
-    print cmd
-    system(cmd)
+    runRCMD(cmd)
 
     pfilout = prout + "DescClean.txt"
 
@@ -152,8 +115,7 @@ def clustering(pdesc, pAC50, prresult, dist, aggreg, clusteringMeth, optClusterM
     else:
         cmd = "./clusterAnalysis.R " + pdesc + " " + pAC50 + " 0 " + prresult + " " + dist + " " + clusteringMeth + " " + aggreg + " " + optClusterMeth
 
-    print cmd
-    system(cmd)
+    runRCMD(cmd)
 
     if path.exists(pcluster):
         return pcluster
@@ -161,11 +123,11 @@ def clustering(pdesc, pAC50, prresult, dist, aggreg, clusteringMeth, optClusterM
         return 0
 
 
-def drawSOM(pdesc1D2Dclean, prSOM):
+def drawEnrichSOM(pdesc1D2Dclean, pAC50, prSOM):
 
 
-    print pdesc1D2Dclean
-    print prSOM
+    cmdSOM = "./SOMaps.R " + str(pdesc1D2Dclean) + " " + pAC50 + " " + str(prSOM)
+    runRCMD(cmdSOM)
 
     return
 
@@ -175,9 +137,14 @@ def CrossClusterIC50(pdesc, pAC50, pclust, prout):
 
 
     cmd = "./clusterIC50.R " + pdesc + " " + pAC50 + " " + pclust + " " + str(prout)
-    print cmd
-    system(cmd)
+    runRCMD(cmd)
 
 
-    return
+
+def crossA50s(pdesc, pAC50luc, pAC50hepg, pAC50hek, prout):
+
+    cmd = "./crossAC50bycluster.R " + pdesc + " " + pAC50luc + " " + pAC50hepg + " " + pAC50hek + " " + prout
+    runRCMD(cmd)
+
+
 

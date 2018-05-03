@@ -1,4 +1,5 @@
 from os import path, listdir
+from pdb import run
 from re import search
 from shutil import copyfile
 
@@ -217,7 +218,7 @@ class clustering:
 
         ddesc = {}
         for chemdesc in lchemdesc[1:]:
-            chemID = chemdesc.split("/t")[0]
+            chemID = chemdesc.split("\t")[0]
             ddesc[chemID] = chemdesc
 
 
@@ -225,7 +226,8 @@ class clustering:
             prclustsub = pathFolder.createFolder(prInterfer + str(cluster) + "/")
 
             #file descriptors
-            filedesc = open(prclustsub + "desc.csv", "w")
+            pdesc = prclustsub + "desc.csv"
+            filedesc = open(pdesc, "w")
             filedesc.write(lchemdesc[0])
 
             for chemical in dclust[cluster]:
@@ -234,22 +236,19 @@ class clustering:
                 if path.exists(ppng):
                     copyfile(ppng, prclustsub + chemical + ".png")
                 #desc
-                filedesc.write(ddesc[chemical])
+                if chemical in ddesc.keys():
+                    filedesc.write(ddesc[chemical])
             fdesc.close()
 
-        
-
-
-
-
-
-
-
+            runExternalSoft.crossA50s(pdesc, cluc.pAC50, chepg2.pAC50, chek293.pAC50, prclustsub)
         return
 
 
 
-def createSOM(pdesc1D2D, corval, maxQuantile, prSOM):
+
+
+
+def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, prSOM):
 
 
 
@@ -265,6 +264,5 @@ def createSOM(pdesc1D2D, corval, maxQuantile, prSOM):
             print "Error ->", pdesc1D2D
 
 
-
-    runExternalSoft.drawSOM(pdesc1D2Dclean, prSOM)
+    runExternalSoft.drawEnrichSOM(pdesc1D2Dclean, pAC50, prSOM)
 

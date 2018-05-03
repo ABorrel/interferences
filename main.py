@@ -1,4 +1,3 @@
-from idlelib import run
 from os import path
 
 import assayResults
@@ -21,6 +20,7 @@ pluc = "/home/borrela2/interference/data/luc/tox21-luc-biochem-p1/tox21-luc-bioc
 phek293 = "/home/borrela2/interference/data/luc/tox21-spec-hek293-p1/tox21-spec-hek293-p1.txt"
 phepg2 = "/home/borrela2/interference/data/luc/tox21-spec-hepg2-p1/tox21-spec-hepg2-p1.txt"
 
+prMain = "/home/borrela2/interference/"
 prresults = "/home/borrela2/interference/spDataAnalysis/"
 
 # log folders
@@ -40,7 +40,8 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 # plot response curves #
 ########################
 #cluc.responseCurves()
-#chek293.responseCurves()
+chek293.responseCurves()
+gggg
 #chepg2.responseCurves()
 
 
@@ -61,16 +62,16 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 #chepg2.extractChemical(pSDFTox21)
 
 
-prSMI = prresults + "SMI/"
+prSMI = prMain + "SMI/"
 # compute descriptors
 
-prDesc = prresults + "Desc/"
+prDesc = prMain + "Desc/"
 pathFolder.createFolder(prDesc)
 
-prlogDesc = prDesc + "log/"
+prlogDesc = prMain + "log/"
 pathFolder.createFolder(prlogDesc)
 
-prPNG = prresults + "PNG/"
+prPNG = prMain + "PNG/"
 pathFolder.createFolder(prPNG)
 
 cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
@@ -102,9 +103,6 @@ pathFolder.createFolder(prcluster)
 cclust = clusteringDB.clustering(cDesc.pdesc1D2D, prcluster, cDesc.prPNG, corval, maxQuantile)
 cclust.createMainClustering(disttype, aggregtype, clusterType, optimalCluster)
 
-prSOM = prresults + "SOM/"
-pathFolder.createFolder(prSOM)
-#clusteringDB.createSOM(cDesc.pdesc1D2D, corval, maxQuantile, prSOM)
 
 
 ### for luc  ###
@@ -115,7 +113,7 @@ cluc.writeAC50()
 cluc.combineAC50()
 pranalysis = cluc.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-out = cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, pranalysis)
+cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, pranalysis)
 #cDesc.rankingAC50()
 
 # clustering -> independant #
@@ -189,9 +187,33 @@ optimalCluster = "gap_stat"
 # apply main cluster #
 ######################
 
-cclust.applyMainClusters(cluc.pAC50, cluc.proutSP)
+#cclust.applyMainClusters(cluc.pAC50, cluc.proutSP)
 #cclust.applyMainClusters(chek293.pAC50, chek293.proutSP)
 #cclust.applyMainClusters(chepg2.pAC50, chepg2.proutSP)
+
+
+
+#################
+####   SOM   ####
+#################
+#### for luc  ####
+##################
+prSOM = cluc.proutSP + "SOM/"
+pathFolder.createFolder(prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, prSOM)
+
+#### for chepg2  ####
+#####################
+prSOM = chepg2.proutSP + "SOM/"
+pathFolder.createFolder(prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prSOM)
+
+
+#### for HEK293  ####
+#####################
+prSOM = chek293.proutSP + "SOM/"
+pathFolder.createFolder(prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prSOM)
 
 
 
