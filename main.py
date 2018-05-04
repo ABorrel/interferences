@@ -6,6 +6,7 @@ import analyseDB
 import loadDB
 import runExternalSoft
 import clusteringDB
+import QSARModel
 
 
 #########
@@ -40,8 +41,7 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 # plot response curves #
 ########################
 #cluc.responseCurves()
-chek293.responseCurves()
-gggg
+#chek293.responseCurves()
 #chepg2.responseCurves()
 
 
@@ -88,6 +88,8 @@ cDesc.generatePNG()
 
 corval = 0.9
 maxQuantile = 90
+splitratio = 0.15
+nbCV = 10
 
 
 ##### analysis for all Chemical ######
@@ -98,10 +100,10 @@ aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
 clusterType = "hclust"#"hclust", "kmeans"
 optimalCluster = "gap_stat"#"silhouette", "wss", "gap_stat"
 
-prcluster = prresults + "clusters/"
-pathFolder.createFolder(prcluster)
-cclust = clusteringDB.clustering(cDesc.pdesc1D2D, prcluster, cDesc.prPNG, corval, maxQuantile)
-cclust.createMainClustering(disttype, aggregtype, clusterType, optimalCluster)
+#prcluster = prresults + "clusters/"
+#pathFolder.createFolder(prcluster)
+#cclust = clusteringDB.clustering(cDesc.pdesc1D2D, prcluster, cDesc.prPNG, corval, maxQuantile)
+#cclust.createMainClustering(disttype, aggregtype, clusterType, optimalCluster)
 
 
 
@@ -131,6 +133,14 @@ optimalCluster = "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
 
+# RF - QSAR modeling
+prQSAR = cluc.proutSP + "QSAR/"
+pathFolder.createFolder(prQSAR)
+
+cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, splitratio, nbCV, prQSAR)
+cModelluc.prepData()
+cModelluc.buildQSARReg()
+ddd
 
 # for HEPG #
 ############

@@ -237,6 +237,11 @@ class assays:
             else:
                 dresponse[casID][typein]["AC50"] = "NA"
 
+            if chem["CURVE_CLASS2"] != "":
+                dresponse[casID][typein]["CURVE_CLASS2"] = chem["CURVE_CLASS2"]
+            else:
+                dresponse[casID][typein]["CURVE_CLASS2"] = "NA"
+
             i = 0
             while i < 16:
                 kdata = "DATA" + str(i)
@@ -258,13 +263,14 @@ class assays:
             pCASout = prresponse + str(CASID)
             print pCASout
             filout = open(pCASout, "w")
-            filout.write("CONC\tDATA\tFluorophores\n")
+            filout.write("CONC\tDATA\tFluorophores\tCurveType\n")
 
             i = 0
             while i < 16:
                 for sample in dresponse[CASID].keys():
                     filout.write(str(dresponse[CASID][sample]["CONC"][i]) + "\t" + str(
-                        dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\n")
+                        dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\t" + str(
+                        dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
                 i += 1
             filout.close()
 

@@ -1,4 +1,4 @@
-from os import system, path, remove, chdir
+from os import system, path, remove, chdir, getcwd
 from re import search
 from time import sleep
 
@@ -10,6 +10,14 @@ def runRCMD(cmd):
     system(cmd)
     chdir("./../fluo/")
 
+
+def runRQSARModeling(cmd):
+
+    workdir = getcwd()
+    chdir("/home/borrela2/QSARPR/source/")
+    print(cmd)
+    system(cmd)
+    chdir(workdir)
 
 def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
 
@@ -84,8 +92,6 @@ def molconvert(pfilin, pfilout= ""):
 def plotResponsiveCurve(prresponse, pAC50, prout):
 
     cmd = "./responseCurves.R " + str(prresponse) + " " + str(pAC50) + " " + str(prout)
-    print(cmd)
-    ddd
     runRCMD(cmd)
 
 
@@ -101,6 +107,19 @@ def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
         return pfilout
     else:
         return 0
+
+
+def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, typeAff="All"):
+
+    cmd = "./QSARsPrep.R " + pdesc + " " + pAC50 + " " + prout + " " + str(valcor) + " " + str(maxquantile) + " " + str(splitratio) + " 1 " + typeAff
+    runRQSARModeling(cmd)
+
+
+
+def QSARReg(ptrain, ptest, pcluster, prresult, nbCV):
+
+    cmd = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prresult + " " + str(nbCV) + ">" + prresult + "RegResults"
+    runRQSARModeling(cmd)
 
 
 def clustering(pdesc, pAC50, prresult, dist, aggreg, clusteringMeth, optClusterMeth):

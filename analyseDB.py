@@ -179,4 +179,3 @@ class Descriptors:
                 frank.write("\n")
             frank.close()
 
-
