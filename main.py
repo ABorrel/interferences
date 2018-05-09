@@ -40,9 +40,24 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 
 # plot response curves #
 ########################
-#cluc.responseCurves()
-#chek293.responseCurves()
-#chepg2.responseCurves()
+#cluc.responseCurves(drawn=1)
+#chek293.responseCurves(drawn=1)
+#chepg2.responseCurves(drawn=1)
+
+
+# barplot curve type #
+######################
+#prbarplot = chepg2.proutSP + "curveType/"
+#pathFolder.createFolder(prbarplot)
+#chepg2.barplotCurveClass(prbarplot)
+
+#prbarplot = cluc.proutSP + "curveType/"
+#pathFolder.createFolder(prbarplot)
+#cluc.barplotCurveClass(prbarplot)
+
+#prbarplot = chek293.proutSP + "curveType/"
+#pathFolder.createFolder(prbarplot)
+#chek293.barplotCurveClass(prbarplot)
 
 
 # IC50 hist #
@@ -76,7 +91,7 @@ pathFolder.createFolder(prPNG)
 
 cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
 cDesc.computeDesc()
-cDesc.generatePNG()
+#cDesc.generatePNG()
 
 
 #####################
@@ -116,7 +131,16 @@ cluc.combineAC50()
 pranalysis = cluc.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
 cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, pranalysis)
+
+#ranking chemical based on AC50
 #cDesc.rankingAC50()
+prRank = cluc.proutSP + "ranking/"
+pathFolder.createFolder(prRank)
+cluc.rankingTop(100, prPNG, prRank)
+
+prRank = cluc.proutSP + "rankinggood/"
+pathFolder.createFolder(prRank)
+cluc.rankingTop(100, prPNG, prRank, 1)
 
 # clustering -> independant #
 #############################
@@ -133,23 +157,37 @@ optimalCluster = "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
 
-# RF - QSAR modeling
+# QSAR modeling #
+#################
 prQSAR = cluc.proutSP + "QSAR/"
 pathFolder.createFolder(prQSAR)
 
-cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, splitratio, nbCV, prQSAR)
-cModelluc.prepData()
-cModelluc.buildQSARReg()
-ddd
+#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, splitratio, nbCV, prQSAR)
+#cModelluc.prepData()
+#cModelluc.buildQSARReg()
+
 
 # for HEPG #
+############
 ############
 
 # prep
 chepg2.writeAC50()
 pranalysis = chepg2.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-out = cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
+cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
+
+# cor with different AC50 available
+###################################
+#chepg2.corAC50()
+# rank AC50
+prRank = chepg2.proutSP + "ranking/"
+pathFolder.createFolder(prRank)
+chepg2.rankingTop(100, prPNG, prRank)
+
+prRank = chepg2.proutSP + "rankinggood/"
+pathFolder.createFolder(prRank)
+chepg2.rankingTop(100, prPNG, prRank, 1)
 #cDesc.rankingAC50()
 
 # clustering
@@ -173,10 +211,20 @@ optimalCluster = "gap_stat"
 
 # prep
 chek293.writeAC50()
+chek293.corAC50()
 pranalysis = chek293.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-out = cDesc.setConstantPreproc(chek293.pAC50, corval, maxQuantile, pranalysis)
+cDesc.setConstantPreproc(chek293.pAC50, corval, maxQuantile, pranalysis)
+
+#rank by AC50
 #cDesc.rankingAC50()
+prRank = chek293.proutSP + "ranking/"
+pathFolder.createFolder(prRank)
+chek293.rankingTop(100, prPNG, prRank)
+
+prRank = chek293.proutSP + "rankinggood/"
+pathFolder.createFolder(prRank)
+chek293.rankingTop(100, prPNG, prRank, 1)
 
 # clustering
 disttype = "euc"
@@ -216,14 +264,14 @@ clusteringDB.createSOM(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, prSOM)
 #####################
 prSOM = chepg2.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prSOM)
+#clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prSOM)
 
 
 #### for HEK293  ####
 #####################
 prSOM = chek293.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prSOM)
+#clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prSOM)
 
 
 
@@ -233,4 +281,4 @@ clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prSO
 
 # cross color red/green/blue with luc
 
-cclust.corelAllAssays(cluc, chepg2, chek293)
+#clust.corelAllAssays(cluc, chepg2, chek293)

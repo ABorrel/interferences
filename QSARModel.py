@@ -6,7 +6,7 @@ import runExternalSoft
 
 class Model:
 
-    def __init__(self, pdesc, pAC50, corval, maxQuantile, splitRatio, nvCV, prresult):
+    def __init__(self, pdesc, pAC50, corval, maxQuantile, splitRatio, nbCV, prresult):
 
         self.corval = corval
         self.maxQauntile = maxQuantile
@@ -14,7 +14,7 @@ class Model:
         self.pdesc = pdesc
         self.pAC50 = pAC50
         self.splitRatio = splitRatio
-        self.nbCV = nvCV
+        self.nbCV = nbCV
 
 
     def prepData(self):
@@ -31,3 +31,7 @@ class Model:
         runExternalSoft.QSARReg(self.ptrain, self.ptest, "0", self.prresult, self.nbCV)
 
 
+
+    def buildQSARClass(self):
+
+        runExternalSoft.QSARClass(self.ptrain, self.ptest, "0", self.prresult, self.nbCV)

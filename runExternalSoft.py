@@ -118,7 +118,7 @@ def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, typeAff="
 
 def QSARReg(ptrain, ptest, pcluster, prresult, nbCV):
 
-    cmd = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prresult + " " + str(nbCV) + ">" + prresult + "RegResults"
+    cmd = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prresult + " " + str(nbCV) + " >" + prresult + "RegResults"
     runRQSARModeling(cmd)
 
 
@@ -167,3 +167,11 @@ def crossA50s(pdesc, pAC50luc, pAC50hepg, pAC50hek, prout):
 
 
 
+def corAC50(pAC50, pcurve, prresult):
+    cmd = "./corAC50.R " + str(pAC50) + " " + str(pcurve) + " " + prresult
+    runRCMD(cmd)
+
+
+def barplotCurve(pfilin):
+    cmd = "./barplotCurve.R " + str(pfilin)
+    runRCMD(cmd)

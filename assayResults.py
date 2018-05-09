@@ -1,9 +1,15 @@
+from pyanaconda.screen_access import sam
+
 import pathFolder
 import runExternalSoft
 import loadDB
 
 from os import path
 from numpy import mean
+from PIL import Image, ImageFont, ImageDraw
+
+font = ImageFont.truetype("OpenSans-Regular.ttf", size=30)
+
 
 class assays:
     def __init__(self, pfilin, prout, prlog):
@@ -66,6 +72,7 @@ class assays:
         pfilout = self.proutSP + "AC50_sample"
         if path.exists(pfilout):
             self.pAC50 = pfilout
+            self.loadAC50()
             return pfilout
 
         for chem in self.lchem:
@@ -91,9 +98,29 @@ class assays:
                     lw.append("NA")
             filout.write(str(casID) + "\t" + "\t".join(lw) + "\n")
         filout.close()
+        self.dAC50 = dAC50
         self.pAC50 = pfilout
 
         return pfilout
+
+
+    def loadAC50(self):
+        self.dAC50 = {}
+        filin = open(self.pAC50, "r")
+        llinecas = filin.readlines()
+        filin.close()
+
+        ltypeAC50 = llinecas[0].strip().split("\t")[1:]
+
+        for linecas in llinecas[1:]:
+            lac50 = linecas.strip().split("\t")
+            cas = lac50[0]
+            self.dAC50[cas] = {}
+            i = 1
+            while i < len(lac50):
+                self.dAC50[cas][ltypeAC50[i-1]] = lac50[i]
+                i += 1
+        print self.dAC50
 
 
     def combineAC50(self):
@@ -104,6 +131,7 @@ class assays:
         pfilout = self.proutSP + "AC50_combine"
         if path.exists(pfilout):
             self.pAC50 = pfilout
+            self.loadAC50()
             return pfilout
 
         for chem in self.lchem:
@@ -118,6 +146,7 @@ class assays:
 
         filout = open(pfilout, "w")
         filout.write("CAS\tIC50\n")
+        dAC50 = {}
         for casID in dAC50.keys():
             if casID == "":
                 continue
@@ -131,12 +160,53 @@ class assays:
                 M = "NA"
             else:
                 M = mean(lM)
-
+            dAC50[casID] = {}
+            dAC50[casID]["set1"] = M
             filout.write(str(casID) + "\t" + str(M) + "\n")
         filout.close()
         self.pAC50 = pfilout
+        self.dAC50 = dAC50
+        print dAC50
+        dddd
 
 
+    def corAC50(self):
+
+        if not "pAC50" in self.__dict__:
+            self.writeAC50()
+
+        pcor = self.proutSP + "corAC50/"
+        pathFolder.createFolder(pcor)
+
+        dtypecurve = {}
+        #define different type of fluo
+        ltypefluo = []
+        for chem in self.lchem:
+            typefluo = chem["SAMPLE_DATA_TYPE"]
+            if not typefluo in ltypefluo:
+                ltypefluo.append(typefluo)
+
+        for chem in self.lchem:
+            casID = chem["CAS"]
+            if not casID in dtypecurve.keys():
+                dtypecurve[casID] = {}
+                for typefluo in ltypefluo:
+                    dtypecurve[casID][typefluo] = "NA"
+            dtypecurve[casID][typefluo] = chem["CURVE_CLASS2"]
+
+        pcurve = pcor + "curve"
+        fcurve = open(pcurve, "w")
+        fcurve.write("CAS" + "\t" + "\t".join(ltypefluo) + "\n")
+
+        for casID in dtypecurve.keys():
+            fcurve.write(casID + "\t" + "\t".join([str(dtypecurve[casID][k]) for k in ltypefluo]) + "\n")
+        fcurve.close()
+
+
+        runExternalSoft.corAC50(self.pAC50, pcurve, pcor)
+
+
+        return
 
 
     def corAssay(self, assay2):
@@ -214,7 +284,7 @@ class assays:
 
 
 
-    def responseCurves(self):
+    def responseCurves(self, drawn=0):
 
         prresponse = self.proutSP + "responseCurve/"
         pathFolder.createFolder(prresponse)
@@ -258,25 +328,47 @@ class assays:
 
                 i += 1
 
-        # compute response curves
-        for CASID in dresponse.keys():
-            pCASout = prresponse + str(CASID)
-            print pCASout
-            filout = open(pCASout, "w")
-            filout.write("CONC\tDATA\tFluorophores\tCurveType\n")
+        if drawn == 1:
 
-            i = 0
-            while i < 16:
-                for sample in dresponse[CASID].keys():
-                    filout.write(str(dresponse[CASID][sample]["CONC"][i]) + "\t" + str(
-                        dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\t" + str(
-                        dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
-                i += 1
-            filout.close()
+            # compute response curves
+            for CASID in dresponse.keys():
+                pCASout = prresponse + str(CASID)
+                print pCASout
+                filout = open(pCASout, "w")
+                filout.write("CONC\tDATA\tFluorophores\tCurveType\n")
 
-        pAC50 = self.writeAC50()
-        runExternalSoft.plotResponsiveCurve(prresponse, pAC50, self.proutSP)
+                i = 0
+                while i < 16:
+                    for sample in dresponse[CASID].keys():
+                        filout.write(str(dresponse[CASID][sample]["CONC"][i]) + "\t" + str(
+                            dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\t" + str(
+                            dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+                    i += 1
+                filout.close()
+            pAC50 = self.writeAC50()
+            runExternalSoft.plotResponsiveCurve(prresponse, pAC50, self.proutSP)
+        self.dresponse = dresponse
 
+
+    def barplotCurveClass(self, prout):
+
+        if not "dresponse" in self.__dict__:
+            self.responseCurves(drawn=0)
+
+        dfile = {}
+        for CASID in self.dresponse.keys():
+            for sample in self.dresponse[CASID].keys():
+                if not sample in dfile.keys():
+                    dfile[sample] = open(prout + str(sample), "w")
+                    dfile[sample].write("CASID\tCurve\n")
+
+                if self.dresponse[CASID][sample]["AC50"] != "NA":
+                    dfile[sample].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+
+        for sample in dfile.keys():
+            pfile = dfile[sample].name
+            dfile[sample].close()
+            runExternalSoft.barplotCurve(pfile)
 
 
     #not used
@@ -339,3 +431,66 @@ class assays:
 
         self.prSMI = prSMI
         self.prSDF = prSDF
+
+
+
+    def rankingTop(self, nrank, prpng, prresult, delcurveinact=0):
+
+        if not "dresponse" in self.__dict__:
+            self.responseCurves(drawn=0)
+        if not "dAC50" in self.__dict__:
+            self.writeAC50()
+
+        dval = {}
+        for CASID in self.dAC50.keys():
+            for sample in self.dAC50[CASID].keys():
+                if not sample in dval.keys():
+                    dval[sample] = []
+                print sample, CASID
+                dval[sample].append(self.dAC50[CASID][sample])
+        for sample in dval.keys():
+            dval[sample] = sorted(dval[sample])
+
+
+        for sample in dval.keys():
+            prsample = prresult + str(sample) + "/"
+            pathFolder.createFolder(prsample)
+
+            rank = 1
+            for val in dval[sample]:
+                if val =="NA":
+                    break
+                for cas in self.dAC50.keys():
+                    if self.dAC50[cas][sample] == val:
+
+                        if not sample in self.dresponse[cas].keys():
+                            curve = self.dresponse[cas]["set1"]["CURVE_CLASS2"]
+                        else:
+                            curve = self.dresponse[cas][sample]["CURVE_CLASS2"]
+
+                        if delcurveinact == 1 and str(curve) == "4":
+                            continue
+                        pimageout = prsample + str(rank) + "_" + str(cas) + ".png"
+                        pcaspng = prpng + cas + ".png"
+                        if not path.exists(pcaspng) or path.getsize(pcaspng) < 10:
+                            print "not found", pcaspng
+                            continue
+                        else:
+                            writeLine = "CAS: " + str(cas) + "\nRANK: " + str(rank) + "\nAC50: " + str(val) + "\nCurve: " + str(curve)
+
+                            img = Image.open(pcaspng)
+                            imgnew = Image.new("RGBA", (700, 1000), (250, 250, 250))
+                            imgnew.paste(img, (0,0))
+                            draw = ImageDraw.Draw(imgnew)
+                            draw.text((10, 700), str(writeLine.split("\n")[0]), (0, 0, 0), font=font)
+                            draw.text((10, 725), str(writeLine.split("\n")[1]), (0, 0, 0), font=font)
+                            draw.text((10, 750), str(writeLine.split("\n")[2]), (0, 0, 0), font=font)
+                            draw.text((10, 775), str(writeLine.split("\n")[3]), (0, 0, 0), font=font)
+                            imgnew.save(pimageout)
+
+                            rank = rank + 1
+
+                if rank > nrank:
+                    break
+
+
