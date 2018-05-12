@@ -47,25 +47,25 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 
 # barplot curve type #
 ######################
-#prbarplot = chepg2.proutSP + "curveType/"
-#pathFolder.createFolder(prbarplot)
-#chepg2.barplotCurveClass(prbarplot)
+prbarplot = chepg2.proutSP + "curveType/"
+pathFolder.createFolder(prbarplot)
+chepg2.barplotCurveClass(prbarplot)
 
-#prbarplot = cluc.proutSP + "curveType/"
-#pathFolder.createFolder(prbarplot)
-#cluc.barplotCurveClass(prbarplot)
+prbarplot = cluc.proutSP + "curveType/"
+pathFolder.createFolder(prbarplot)
+cluc.barplotCurveClass(prbarplot)
 
-#prbarplot = chek293.proutSP + "curveType/"
-#pathFolder.createFolder(prbarplot)
-#chek293.barplotCurveClass(prbarplot)
+prbarplot = chek293.proutSP + "curveType/"
+pathFolder.createFolder(prbarplot)
+chek293.barplotCurveClass(prbarplot)
 
+hhh
 
 # IC50 hist #
 #############
 #cluc.AC50Distribution()
 #chek293.AC50Distribution()
 #chepg2.AC50Distribution()
-
 
 
 # MOLECULAR DESCRIPTOR #
@@ -130,7 +130,8 @@ cluc.writeAC50()
 cluc.combineAC50()
 pranalysis = cluc.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, pranalysis)
+#cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, pranalysis)
+#cluc.summarize(pranalysis)
 
 #ranking chemical based on AC50
 #cDesc.rankingAC50()
@@ -175,7 +176,10 @@ pathFolder.createFolder(prQSAR)
 chepg2.writeAC50()
 pranalysis = chepg2.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
+#cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
+#chepg2.summarize(pranalysis)
+prVenn = pathFolder.createFolder(pranalysis + "Venn/")
+#chepg2.drawVennPlot(prVenn, prPNG)
 
 # cor with different AC50 available
 ###################################
@@ -209,12 +213,15 @@ optimalCluster = "gap_stat"
 # for HEK #
 ############
 
-# prep
+# prep and preliminary analysis
 chek293.writeAC50()
-chek293.corAC50()
+#chek293.corAC50()
 pranalysis = chek293.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-cDesc.setConstantPreproc(chek293.pAC50, corval, maxQuantile, pranalysis)
+#cDesc.setConstantPreproc(chek293.pAC50, corval, maxQuantile, pranalysis)
+#chek293.summarize(pranalysis)
+prVeen = pathFolder.createFolder(pranalysis + "Venn/")
+#chek293.drawVennPlot(prVeen, prPNG)
 
 #rank by AC50
 #cDesc.rankingAC50()
@@ -264,14 +271,14 @@ clusteringDB.createSOM(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, prSOM)
 #####################
 prSOM = chepg2.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-#clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prSOM)
 
 
 #### for HEK293  ####
 #####################
 prSOM = chek293.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-#clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prSOM)
 
 
 
@@ -282,3 +289,9 @@ pathFolder.createFolder(prSOM)
 # cross color red/green/blue with luc
 
 #clust.corelAllAssays(cluc, chepg2, chek293)
+
+
+#Venn diagram by color
+
+prCrossVenn = pathFolder.createFolder(prresults + "CrossVenn/")
+#analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)

@@ -1,6 +1,7 @@
 from os import path, listdir
 import pathFolder
 from scipy import stats
+from shutil import copyfile
 
 import chemical
 import runExternalSoft
@@ -90,7 +91,7 @@ class Descriptors:
 
         elif path.exists(self.pdesc1D2D) and path.getsize(self.pdesc1D2D) > 10:
             # preproc
-            runExternalSoft.dataManager(self.pdesc1D2D, self.pAC50, self.corval, self.maxQauntile, 1, self.prAnalysis)
+            runExternalSoft.dataManager(self.pdesc1D2D, self.pAC50, self.corval, self.maxQauntile, self.prAnalysis)
 
             if path.exists(paffclean) and path.exists(pdesc1D2Dclean):
                 self.pAC50clean = paffclean
@@ -179,3 +180,30 @@ class Descriptors:
                 frank.write("\n")
             frank.close()
 
+
+
+def VennCross(cluc, chepg2, chek293, prPNG, prout):
+
+
+    if not "dresponse" in chepg2.__dict__:
+        chepg2.responseCurves(drawn=0)
+
+    if not "dresponse" in chek293.__dict__:
+        chek293.responseCurves(drawn=0)
+
+    lsample = chepg2.dresponse[chepg2.dresponse.keys()[0]].keys()
+
+    for sample in lsample:
+        prsub = pathFolder.createFolder(prout + str(sample) + "/")
+
+        for CASID in chepg2.dresponse.keys():
+            if chepg2.dresponse[CASID][sample]["AC50"] == "NA" or chek293.dresponse[CASID][sample]["AC50"] == "NA":
+                continue
+            if float(chepg2.dresponse[CASID][sample]["AC50"]) >= 4 or float(chek293.dresponse[CASID][sample]["AC50"]) >= 4:
+                continue
+
+            if path.exists(prPNG + CASID + ".png"):
+                copyfile(prPNG + CASID + ".png", prsub + CASID + ".png")
+
+
+    runExternalSoft.crossVenn(cluc.pAC50, chepg2.pAC50, chek293.pAC50, prout)

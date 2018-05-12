@@ -175,3 +175,15 @@ def corAC50(pAC50, pcurve, prresult):
 def barplotCurve(pfilin):
     cmd = "./barplotCurve.R " + str(pfilin)
     runRCMD(cmd)
+
+
+def vennPlot(dAC50, pranalysis):
+    cmd = "./VennDiagram.R " + str(dAC50) + " " + str(pranalysis)
+    runRCMD(cmd)
+
+
+
+def crossVenn(plucAC50, phepg2AC50, phek293AC50, prout):
+
+    cmd = "./VennDiagramCross.R " + str(plucAC50) + " " + str(phepg2AC50) + " " + str(phek293AC50) + " " + str(prout)
+    runRCMD(cmd)

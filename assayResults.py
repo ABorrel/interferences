@@ -1,12 +1,12 @@
-from pyanaconda.screen_access import sam
-
 import pathFolder
 import runExternalSoft
 import loadDB
 
 from os import path
-from numpy import mean
+from numpy import mean, std
 from PIL import Image, ImageFont, ImageDraw
+from math import log10
+from shutil import copyfile
 
 font = ImageFont.truetype("OpenSans-Regular.ttf", size=30)
 
@@ -40,7 +40,9 @@ class assays:
             while i < len(lval):
                 dtemp[lheader[i]] = lval[i]
                 i += 1
-            lout.append(dtemp)
+            #chemical without CAS -> PTC124 in luc
+            if dtemp["CAS"] != "":
+                lout.append(dtemp)
 
         self.lchem = lout
         return lout
@@ -64,21 +66,38 @@ class assays:
         filout.close()
 
 
-    def writeAC50(self):
+    def writeAC50(self, filtercurvefit = 1):
 
         dAC50 = {}
         lsample = []
 
-        pfilout = self.proutSP + "AC50_sample"
+        if filtercurvefit == 1:
+            pfilout = self.proutSP + "AC50_sample_curve"
+        else:
+            pfilout = self.proutSP + "AC50_sample"
+
         if path.exists(pfilout):
             self.pAC50 = pfilout
             self.loadAC50()
             return pfilout
 
+        if filtercurvefit == 1:
+            if not "dresponse" in self.__dict__:
+                self.responseCurves(drawn=0)
+
+
         for chem in self.lchem:
             if chem["AC50"] == "":
                 chem["AC50"] = "NA"
             CAS = chem["CAS"]
+
+            if filtercurvefit == 1:
+                #print CAS, "CAS"
+                #print self.dresponse[CAS]
+                #print chem["SAMPLE_DATA_TYPE"]
+                #print self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]
+                if float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["CURVE_CLASS2"]) >= 4:
+                    chem["AC50"] = "NA"
             if not CAS in dAC50.keys():
                 dAC50[CAS] = {}
             dAC50[CAS][chem["SAMPLE_DATA_TYPE"]] = chem["AC50"]
@@ -129,7 +148,7 @@ class assays:
         lsample = []
 
         pfilout = self.proutSP + "AC50_combine"
-        if path.exists(pfilout):
+        if path.exists(pfilout) and path.getsize(pfilout) > 50:
             self.pAC50 = pfilout
             self.loadAC50()
             return pfilout
@@ -146,11 +165,9 @@ class assays:
 
         filout = open(pfilout, "w")
         filout.write("CAS\tIC50\n")
-        dAC50 = {}
         for casID in dAC50.keys():
             if casID == "":
                 continue
-
             lM = []
             for sample in lsample:
                 if sample in dAC50[casID].keys():
@@ -166,8 +183,6 @@ class assays:
         filout.close()
         self.pAC50 = pfilout
         self.dAC50 = dAC50
-        print dAC50
-        dddd
 
 
     def corAC50(self):
@@ -362,7 +377,7 @@ class assays:
                     dfile[sample] = open(prout + str(sample), "w")
                     dfile[sample].write("CASID\tCurve\n")
 
-                if self.dresponse[CASID][sample]["AC50"] != "NA":
+                if self.dresponse[CASID][sample]["AC50"] != "NA" and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
                     dfile[sample].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
 
         for sample in dfile.keys():
@@ -456,19 +471,22 @@ class assays:
             prsample = prresult + str(sample) + "/"
             pathFolder.createFolder(prsample)
 
+            lcasflag = []
             rank = 1
             for val in dval[sample]:
                 if val =="NA":
                     break
                 for cas in self.dAC50.keys():
-                    if self.dAC50[cas][sample] == val:
+                    if cas in lcasflag:
+                        continue
+                    elif self.dAC50[cas][sample] == val:
 
                         if not sample in self.dresponse[cas].keys():
                             curve = self.dresponse[cas]["set1"]["CURVE_CLASS2"]
                         else:
                             curve = self.dresponse[cas][sample]["CURVE_CLASS2"]
 
-                        if delcurveinact == 1 and str(curve) == "4":
+                        if delcurveinact == 1 and float(curve) >= 4:
                             continue
                         pimageout = prsample + str(rank) + "_" + str(cas) + ".png"
                         pcaspng = prpng + cas + ".png"
@@ -479,18 +497,87 @@ class assays:
                             writeLine = "CAS: " + str(cas) + "\nRANK: " + str(rank) + "\nAC50: " + str(val) + "\nCurve: " + str(curve)
 
                             img = Image.open(pcaspng)
-                            imgnew = Image.new("RGBA", (700, 1000), (250, 250, 250))
+                            imgnew = Image.new("RGBA", (580, 775), (250, 250, 250))
                             imgnew.paste(img, (0,0))
                             draw = ImageDraw.Draw(imgnew)
-                            draw.text((10, 700), str(writeLine.split("\n")[0]), (0, 0, 0), font=font)
-                            draw.text((10, 725), str(writeLine.split("\n")[1]), (0, 0, 0), font=font)
-                            draw.text((10, 750), str(writeLine.split("\n")[2]), (0, 0, 0), font=font)
-                            draw.text((10, 775), str(writeLine.split("\n")[3]), (0, 0, 0), font=font)
+                            draw.text((10, 600), str(writeLine.split("\n")[0]), (0, 0, 0), font=font)
+                            draw.text((10, 625), str(writeLine.split("\n")[1]), (0, 0, 0), font=font)
+                            draw.text((10, 650), str(writeLine.split("\n")[2]), (0, 0, 0), font=font)
+                            draw.text((10, 675), str(writeLine.split("\n")[3]), (0, 0, 0), font=font)
                             imgnew.save(pimageout)
 
-                            rank = rank + 1
+                        rank = rank + 1
+                        lcasflag.append(cas)
 
                 if rank > nrank:
                     break
 
 
+
+    def summarize(self, prout):
+
+        # table nbChem/active/inactive/M and SD AC50 + M and SD log10
+        if not "dresponse" in self.__dict__:
+            self.responseCurves(drawn=0)
+        if not "dAC50" in self.__dict__:
+            self.writeAC50()
+
+
+
+        dsum = {}
+        for sample in self.dresponse[self.dresponse.keys()[0]].keys():
+            dsum[sample] = {}
+            dsum[sample]["act"] = []
+            dsum[sample]["inact"] = []
+
+        for CASID in self.dresponse.keys():
+            for sample in dsum.keys():
+                if self.dresponse[CASID][sample]["AC50"] == "NA":
+                    dsum[sample]["inact"].append(CASID)
+                elif float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) >=4 :
+                    dsum[sample]["inact"].append(CASID)
+                else:
+                    dsum[sample]["act"].append(float(self.dresponse[CASID][sample]["AC50"]))
+
+
+        pfilout = prout + "summarize.txt"
+        filout = open(pfilout, "w")
+        filout.write("Raw\tNb Chemical\tNb active\tNb inactive\tMean(AC50)\tSD(AC50)\tMean(-(logAC50))\tSD(-log(AC50))\n")
+        for sample in dsum.keys():
+            filout.write(str(sample) + "\t" + str(len(dsum[sample]["act"])+len(dsum[sample]["inact"])) + "\t" +
+                         str(len(dsum[sample]["act"])) + "\t" +
+                         str(len(dsum[sample]["inact"])) + "\t" + str(mean(dsum[sample]["act"])) + "\t" +
+                         str(std(dsum[sample]["act"])) + "\t" +
+                         str(mean([-log10(x) for x in dsum[sample]["act"]])) + "\t" +
+                         str(std([-log10(x) for x in dsum[sample]["act"]])) + "\n")
+        filout.close()
+
+
+
+    def drawVennPlot(self, pranalysis, prPNG):
+
+        if not "dresponse" in self.__dict__:
+            self.responseCurves(drawn=0)
+
+        lsample = self.dresponse[self.dresponse.keys()[0]].keys()
+
+        i = 0
+        imax = len(lsample)
+        while i < imax-1:
+            j = i + 1
+            while j < imax:
+                sample1 = lsample[i]
+                sample2 = lsample[j]
+
+                prsubpng = pathFolder.createFolder(pranalysis + str(sample1) + "-" + str(sample2) + "/")
+                for CASID in self.dresponse.keys():
+                    if self.dresponse[CASID][sample1]["AC50"] == "NA" or self.dresponse[CASID][sample2]["AC50"] == "NA":
+                        continue
+                    if float(self.dresponse[CASID][sample1]["CURVE_CLASS2"]) >= 4 or float(self.dresponse[CASID][sample2]["CURVE_CLASS2"]) >= 4:
+                        continue
+
+                    if path.exists(prPNG + CASID + ".png"):
+                        copyfile(prPNG + CASID + ".png", prsubpng + CASID + ".png")
+                j += 1
+            i += 1
+        runExternalSoft.vennPlot(self.pAC50, pranalysis)
