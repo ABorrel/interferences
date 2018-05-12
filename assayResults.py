@@ -145,7 +145,6 @@ class assays:
     def combineAC50(self):
 
         dAC50 = {}
-        lsample = []
 
         pfilout = self.proutSP + "AC50_combine"
         if path.exists(pfilout) and path.getsize(pfilout) > 50:
@@ -153,15 +152,11 @@ class assays:
             self.loadAC50()
             return pfilout
 
-        for chem in self.lchem:
-            if chem["AC50"] == "":
-                chem["AC50"] = "NA"
-            CAS = chem["CAS"]
-            if not CAS in dAC50.keys():
-                dAC50[CAS] = {}
-            dAC50[CAS][chem["SAMPLE_DATA_TYPE"]] = chem["AC50"]
-            if not chem["SAMPLE_DATA_TYPE"] in lsample:
-                lsample.append(chem["SAMPLE_DATA_TYPE"])
+
+        if not "dAC50" in self.__dict__:
+                self.writeAC50()
+
+        lsample = dAC50[dAC50.keys()[0]].keys()
 
         filout = open(pfilout, "w")
         filout.write("CAS\tIC50\n")
@@ -183,6 +178,7 @@ class assays:
         filout.close()
         self.pAC50 = pfilout
         self.dAC50 = dAC50
+
 
 
     def corAC50(self):
