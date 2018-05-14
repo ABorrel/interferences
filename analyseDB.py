@@ -6,6 +6,7 @@ from shutil import copyfile
 import chemical
 import runExternalSoft
 import toolbox
+from re import search
 
 class Descriptors:
 
@@ -84,8 +85,9 @@ class Descriptors:
         paffclean = self.prAnalysis + "IC50Clean.csv"
         pdesc1D2Dclean = self.prAnalysis + "descClean.csv"
 
-        if path.exists(paffclean) and path.exists(pdesc1D2Dclean):
+        if path.exists(paffclean):
             self.pAC50clean = paffclean
+        if path.exists(pdesc1D2Dclean) and pAC50 == "0":
             self.pdesc1D2Dclean = pdesc1D2Dclean
             return 0
 
@@ -124,6 +126,14 @@ class Descriptors:
             self.pcluster = pcluster
             return 0
 
+
+    def MainSOM(self, sizeMap):
+
+        runExternalSoft.generateMainSOM(self.pdesc1D2Dclean, self.prAnalysis, sizeMap)
+        pModel = self.prAnalysis + "SOMmodel.Rdata"
+        if path.exists(pModel):
+            return pModel
+        return "0"
 
 
     def preliminaryAnalysis(self):
@@ -192,6 +202,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
         chek293.responseCurves(drawn=0)
 
     lsample = chepg2.dresponse[chepg2.dresponse.keys()[0]].keys()
+    lcolor = ["blue", "blue_n", "red", "green"]
 
     for sample in lsample:
         prsub = pathFolder.createFolder(prout + str(sample) + "/")
@@ -204,6 +215,24 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
 
             if path.exists(prPNG + CASID + ".png"):
                 copyfile(prPNG + CASID + ".png", prsub + CASID + ".png")
+
+    #for color
+    for color in lcolor:
+        prsub = pathFolder.createFolder(prout + str(color) + "/")
+
+        for CASID in chepg2.dresponse.keys():
+            if chepg2.dresponse[CASID]["cell_" + color]["AC50"] == "NA" or chek293.dresponse[CASID]["cell_" + color]["AC50"] == "NA"\
+                    or chepg2.dresponse[CASID]["med_" + color]["AC50"] == "NA" or chek293.dresponse[CASID]["med_" + color]["AC50"] == "NA":
+                continue
+            if float(chepg2.dresponse[CASID]["cell_" + color]["AC50"]) >= 4 or float(chek293.dresponse[CASID]["cell_" + color]["AC50"]) >= 4 \
+                    or float(chepg2.dresponse[CASID]["med_" + color]["AC50"]) >= 4 or float(chek293.dresponse[CASID]["med_" + color]["AC50"]) >= 4:
+                continue
+
+            print "INNN"
+
+            if path.exists(prPNG + CASID + ".png"):
+                copyfile(prPNG + CASID + ".png", prsub + CASID + ".png")
+
 
 
     runExternalSoft.crossVenn(cluc.pAC50, chepg2.pAC50, chek293.pAC50, prout)

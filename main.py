@@ -47,19 +47,18 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 
 # barplot curve type #
 ######################
-prbarplot = chepg2.proutSP + "curveType/"
-pathFolder.createFolder(prbarplot)
-chepg2.barplotCurveClass(prbarplot)
+#prbarplot = chepg2.proutSP + "curveType/"
+#pathFolder.createFolder(prbarplot)
+#chepg2.barplotCurveClass(prbarplot)
 
-prbarplot = cluc.proutSP + "curveType/"
-pathFolder.createFolder(prbarplot)
-cluc.barplotCurveClass(prbarplot)
+#prbarplot = cluc.proutSP + "curveType/"
+#pathFolder.createFolder(prbarplot)
+#cluc.barplotCurveClass(prbarplot)
 
-prbarplot = chek293.proutSP + "curveType/"
-pathFolder.createFolder(prbarplot)
-chek293.barplotCurveClass(prbarplot)
+#prbarplot = chek293.proutSP + "curveType/"
+#pathFolder.createFolder(prbarplot)
+#chek293.barplotCurveClass(prbarplot)
 
-hhh
 
 # IC50 hist #
 #############
@@ -121,12 +120,29 @@ optimalCluster = "gap_stat"#"silhouette", "wss", "gap_stat"
 #cclust.createMainClustering(disttype, aggregtype, clusterType, optimalCluster)
 
 
+# clustering -> independant #
+#############################
+optimalCluster = "silhouette"
+#cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
+
+optimalCluster = "gap_stat"
+#cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
+
+
+
+###############
+# MAIN - SOM  #
+###############
+prSOM = prresults + "SOM/"
+pathFolder.createFolder(prSOM)
+cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
+pmodelSOM = cDesc.MainSOM(15)
 
 ### for luc  ###
 ################
 ################
 # prep
-cluc.writeAC50()
+#cluc.writeAC50()
 cluc.combineAC50()
 pranalysis = cluc.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
@@ -137,25 +153,16 @@ pathFolder.createFolder(pranalysis)
 #cDesc.rankingAC50()
 prRank = cluc.proutSP + "ranking/"
 pathFolder.createFolder(prRank)
-cluc.rankingTop(100, prPNG, prRank)
+#cluc.rankingTop(100, prPNG, prRank)
 
 prRank = cluc.proutSP + "rankinggood/"
 pathFolder.createFolder(prRank)
-cluc.rankingTop(100, prPNG, prRank, 1)
+#cluc.rankingTop(100, prPNG, prRank, 1)
 
-# clustering -> independant #
-#############################
-disttype = "euc"
-aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
-clusterType = "hclust"#"hclust", "kmeans"
-optimalCluster = "wss"#"silhouette", "wss", "gap_stat"
-#cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
-optimalCluster = "silhouette"
-#cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
-optimalCluster = "gap_stat"
-#cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
+
+
 
 
 # QSAR modeling #
@@ -187,11 +194,11 @@ prVenn = pathFolder.createFolder(pranalysis + "Venn/")
 # rank AC50
 prRank = chepg2.proutSP + "ranking/"
 pathFolder.createFolder(prRank)
-chepg2.rankingTop(100, prPNG, prRank)
+#chepg2.rankingTop(100, prPNG, prRank)
 
 prRank = chepg2.proutSP + "rankinggood/"
 pathFolder.createFolder(prRank)
-chepg2.rankingTop(100, prPNG, prRank, 1)
+#chepg2.rankingTop(100, prPNG, prRank, 1)
 #cDesc.rankingAC50()
 
 # clustering
@@ -227,11 +234,11 @@ prVeen = pathFolder.createFolder(pranalysis + "Venn/")
 #cDesc.rankingAC50()
 prRank = chek293.proutSP + "ranking/"
 pathFolder.createFolder(prRank)
-chek293.rankingTop(100, prPNG, prRank)
+#chek293.rankingTop(100, prPNG, prRank)
 
 prRank = chek293.proutSP + "rankinggood/"
 pathFolder.createFolder(prRank)
-chek293.rankingTop(100, prPNG, prRank, 1)
+#chek293.rankingTop(100, prPNG, prRank, 1)
 
 # clustering
 disttype = "euc"
@@ -265,20 +272,20 @@ optimalCluster = "gap_stat"
 ##################
 prSOM = cluc.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
 
 #### for chepg2  ####
 #####################
 prSOM = chepg2.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
 
 
 #### for HEK293  ####
 #####################
 prSOM = chek293.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prSOM)
+clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
 
 
 

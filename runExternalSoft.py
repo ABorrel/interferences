@@ -142,10 +142,9 @@ def clustering(pdesc, pAC50, prresult, dist, aggreg, clusteringMeth, optClusterM
         return 0
 
 
-def drawEnrichSOM(pdesc1D2Dclean, pAC50, prSOM):
+def drawEnrichSOM(pdesc1D2Dclean, pAC50, pmodel, prSOM):
 
-
-    cmdSOM = "./SOMaps.R " + str(pdesc1D2Dclean) + " " + pAC50 + " " + str(prSOM)
+    cmdSOM = "./SOMaps.R " + str(pdesc1D2Dclean) + " " + pAC50 + " " + str(pmodel) + " " + str(prSOM)
     runRCMD(cmdSOM)
 
     return
@@ -187,3 +186,12 @@ def crossVenn(plucAC50, phepg2AC50, phek293AC50, prout):
 
     cmd = "./VennDiagramCross.R " + str(plucAC50) + " " + str(phepg2AC50) + " " + str(phek293AC50) + " " + str(prout)
     runRCMD(cmd)
+
+
+def generateMainSOM(pdesc, prout, sizeMap):
+
+
+    cmd = "./generateSOMModel.R " + pdesc + " " + prout + " " + str(sizeMap)
+    runRCMD(cmd)
+
+

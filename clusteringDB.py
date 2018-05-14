@@ -248,7 +248,7 @@ class clustering:
 
 
 
-def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, prSOM):
+def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, pModel, prSOM):
 
 
 
@@ -264,5 +264,5 @@ def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, prSOM):
             print "Error ->", pdesc1D2D
 
 
-    runExternalSoft.drawEnrichSOM(pdesc1D2Dclean, pAC50, prSOM)
+    runExternalSoft.drawEnrichSOM(pdesc1D2Dclean, pAC50, pModel, prSOM)
 

@@ -139,12 +139,11 @@ class assays:
             while i < len(lac50):
                 self.dAC50[cas][ltypeAC50[i-1]] = lac50[i]
                 i += 1
-        print self.dAC50
 
 
     def combineAC50(self):
 
-        dAC50 = {}
+        dAC50out = {}
 
         pfilout = self.proutSP + "AC50_combine"
         if path.exists(pfilout) and path.getsize(pfilout) > 50:
@@ -156,28 +155,28 @@ class assays:
         if not "dAC50" in self.__dict__:
                 self.writeAC50()
 
-        lsample = dAC50[dAC50.keys()[0]].keys()
+        lsample = self.dAC50[self.dAC50.keys()[0]].keys()
 
         filout = open(pfilout, "w")
         filout.write("CAS\tIC50\n")
-        for casID in dAC50.keys():
+        for casID in self.dAC50.keys():
             if casID == "":
                 continue
             lM = []
             for sample in lsample:
-                if sample in dAC50[casID].keys():
-                    if dAC50[casID][sample] != "NA":
-                        lM.append(float(dAC50[casID][sample]))
+                if sample in self.dAC50[casID].keys():
+                    if self.dAC50[casID][sample] != "NA":
+                        lM.append(float(self.dAC50[casID][sample]))
             if lM == []:
                 M = "NA"
             else:
                 M = mean(lM)
-            dAC50[casID] = {}
-            dAC50[casID]["set1"] = M
+            dAC50out[casID] = {}
+            dAC50out[casID]["set1"] = M
             filout.write(str(casID) + "\t" + str(M) + "\n")
         filout.close()
         self.pAC50 = pfilout
-        self.dAC50 = dAC50
+        self.dAC50 = dAC50out
 
 
 
