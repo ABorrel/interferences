@@ -236,3 +236,23 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
 
 
     runExternalSoft.crossVenn(cluc.pAC50, chepg2.pAC50, chek293.pAC50, prout)
+
+
+
+def PCACross(pdesc, pAC50_hepg2, pAC50_hek293, corval, maxQuantile, prCrossPCA):
+
+
+    # output
+    pdesc1D2Dclean = prCrossPCA + "descClean.csv"
+
+    if not path.exists(pdesc1D2Dclean):
+
+        if path.exists(pdesc) and path.getsize(pdesc) > 10:
+            # preproc
+            runExternalSoft.dataManager(pdesc, 0, corval, maxQuantile, prCrossPCA)
+        else:
+            print "Error ->", pdesc
+
+    runExternalSoft.drawPCACross(pdesc1D2Dclean, pAC50_hepg2, pAC50_hek293, prCrossPCA)
+
+

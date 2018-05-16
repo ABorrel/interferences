@@ -355,7 +355,7 @@ class assays:
                             dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
                     i += 1
                 filout.close()
-            pAC50 = self.writeAC50()
+            pAC50 = self.writeAC50(filtercurvefit = 0)
             runExternalSoft.plotResponsiveCurve(prresponse, pAC50, self.proutSP)
         self.dresponse = dresponse
 
@@ -576,3 +576,19 @@ class assays:
                 j += 1
             i += 1
         runExternalSoft.vennPlot(self.pAC50, pranalysis)
+
+
+    def createPCA(self, pdesc1D2D, pAC50, corval, maxQuantile, prPCA):
+
+        # output
+        pdesc1D2Dclean = prPCA + "descClean.csv"
+
+        if not path.exists(pdesc1D2Dclean):
+
+            if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 10:
+                # preproc
+                runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, prPCA)
+            else:
+                print "Error ->", pdesc1D2D
+
+        runExternalSoft.drawPCA(pdesc1D2Dclean, pAC50, prPCA)

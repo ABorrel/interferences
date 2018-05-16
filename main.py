@@ -41,9 +41,9 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 # plot response curves #
 ########################
 #cluc.responseCurves(drawn=1)
-#chek293.responseCurves(drawn=1)
-#chepg2.responseCurves(drawn=1)
-
+chek293.responseCurves(drawn=1)
+chepg2.responseCurves(drawn=1)
+ddd
 
 # barplot curve type #
 ######################
@@ -136,7 +136,7 @@ optimalCluster = "gap_stat"
 prSOM = prresults + "SOM/"
 pathFolder.createFolder(prSOM)
 cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
-pmodelSOM = cDesc.MainSOM(15)
+#pmodelSOM = cDesc.MainSOM(15)
 
 ### for luc  ###
 ################
@@ -158,21 +158,6 @@ pathFolder.createFolder(prRank)
 prRank = cluc.proutSP + "rankinggood/"
 pathFolder.createFolder(prRank)
 #cluc.rankingTop(100, prPNG, prRank, 1)
-
-
-
-
-
-
-
-# QSAR modeling #
-#################
-prQSAR = cluc.proutSP + "QSAR/"
-pathFolder.createFolder(prQSAR)
-
-#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, splitratio, nbCV, prQSAR)
-#cModelluc.prepData()
-#cModelluc.buildQSARReg()
 
 
 # for HEPG #
@@ -272,21 +257,63 @@ optimalCluster = "gap_stat"
 ##################
 prSOM = cluc.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
+#clusteringDB.createSOM(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
 
 #### for chepg2  ####
 #####################
 prSOM = chepg2.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
+#clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
 
 
 #### for HEK293  ####
 #####################
 prSOM = chek293.proutSP + "SOM/"
 pathFolder.createFolder(prSOM)
-clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
+#clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, pmodelSOM, prSOM)
 
+
+####################
+#   PCA analysis   #
+####################
+
+#### for chepg2  ####
+#####################
+prPCA = chepg2.proutSP + "PCA/"
+pathFolder.createFolder(prPCA)
+#chepg2.createPCA(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prPCA)
+
+#### for chek293 ####
+#####################
+prPCA = chek293.proutSP + "PCA/"
+pathFolder.createFolder(prPCA)
+#chek293.createPCA(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prPCA)
+
+
+
+
+##### QSAR modeling ######
+##########################
+
+# for luc #
+###########
+prQSAR = cluc.proutSP + "QSAR/"
+pathFolder.createFolder(prQSAR)
+
+#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, splitratio, nbCV, prQSAR)
+#cModelluc.prepData()
+#cModelluc.buildQSARReg()
+
+
+# for HEPG2 #
+#############
+typeQSAR = "class"
+prQSARClass = chepg2.proutSP + "QSARclass/"
+pathFolder.createFolder(prQSARClass)
+
+cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
+cModelHEPG2.prepData()
+cModelHEPG2.buildQSARClass()
 
 
 ###################################
@@ -297,8 +324,16 @@ clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, pmod
 
 #clust.corelAllAssays(cluc, chepg2, chek293)
 
-
-#Venn diagram by color
+##########################
+# Venn diagram by color  #
+##########################
 
 prCrossVenn = pathFolder.createFolder(prresults + "CrossVenn/")
 #analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)
+
+
+#################
+#  cross PCA    #
+#################
+prCrossPCA = pathFolder.createFolder(prresults + "CrossPCA/")
+analyseDB.PCACross(cDesc.pdesc1D2D, chepg2.pAC50, chek293.pAC50, corval, maxQuantile, prCrossPCA)

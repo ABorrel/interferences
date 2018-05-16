@@ -122,6 +122,12 @@ def QSARReg(ptrain, ptest, pcluster, prresult, nbCV):
     runRQSARModeling(cmd)
 
 
+def QSARClass(ptrain, ptest, prresult, nbCV):
+
+    cmd = "./QSARsClass.R " + ptrain + " " + ptest + " 0 " + prresult + " " + str(nbCV)
+    runRQSARModeling(cmd)
+
+
 def clustering(pdesc, pAC50, prresult, dist, aggreg, clusteringMeth, optClusterMeth):
 
 
@@ -190,8 +196,17 @@ def crossVenn(plucAC50, phepg2AC50, phek293AC50, prout):
 
 def generateMainSOM(pdesc, prout, sizeMap):
 
-
     cmd = "./generateSOMModel.R " + pdesc + " " + prout + " " + str(sizeMap)
     runRCMD(cmd)
 
 
+def drawPCA(pdesc1D2Dclean, pAC50, prPCA):
+
+    cmd = "./PCAAnalysis.R " + str(pdesc1D2Dclean) + " " + str(pAC50) + " " + str(prPCA)
+    runRCMD(cmd)
+
+
+def drawPCACross(pdesc1D2Dclean, pAC50_hepg2, pAC50_hek293, prCrossPCA):
+
+    cmd = "./PCAAnalysisCross.R " + str(pdesc1D2Dclean) + " " + str(pAC50_hepg2) + " " + str(pAC50_hek293) + " " + str(prCrossPCA)
+    runRCMD(cmd)
