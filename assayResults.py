@@ -299,6 +299,8 @@ class assays:
         prresponse = self.proutSP + "responseCurve/"
         pathFolder.createFolder(prresponse)
 
+        self.prresponse = prresponse
+
         dresponse = {}
         for chem in self.lchem:
             casID = chem["CAS"]
@@ -338,26 +340,42 @@ class assays:
 
                 i += 1
 
+        # compute response curves
+        for CASID in dresponse.keys():
+            pCASout = prresponse + str(CASID)
+            if path.exists(pCASout) and path.getsize(pCASout) > 10:
+                continue
+            #print pCASout
+            filout = open(pCASout, "w")
+            filout.write("CONC\tDATA\tFluorophores\tCurveType\n")
+
+            i = 0
+            while i < 16:
+                for sample in dresponse[CASID].keys():
+                    filout.write(str(dresponse[CASID][sample]["CONC"][i]) + "\t" + str(
+                        dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\t" + str(
+                        dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+                i += 1
+            filout.close()
+
+        # draw plot
         if drawn == 1:
-
-            # compute response curves
-            for CASID in dresponse.keys():
-                pCASout = prresponse + str(CASID)
-                print pCASout
-                filout = open(pCASout, "w")
-                filout.write("CONC\tDATA\tFluorophores\tCurveType\n")
-
-                i = 0
-                while i < 16:
-                    for sample in dresponse[CASID].keys():
-                        filout.write(str(dresponse[CASID][sample]["CONC"][i]) + "\t" + str(
-                            dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\t" + str(
-                            dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
-                    i += 1
-                filout.close()
-            pAC50 = self.writeAC50(filtercurvefit = 0)
+            pAC50 = self.writeAC50()
             runExternalSoft.plotResponsiveCurve(prresponse, pAC50, self.proutSP)
+            
         self.dresponse = dresponse
+
+
+
+    def crossResponseCurves(self, cAssays, prout):
+
+        self.responseCurves(drawn=0)
+        cAssays.responseCurves(drawn=0)
+
+
+        runExternalSoft.crossResponseCurve(self.prresponse, cAssays.prresponse, self.pAC50, cAssays.pAC50)
+
+        return
 
 
     def barplotCurveClass(self, prout):

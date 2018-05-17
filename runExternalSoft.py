@@ -95,6 +95,11 @@ def plotResponsiveCurve(prresponse, pAC50, prout):
     runRCMD(cmd)
 
 
+def crossResponseCurve(prresponse1, prresponse2, pAC501, pAC502, prout):
+
+    cmd = "./crossResponseCurves.R " + str(prresponse1) + " " + str(prresponse2) + " " + str(pAC501) + " " + str(pAC502) + " " + str(prout)
+    runRCMD(cmd)
+
 
 def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
 
