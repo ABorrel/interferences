@@ -45,6 +45,15 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 #chepg2.responseCurves(drawn=1)
 
 
+# cross curve by color and type of assays #
+############################################
+
+prCrossCurve = prresults + "crossCurvesResponse/"
+pathFolder.createFolder(prCrossCurve)
+chepg2.crossResponseCurves(chek293)
+
+
+
 # barplot curve type #
 ######################
 #prbarplot = chepg2.proutSP + "curveType/"
