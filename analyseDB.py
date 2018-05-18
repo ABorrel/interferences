@@ -220,15 +220,15 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
     for color in lcolor:
         prsub = pathFolder.createFolder(prout + str(color) + "/")
 
+        print len(chepg2.dresponse.keys()), "ddd"
+
         for CASID in chepg2.dresponse.keys():
             if chepg2.dresponse[CASID]["cell_" + color]["AC50"] == "NA" or chek293.dresponse[CASID]["cell_" + color]["AC50"] == "NA"\
                     or chepg2.dresponse[CASID]["med_" + color]["AC50"] == "NA" or chek293.dresponse[CASID]["med_" + color]["AC50"] == "NA":
                 continue
-            if float(chepg2.dresponse[CASID]["cell_" + color]["AC50"]) >= 4 or float(chek293.dresponse[CASID]["cell_" + color]["AC50"]) >= 4 \
-                    or float(chepg2.dresponse[CASID]["med_" + color]["AC50"]) >= 4 or float(chek293.dresponse[CASID]["med_" + color]["AC50"]) >= 4:
+            if float(chepg2.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) >= 4 or float(chek293.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) >= 4 \
+                    or float(chepg2.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) >= 4 or float(chek293.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) >= 4:
                 continue
-
-            print "INNN"
 
             if path.exists(prPNG + CASID + ".png"):
                 copyfile(prPNG + CASID + ".png", prsub + CASID + ".png")

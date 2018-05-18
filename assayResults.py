@@ -360,9 +360,9 @@ class assays:
 
         # draw plot
         if drawn == 1:
-            pAC50 = self.writeAC50()
+            pAC50 = self.writeAC50(filtercurvefit=0)
             runExternalSoft.plotResponsiveCurve(prresponse, pAC50, self.proutSP)
-            
+
         self.dresponse = dresponse
 
 
@@ -372,8 +372,11 @@ class assays:
         self.responseCurves(drawn=0)
         cAssays.responseCurves(drawn=0)
 
+        self.writeAC50(filtercurvefit=0)
+        cAssays.writeAC50(filtercurvefit=0)
 
-        runExternalSoft.crossResponseCurve(self.prresponse, cAssays.prresponse, self.pAC50, cAssays.pAC50)
+
+        runExternalSoft.crossResponseCurve(self.prresponse, cAssays.prresponse, self.pAC50, cAssays.pAC50, prout)
 
         return
 

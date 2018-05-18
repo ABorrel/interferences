@@ -41,18 +41,15 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 # plot response curves #
 ########################
 #cluc.responseCurves(drawn=1)
-chek293.responseCurves(drawn=1)
-chepg2.responseCurves(drawn=1)
-ddd
+#chek293.responseCurves(drawn=1)
+#chepg2.responseCurves(drawn=1)
 
 # cross curve by color and type of assays #
 ############################################
 
 prCrossCurve = prresults + "crossCurvesResponse/"
 pathFolder.createFolder(prCrossCurve)
-chepg2.crossResponseCurves(chek293)
-
-
+#chepg2.crossResponseCurves(chek293, prCrossCurve)
 
 # barplot curve type #
 ######################
@@ -320,6 +317,7 @@ typeQSAR = "class"
 prQSARClass = chepg2.proutSP + "QSARclass/"
 pathFolder.createFolder(prQSARClass)
 
+
 cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
 cModelHEPG2.prepData()
 cModelHEPG2.buildQSARClass()
@@ -345,4 +343,4 @@ prCrossVenn = pathFolder.createFolder(prresults + "CrossVenn/")
 #  cross PCA    #
 #################
 prCrossPCA = pathFolder.createFolder(prresults + "CrossPCA/")
-analyseDB.PCACross(cDesc.pdesc1D2D, chepg2.pAC50, chek293.pAC50, corval, maxQuantile, prCrossPCA)
+#analyseDB.PCACross(cDesc.pdesc1D2D, chepg2.pAC50, chek293.pAC50, corval, maxQuantile, prCrossPCA)

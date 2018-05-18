@@ -114,9 +114,9 @@ def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
         return 0
 
 
-def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, typeAff="All"):
+def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, logAff = "1", typeAff="All"):
 
-    cmd = "./QSARsPrep.R " + pdesc + " " + pAC50 + " " + prout + " " + str(valcor) + " " + str(maxquantile) + " " + str(splitratio) + " 1 " + typeAff
+    cmd = "./QSARsPrep.R " + pdesc + " " + pAC50 + " " + prout + " " + str(valcor) + " " + str(maxquantile) + " " + str(splitratio) + " " + str(logAff) + " " + typeAff
     runRQSARModeling(cmd)
 
 
@@ -129,7 +129,7 @@ def QSARReg(ptrain, ptest, pcluster, prresult, nbCV):
 
 def QSARClass(ptrain, ptest, prresult, nbCV):
 
-    cmd = "./QSARsClass.R " + ptrain + " " + ptest + " 0 " + prresult + " " + str(nbCV)
+    cmd = "./QSARsClass.R " + ptrain + " " + ptest + " 0 " + prresult + " " + str(nbCV) + " > " + prresult + "perf.txt"
     runRQSARModeling(cmd)
 
 
