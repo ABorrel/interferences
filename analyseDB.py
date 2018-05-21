@@ -29,6 +29,7 @@ class Descriptors:
 
         prDescbyCAS = self.prDesc + "DESCbyCAS/"
         pathFolder.createFolder(prDescbyCAS)
+        self.prDescByCAS = prDescbyCAS
 
 
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
@@ -60,6 +61,71 @@ class Descriptors:
                 #Write in the table
                 chem.writeDesc(ldesc, fdesc1D2D)
         fdesc1D2D.close()
+
+
+
+    def computeFP(self, prFP):
+
+        # set SMI after cleanning
+        prSMIclean = self.prDesc + "SMIclean/"
+        pathFolder.createFolder(prSMIclean)
+        self.pSMIclean = prSMIclean
+
+        #set FP
+        self.prFP = prFP
+
+
+        dFP = {}
+        for pSMI in listdir(self.prSMI):
+        #for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
+            cas = pSMI.split("/")[-1].split(".")[0]
+            print cas
+
+            psmiles = self.prSMI + cas + ".smi"
+            if path.exists(self.prSMI + cas + ".smi"):
+                fsmiles = open(psmiles, "r")
+                smiles = fsmiles.readlines()[0].strip()
+                fsmiles.close()
+
+                # chemical
+                chem = chemical.chemical(cas, smiles)
+                chem.prepareChem(prSMIclean)
+                chem.computeFP()
+                dFP[cas] = chem.FP
+
+        # create matrix of of FP score similarity
+        lmetric = to fisnish
+        lcas = dFP.keys()
+        imax = len(lcas)
+
+
+
+
+                chem.computeFP(self.prFPbyCAS)
+
+            # control if exit already
+            if not path.exists(self.prDescByCAS + cas + ".txt"):
+
+                psmiles = self.prSMI + cas + ".smi"
+                if path.exists(self.prSMI + cas + ".smi"):
+                    fsmiles = open(psmiles, "r")
+                    smiles = fsmiles.readlines()[0].strip()
+                    fsmiles.close()
+
+                    # chemical
+                    chem = chemical.chemical(cas, smiles)
+                    chem.prepareChem(prSMIclean)
+                    chem.computeFP(self.prFPbyCAS)
+                    fff
+
+
+
+                    chem.compute1D2DDesc(self.prDescByCAS)
+                    err = chem.writeTablesDesc(self.prDescByCAS)#
+                    if err == 1: chem.writelog(self.prlog)
+
+
+        return
 
 
     def generatePNG(self):
@@ -210,7 +276,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
         for CASID in chepg2.dresponse.keys():
             if chepg2.dresponse[CASID][sample]["AC50"] == "NA" or chek293.dresponse[CASID][sample]["AC50"] == "NA":
                 continue
-            if float(chepg2.dresponse[CASID][sample]["AC50"]) >= 4 or float(chek293.dresponse[CASID][sample]["AC50"]) >= 4:
+            if float(chepg2.dresponse[CASID][sample]["CURVE_CLASS2"]) >= 4 or float(chek293.dresponse[CASID][sample]["CURVE_CLASS2"]) >= 4:
                 continue
 
             if path.exists(prPNG + CASID + ".png"):

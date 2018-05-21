@@ -195,7 +195,7 @@ class chemical:
                     fsmiclean.close()
 
                     self.smiclean = smilesclean
-                    self.smiclean = psmiclean
+                    self.psmiclean = psmiclean
 
 
     def compute1D2DDesc(self, prDescbyChem):
@@ -307,6 +307,57 @@ class chemical:
                 return 1
             else:
                 return 0
+
+
+
+    def computeFP(self, prFPChem):
+
+        self.prFP = prFPChem
+
+        if not "smiclean" in self.__dict__:
+            self.log = self.log + "No smiles prepared\n"
+            return 1
+        else:
+            self.mol = loader.ReadMolFromSmile(self.smiclean)
+            print self.smiclean
+
+        self.fingerAtomPairs = fingerprint.CalculateAtomPairsFingerprint(self.mol)
+        self.fingerDaylight = fingerprint.CalculateDaylightFingerprint(self.mol)
+        self.fingerEstate = fingerprint.CalculateEstateFingerprint(self.mol)
+        self.fingerFP4 = fingerprint.CalculateFP4Fingerprint(self.mol)
+        self.fingerMACCS = fingerprint.CalculateMACCSFingerprint(self.mol)
+        self.fingerMorgan = fingerprint.CalculateMorganFingerprint(self.mol)
+        self.fingerTorsion = fingerprint.CalculateTopologicalTorsionFingerprint(self.mol)
+
+        print self.fingerAtomPairs
+        print self.fingerDaylight
+        print self.fingerEstate
+        print self.fingerFP4
+        print self.fingerMACCS
+        print self.fingerMorgan
+        print self.fingerTorsion
+        ddd
+
+
+        # check if descriptors already computed
+        pdes = prDescbyChem + self.name + ".txt"
+        if path.exists(pdes) and path.getsize(pdes) > 10:
+            filin = open(pdes, "r")
+            llines = filin.readlines()
+            filin.close()
+            ldesc = llines[0].strip().split("\t")[1:]
+            lval = llines[1].strip().split("\t")[1:]
+            ddes = {}
+            i = 0
+            while i < len(ldesc):
+                ddes[ldesc[i]] = lval[i]
+                i += 1
+            self.allDesc = ddes
+            self.log = self.log + "Desc already computed -> " + pdes + "\n"
+            return 0
+
+
+        return
 
 
     def writeDesc(self, ldesc, filin):

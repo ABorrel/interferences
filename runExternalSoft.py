@@ -123,7 +123,7 @@ def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, logAff = 
 
 def QSARReg(ptrain, ptest, pcluster, prresult, nbCV):
 
-    cmd = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prresult + " " + str(nbCV) + " >" + prresult + "RegResults"
+    cmd = "./QSARsReg.R " + ptrain + " " + ptest + " " + pcluster + " " + prresult + " " + str(nbCV) + " >" + prresult + "perf.txt"
     runRQSARModeling(cmd)
 
 
@@ -214,4 +214,9 @@ def drawPCA(pdesc1D2Dclean, pAC50, prPCA):
 def drawPCACross(pdesc1D2Dclean, pAC50_hepg2, pAC50_hek293, prCrossPCA):
 
     cmd = "./PCAAnalysisCross.R " + str(pdesc1D2Dclean) + " " + str(pAC50_hepg2) + " " + str(pAC50_hek293) + " " + str(prCrossPCA)
+    runRCMD(cmd)
+
+def drawMDS(pdesc1D2Dclean, pAC50, prMDS):
+
+    cmd = "./MDSAnalysis.R " + str(pdesc1D2Dclean) + " " + str(pAC50) + " " + str(prMDS)
     runRCMD(cmd)

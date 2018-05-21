@@ -14,7 +14,7 @@ import QSARModel
 #########
 
 
-pSDFToxCast= "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
+pSDFToxCast = "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
 pSDFTox21 = "/home/borrela2/Tox21/TOX21SL.sdf"
 
 pluc = "/home/borrela2/interference/data/luc/tox21-luc-biochem-p1/tox21-luc-biochem-p1.txt"
@@ -94,8 +94,13 @@ pathFolder.createFolder(prlogDesc)
 prPNG = prMain + "PNG/"
 pathFolder.createFolder(prPNG)
 
+prFP = prMain + "FP/"
+pathFolder.createFolder(prFP)
+
 cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
 cDesc.computeDesc()
+cDesc.computeFP()
+ddd
 #cDesc.generatePNG()
 
 
@@ -297,30 +302,71 @@ pathFolder.createFolder(prPCA)
 
 
 
+##################
+# MDS analysis   #
+##################
+
+#### for chepg2  ####
+#####################
+prMDS = chepg2.proutSP + "MDS/"
+pathFolder.createFolder(prMDS)
+chepg2.createMDS(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, prMDS)
+
+#### for chek293 ####
+#####################
+prMDS = chek293.proutSP + "MDS/"
+pathFolder.createFolder(prMDS)
+chek293.createMDS(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prMDS)
+
+
+hhh
+
 
 ##### QSAR modeling ######
 ##########################
 
 # for luc #
 ###########
-prQSAR = cluc.proutSP + "QSAR/"
+# ----> Regression
+typeQSAR = "Reg"
+prQSAR = cluc.proutSP + "QSARReg/"
 pathFolder.createFolder(prQSAR)
 
-#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, splitratio, nbCV, prQSAR)
+cluc.combineAC50()
+#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSAR)
 #cModelluc.prepData()
 #cModelluc.buildQSARReg()
 
 
+# ----> Classification
+typeQSAR = "class"
+prQSAR = cluc.proutSP + "QSARClass/"
+pathFolder.createFolder(prQSAR)
+
+cluc.combineAC50()
+cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSAR)
+cModelluc.prepData()
+cModelluc.buildQSARClass()
+
 # for HEPG2 #
 #############
+# --> classification
 typeQSAR = "class"
 prQSARClass = chepg2.proutSP + "QSARclass/"
 pathFolder.createFolder(prQSARClass)
 
+#cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
+#cModelHEPG2.prepData()
+#cModelHEPG2.buildQSARClass()
 
-cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
-cModelHEPG2.prepData()
-cModelHEPG2.buildQSARClass()
+
+# ---> regression
+typeQSAR = "Reg"
+prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
+
+#cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
+#cModelHEPG2.prepData()
+#cModelHEPG2.buildQSARClass()
 
 
 ###################################

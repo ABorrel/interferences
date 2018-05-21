@@ -67,7 +67,7 @@ class Model:
         dtest = {}
         for typeAC50 in self.dpAC50.keys():
             if self.typeQSAR == "Reg":
-                runExternalSoft.prepDataQSAR(self.pdesc, self.pAC50, self.prresult, self.corval, self.maxQauntile, self.splitRatio)
+                runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile, self.splitRatio)
 
             else:
                 self.writeClass()

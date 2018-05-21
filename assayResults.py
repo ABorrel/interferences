@@ -613,3 +613,20 @@ class assays:
                 print "Error ->", pdesc1D2D
 
         runExternalSoft.drawPCA(pdesc1D2Dclean, pAC50, prPCA)
+
+
+
+    def createMDS(self, pdesc1D2D, pAC50, corval, maxQuantile, prMDS):
+
+        # output
+        pdesc1D2Dclean = prMDS + "descClean.csv"
+
+        if not path.exists(pdesc1D2Dclean):
+
+            if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 10:
+                # preproc
+                runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, prMDS)
+            else:
+                print "Error ->", pdesc1D2D
+
+        runExternalSoft.drawMDS(pdesc1D2Dclean, pAC50, prMDS)
