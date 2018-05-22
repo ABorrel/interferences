@@ -321,43 +321,15 @@ class chemical:
             self.mol = loader.ReadMolFromSmile(self.smiclean)
             print self.smiclean
 
-        self.fingerAtomPairs = fingerprint.CalculateAtomPairsFingerprint(self.mol)
-        self.fingerDaylight = fingerprint.CalculateDaylightFingerprint(self.mol)
-        self.fingerEstate = fingerprint.CalculateEstateFingerprint(self.mol)
-        self.fingerFP4 = fingerprint.CalculateFP4Fingerprint(self.mol)
-        self.fingerMACCS = fingerprint.CalculateMACCSFingerprint(self.mol)
-        self.fingerMorgan = fingerprint.CalculateMorganFingerprint(self.mol)
-        self.fingerTorsion = fingerprint.CalculateTopologicalTorsionFingerprint(self.mol)
+        dFP = {}
+        dFP["FPMol"] = Chem.FingerprintMol(self.mol)
+        dFP["FPMACCS"] = Chem.MACCSkeys.GenMACCSKeys(self.mol)
+        dFP["FPpairs"] = Chem.AtomPairs.Pairs.GetAtomPairFingerprint(self.mol)
+        dFP["FPTorsion"] = Chem.AtomPairs.Torsions.GetTopologicalTorsionFingerprintAsIntVect(x)
+        dFP["FPMorgan"] = Chem.AllChem.GetMorganFingerprint(self.mol,2)
 
-        print self.fingerAtomPairs
-        print self.fingerDaylight
-        print self.fingerEstate
-        print self.fingerFP4
-        print self.fingerMACCS
-        print self.fingerMorgan
-        print self.fingerTorsion
-        ddd
-
-
-        # check if descriptors already computed
-        pdes = prDescbyChem + self.name + ".txt"
-        if path.exists(pdes) and path.getsize(pdes) > 10:
-            filin = open(pdes, "r")
-            llines = filin.readlines()
-            filin.close()
-            ldesc = llines[0].strip().split("\t")[1:]
-            lval = llines[1].strip().split("\t")[1:]
-            ddes = {}
-            i = 0
-            while i < len(ldesc):
-                ddes[ldesc[i]] = lval[i]
-                i += 1
-            self.allDesc = ddes
-            self.log = self.log + "Desc already computed -> " + pdes + "\n"
-            return 0
-
-
-        return
+        print dFP
+        self.FP = dFP
 
 
     def writeDesc(self, ldesc, filin):
