@@ -1,4 +1,7 @@
 from os import path, listdir
+
+from mxnet.symbol import mean
+
 import pathFolder
 from scipy import stats
 from shutil import copyfile
@@ -25,7 +28,7 @@ class Descriptors:
 
         prSMIclean = self.prDesc + "SMIclean/"
         pathFolder.createFolder(prSMIclean)
-        self.pSMIclean = prSMIclean
+        self.prSMIclean = prSMIclean
 
         prDescbyCAS = self.prDesc + "DESCbyCAS/"
         pathFolder.createFolder(prDescbyCAS)
@@ -64,12 +67,15 @@ class Descriptors:
 
 
 
-    def computeFP(self, prFP):
+    def computeFP(self, prFP, FPtype, typeMetric):
+
+        from rdkit import DataStructs
+
 
         # set SMI after cleanning
         prSMIclean = self.prDesc + "SMIclean/"
         pathFolder.createFolder(prSMIclean)
-        self.pSMIclean = prSMIclean
+        self.prSMIclean = prSMIclean
 
         #set FP
         self.prFP = prFP
@@ -90,51 +96,105 @@ class Descriptors:
                 # chemical
                 chem = chemical.chemical(cas, smiles)
                 chem.prepareChem(prSMIclean)
-                chem.computeFP()
-                dFP[cas] = chem.FP
+                error = chem.computeFP(FPtype)
 
-        # create matrix of of FP score similarity
-        lmetric = to fisnish
+                if error == 1:
+                    print "ERROR FP"
+                    continue
+                else:
+                    dFP[cas] = chem.FP
+        if FPtype == "FPpairs" or FPtype == "FPTorsion" or FPtype == "FPMorgan":
+            if typeMetric != "Dice":
+                print "Similarity metric incompatible for ", FPtype, typeMetric
+                return 1
+
         lcas = dFP.keys()
+        dmetric = {}
+        i = 0
+        imax = len(dFP.keys())
+        while i < imax:
+            if not lcas[i] in dmetric.keys():
+                dmetric[lcas[i]] = {}
+            j = i
+            while j < imax:
+                if not lcas[j] in dmetric[lcas[i]].keys():
+                    dmetric[lcas[i]][lcas[j]] = {}
+
+                if typeMetric == 'Tanimoto':
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.TanimotoSimilarity)
+                elif typeMetric == "Dice":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.DiceSimilarity(dFP[lcas[i]][FPtype],dFP[lcas[j]][FPtype])
+
+                elif typeMetric == "Cosine":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.CosineSimilarity)
+                elif typeMetric == "Sokal":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.SokalSimilarity)
+                elif typeMetric == "Russel":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.RusselSimilarity)
+                elif typeMetric == "RogotGoldberg":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.RogotGoldbergSimilarity)
+                elif typeMetric == "AllBit":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.AllBitSimilarity)
+                elif typeMetric == "Kulczynski":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.KulczynskiSimilarity)
+                elif typeMetric == "McConnaughey":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.McConnaugheySimilarity)
+                elif typeMetric == "Asymmetric":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.AsymmetricSimilarity)
+                elif typeMetric == "BraunBlanquet":
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
+                                                                                                  dFP[lcas[j]][FPtype],
+                                                                                                  metric=DataStructs.BraunBlanquetSimilarity)
+                j += 1
+            i += 1
+        #write matrix of similarity
+        pfilout = prFP + str(FPtype) + "-" + str(typeMetric)
+        filout = open(pfilout, "w")
+        filout.write("\t".join(lcas) + "\n")
+
+        i = 0
         imax = len(lcas)
+        while i < imax:
+            j = 0
+            lw = []
+            while j < imax:
+                try:
+                    score = dmetric[lcas[i]][lcas[j]][typeMetric]
+                except:
+                    score = dmetric[lcas[j]][lcas[i]][typeMetric]
+                lw.append(str(score))
+                j += 1
+            filout.write(lcas[i] + "\t" + "\t".join(lw) + "\n")
+            i += 1
+        filout.close()
 
-
-
-
-                chem.computeFP(self.prFPbyCAS)
-
-            # control if exit already
-            if not path.exists(self.prDescByCAS + cas + ".txt"):
-
-                psmiles = self.prSMI + cas + ".smi"
-                if path.exists(self.prSMI + cas + ".smi"):
-                    fsmiles = open(psmiles, "r")
-                    smiles = fsmiles.readlines()[0].strip()
-                    fsmiles.close()
-
-                    # chemical
-                    chem = chemical.chemical(cas, smiles)
-                    chem.prepareChem(prSMIclean)
-                    chem.computeFP(self.prFPbyCAS)
-                    fff
-
-
-
-                    chem.compute1D2DDesc(self.prDescByCAS)
-                    err = chem.writeTablesDesc(self.prDescByCAS)#
-                    if err == 1: chem.writelog(self.prlog)
-
-
-        return
 
 
     def generatePNG(self):
 
         pathFolder.createFolder(self.prPNG)
-        lnSMIs = listdir(self.pSMIclean)
+        lnSMIs = listdir(self.prSMIclean)
 
         for nSMI in lnSMIs:
-            runExternalSoft.molconvert(self.pSMIclean + nSMI, self.prPNG + nSMI[:-3] + "png")
+            runExternalSoft.molconvert(self.prSMIclean + nSMI, self.prPNG + nSMI[:-3] + "png")
 
 
 

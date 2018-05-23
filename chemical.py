@@ -310,27 +310,34 @@ class chemical:
 
 
 
-    def computeFP(self, prFPChem):
+    def computeFP(self, typeFP):
 
-        self.prFP = prFPChem
+        from rdkit.Chem.Fingerprints import FingerprintMols
+        from rdkit.Chem import MACCSkeys
+        from rdkit.Chem.AtomPairs import Pairs, Torsions
+        from rdkit.Chem import AllChem
 
         if not "smiclean" in self.__dict__:
             self.log = self.log + "No smiles prepared\n"
             return 1
         else:
-            self.mol = loader.ReadMolFromSmile(self.smiclean)
+            self.mol = Chem.MolFromSmiles(self.smiclean)
             print self.smiclean
 
         dFP = {}
-        dFP["FPMol"] = Chem.FingerprintMol(self.mol)
-        dFP["FPMACCS"] = Chem.MACCSkeys.GenMACCSKeys(self.mol)
-        dFP["FPpairs"] = Chem.AtomPairs.Pairs.GetAtomPairFingerprint(self.mol)
-        dFP["FPTorsion"] = Chem.AtomPairs.Torsions.GetTopologicalTorsionFingerprintAsIntVect(x)
-        dFP["FPMorgan"] = Chem.AllChem.GetMorganFingerprint(self.mol,2)
+        if typeFP == "FPMol":
+            dFP["FPMol"] = FingerprintMols.FingerprintMol(self.mol)
+        elif typeFP == "FPMACCS":
+            dFP["FPMACCS"] = MACCSkeys.GenMACCSKeys(self.mol)
+        elif typeFP == "FPpairs":
+            dFP["FPpairs"] = Pairs.GetAtomPairFingerprint(self.mol)
+        elif typeFP == "FPTorsion":
+            dFP["FPTorsion"] = Torsions.GetTopologicalTorsionFingerprint(self.mol)
+        else:
+            dFP["FPMorgan"] = AllChem.GetMorganFingerprint(self.mol, 2)
 
-        print dFP
         self.FP = dFP
-
+        return 0
 
     def writeDesc(self, ldesc, filin):
 
