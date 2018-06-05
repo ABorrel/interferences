@@ -81,6 +81,14 @@ class Descriptors:
         self.prFP = prFP
 
 
+        # to just load the file
+        pfilout = prFP + str(FPtype) + "-" + str(typeMetric)
+        if path.exists(pfilout):
+            self.pFP = pfilout
+            return 0
+
+
+
         dFP = {}
         for pSMI in listdir(self.prSMI):
         #for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
@@ -166,7 +174,6 @@ class Descriptors:
                 j += 1
             i += 1
         #write matrix of similarity
-        pfilout = prFP + str(FPtype) + "-" + str(typeMetric)
         filout = open(pfilout, "w")
         filout.write("\t".join(lcas) + "\n")
 
@@ -185,6 +192,7 @@ class Descriptors:
             filout.write(lcas[i] + "\t" + "\t".join(lw) + "\n")
             i += 1
         filout.close()
+        self.pFP = pfilout
 
 
 
@@ -232,6 +240,56 @@ class Descriptors:
 
 
 
+    def reduceMatrixFP(self, lCASID, pout):
+
+        if path.exists(pout) and path.getsize(pout) > 100:
+            return 0
+
+        if not "FP" in self.__dict__:
+            self.loadFPmatrix()
+
+
+        filout = open(pout, "w")
+        filout.write("\t".join(lCASID) + "\n")
+        for casID in lCASID:
+            filout.write(casID)
+            i = 0
+            imax = len(lCASID)
+            while i < imax:
+                try:filout.write("\t" + str(self.FP[casID][lCASID[i]]))
+                except : filout.write("\t" + str(self.FP[lCASID[i]][casID]))
+                i += 1
+            filout.write("\n")
+        filout.close()
+        return 0
+
+
+    def loadFPmatrix(self):
+
+        dout = {}
+        if not "pFP" in self.__dict__:
+            print "Error: no FP computed"
+            return 1
+        else:
+            filin = open(self.pFP, "r")
+            llinesFP = filin.readlines()
+            filin.close()
+
+            lcas = llinesFP[0].strip().split("\t")
+            j = 1
+            for linesFP in llinesFP[1:]:
+                lscore = linesFP.strip().split("\t")
+                imax = len(lscore)
+                cas = lscore[0]
+                i = 1
+                dout[cas] = {}
+                while i < imax:
+                    dout[cas][lcas[i-1]] = lscore[i]
+                    i += 1
+                print j
+                j += 1
+            self.FP = dout
+        return 0
 
 
     def clustering (self, disttype, clustype, agregmethod, optnbclustmethod):

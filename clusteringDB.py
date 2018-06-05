@@ -11,26 +11,29 @@ import pathFolder
 
 class clustering:
 
-    def __init__(self, pdesc, prout, prPNG, corval, maxQuantile):
+    def __init__(self, cdesc, prout, corval, maxQuantile, distmeth = "euc", aggregtype = "ward.D2", clusterType = "hclust", optimalCluster = "gap_stat"):
 
-
+        # set global parameters
         self.prout = prout
+        self.cdesc = cdesc
+
+        # set stat parameters
         self.corval = corval
         self.maxquantile = maxQuantile
-        self.pdesc = pdesc
-        self.prPNG = prPNG
-
-
-
-
-    def createMainClustering(self, disttype = "euc", aggregtype = "ward.D2", clusterType = "hclust", optimalCluster = "gap_stat"):
-
-        self.distmeth = disttype
+        self.distmeth = distmeth
         self.aggType = aggregtype
         self.clusterMeth = clusterType
         self.optimalNBclustMeth = optimalCluster
 
-        self.prCluster = self.prout + str(self.clusterMeth) + "_" + str(self.distmeth) + "_" + str(aggregtype.replace(".", "")) + "_" + str(self.optimalNBclustMeth) + "/"
+
+    def createMainClustering(self, doublecluster = 0, lcas = []):
+
+        if self.distmeth == None: # case of fp
+            self.prCluster = self.prout + self.cdesc.pFP.split("/")[-1] + "-" + str(self.clusterMeth) + "_" + str(self.distmeth) \
+                             + "_" + str(self.aggType.replace(".", "")) + "_" + str(self.optimalNBclustMeth) + "/"
+        else:
+            self.prCluster = self.prout + str(self.clusterMeth) + "_" + str(self.distmeth) + "_" + str(
+                self.aggType.replace(".", "")) + "_" + str(self.optimalNBclustMeth) + "/"
         pathFolder.createFolder(self.prCluster)
 
 
@@ -38,63 +41,129 @@ class clustering:
         self.pdesclean = self.prCluster + "descClean.csv"
 
         if not path.exists(self.pdesclean):
-            if path.exists(self.pdesc) and path.getsize(self.pdesc) > 10:
+            if path.exists(self.cdesc.pdesc1D2D) and path.getsize(self.cdesc.pdesc1D2D) > 10:
                 # preproc
-                runExternalSoft.dataManager(self.pdesc, 0, self.corval, self.maxquantile, self.prCluster)
+                if self.distmeth == None:
+                    if lcas != []:
+                        self.cdesc.reduceMatrixFP(lcas, self.pdesclean)
+                    else:
+                        copyfile(self.cdesc.pFP, self.pdesclean)
+                else:
+                    runExternalSoft.dataManager(self.cdesc.pdesc1D2D, 0, self.corval, self.maxquantile, self.prCluster)
             else:
-                print "Error ->", self.pdesc
-
+                print "Error ->", self.cdesc.pdesc1D2D
 
         pcluster = self.prCluster + "cluster.csv"
         if not path.exists(pcluster):
-            #clustering -> first level
-            pcluster = runExternalSoft.clustering(self.pdesclean, "0", self.prCluster, self.distmeth, self.aggType, self.clusterMeth, self.optimalNBclustMeth)
+            if self.distmeth == None:
+                pcluster = runExternalSoft.clusteringSimilarityMatrix(self.pdesclean, self.prCluster, self.aggType, self.clusterMeth, self.optimalNBclustMeth)
+            else:
+                #clustering -> first level
+                pcluster = runExternalSoft.clustering(self.pdesclean, "0", self.prCluster, self.distmeth, self.aggType, self.clusterMeth, self.optimalNBclustMeth)
 
-        #Clustering second level
-        if pcluster != 0:
-            self.createSecondaryClustering(pcluster)
+        if doublecluster == 1:
+            #Clustering second level
+            if pcluster != 0:
+                self.createSecondaryClustering(pcluster)
+
+            # create main cluster file
+            pclustersFinal = self.prCluster + "clusterMain.csv"
+            if not path.exists(pclustersFinal):
+                fclustersFinal = open(pclustersFinal, "w")
+                fclustersFinal.write("ID,Cluster1,Cluster2\n")
+
+                fcluster1 = open(pcluster, "r")
+                lchemCluster1 = fcluster1.readlines()
+                fcluster1.close()
+
+                dclust = {}
+                for chemCluster1 in lchemCluster1[1:]:
+                    chemCluster1 = chemCluster1.strip().replace("\"", "").split(",")
+                    chemID = chemCluster1[0]
+                    clust = chemCluster1[1]
+                    dclust[chemID] = [clust]
+
+                for fileCluster in listdir(self.prCluster):
+                    if search("Clust", fileCluster):
+                        pclust2 = self.prCluster + fileCluster + "/cluster.csv"
+                        if path.exists(pclust2):
+                            fclust2 = open(pclust2, "r")
+                            lchemCluster2 = fclust2.readlines()
+                            fclust2.close()
+
+                            for chemCluster2 in lchemCluster2[1:]:
+                                chemCluster2 = chemCluster2.strip().replace("\"", "").split(",")
+                                chemID = chemCluster2[0]
+                                clust2 = chemCluster2[1]
+
+                                dclust[chemID].append(clust2)
+
+                #write main cluster
+                for chemID in dclust.keys():
+                    if len(dclust[chemID]) == 1:
+                        dclust[chemID].append("1")
+                    fclustersFinal.write(str(chemID) + "," + ",".join(dclust[chemID]) + "\n")
+                fclustersFinal.close()
+            self.pclusters = pclustersFinal
+
+        else:
+            self.pclusters = pcluster
 
 
-        # create main cluster file
-        pclustersFinal = self.prCluster + "clusterMain.csv"
-        if not path.exists(pclustersFinal):
-            fclustersFinal = open(pclustersFinal, "w")
-            fclustersFinal.write("ID,Cluster1,Cluster2\n")
 
-            fcluster1 = open(pcluster, "r")
-            lchemCluster1 = fcluster1.readlines()
-            fcluster1.close()
+    def enrichmentCluster(self, pallAC50):
 
-            dclust = {}
-            for chemCluster1 in lchemCluster1[1:]:
-                chemCluster1 = chemCluster1.strip().replace("\"", "").split(",")
-                chemID = chemCluster1[0]
-                clust = chemCluster1[1]
-                dclust[chemID] = [clust]
 
-            for fileCluster in listdir(self.prCluster):
-                if search("Clust", fileCluster):
-                    pclust2 = self.prCluster + fileCluster + "/cluster.csv"
-                    if path.exists(pclust2):
-                        fclust2 = open(pclust2, "r")
-                        lchemCluster2 = fclust2.readlines()
-                        fclust2.close()
+        if not "pclusters" in self.__dict__:
+            print "ERROR: clustering should be create before"
+        else:
+            runExternalSoft.enrichmentCluster(self.pclusters, pallAC50, self.prCluster)
 
-                        for chemCluster2 in lchemCluster2[1:]:
-                            chemCluster2 = chemCluster2.strip().replace("\"", "").split(",")
-                            chemID = chemCluster2[0]
-                            clust2 = chemCluster2[1]
+            return
 
-                            dclust[chemID].append(clust2)
+    def enrichmentIndex(self, pAC50All, FP=1):
 
-            #write main cluster
-            for chemID in dclust.keys():
-                if len(dclust[chemID]) == 1:
-                    dclust[chemID].append("1")
-                fclustersFinal.write(str(chemID) + "," + ",".join(dclust[chemID]) + "\n")
-            fclustersFinal.close()
+        self.pAC50All = pAC50All
 
-        self.pclusters = pclustersFinal
+        if FP == 1:
+            prenrich = self.prout + self.cdesc.pFP.split("/")[-1] + "/"
+        else:
+            prenrich = self.prout + "enrichmentIndex/"
+        pathFolder.createFolder(prenrich)
+
+        self.prenrich = prenrich
+
+        lfileenrich = listdir(prenrich)
+        if len(lfileenrich) > 2:
+            return 0
+
+        if FP == 0:
+            if not "pdesclean" in self.__dict__:
+                self.pdesclean = prenrich + "descClean.csv"
+                if not path.exists(self.pdesclean):
+                    runExternalSoft.dataManager(self.cdesc.pdesc1D2D, 0, self.corval, self.maxquantile, prenrich)
+            runExternalSoft.enrichmentIndex(self.pdesclean, prenrich, pAC50All, self.clusterMeth, self.distmeth, self.aggType)
+        else:
+            runExternalSoft.enrichmentIndex(self.cdesc.pFP, prenrich, pAC50All, self.clusterMeth, self.distmeth, self.aggType)
+        return 0
+
+
+    def optimalClusteringForEnrich(self, FP = 0):
+
+        proptimal = self.prenrich + "optclustering/"
+        pathFolder.createFolder(proptimal)
+        self.proptimal = proptimal
+
+        lfilesenrich = listdir(self.prenrich)
+        for fileenrich in lfilesenrich:
+            if search(".csv", fileenrich):
+                ptable = self.prenrich + fileenrich
+                if FP == 1:
+                    runExternalSoft.preciseEnrichmentIndex(self.cdesc.pFP, proptimal, self.pAC50All, ptable,
+                                                           self.clusterMeth, self.distmeth, self.aggType)
+                else:
+                    runExternalSoft.preciseEnrichmentIndex(self.cdesc.pFP, proptimal, self.pAC50All, ptable,
+                                                           self.clusterMeth, self.distmeth, self.aggType)
 
 
     def createSecondaryClustering(self, pClusters):
@@ -114,31 +183,44 @@ class clustering:
                 dclust[cluster] = []
             dclust[cluster].append(ID)
 
+        #do different for FP and descriptor
+        if self.distmeth == None:
+            # write cluster and chemical
+            for cluster in dclust.keys():
+                prcluster = self.prCluster + "Clust" + str(cluster) + "/"
+                if not path.exists(prcluster + "cluster.csv"):
+                    pathFolder.createFolder(prcluster)
+                    pmatrix = prcluster + "FPmatrix"
+                    self.cdesc.reduceMatrixFP(dclust[cluster], pmatrix)
+                    runExternalSoft.clusteringSimilarityMatrix(pmatrix, prcluster, self.aggType, self.clusterMeth,
+                                                               self.optimalNBclustMeth)
+        else:
+            fdesc = open(self.pdesclean, "r")
+            lchemdesc = fdesc.readlines()
+            fdesc.close()
 
-        fdesc = open(self.pdesclean, "r")
-        lchemdesc = fdesc.readlines()
-        fdesc.close()
-
-        ddesc = {}
-        for chemdesc in lchemdesc[1:]:
-            ID = chemdesc.split(",")[0].replace("\"", "")
-            ddesc[ID] = chemdesc
+            ddesc = {}
+            for chemdesc in lchemdesc[1:]:
+                ID = chemdesc.split(",")[0].replace("\"", "")
+                ddesc[ID] = chemdesc
 
 
-        #write cluster and chemical
-        for cluster in dclust.keys():
-            prcluster = self.prCluster + "Clust" + str(cluster) + "/"
-            if not path.exists(prcluster + "cluster.csv"):
-                pathFolder.createFolder(prcluster)
-                pdesc = prcluster + "descClean.csv"
-                fdesc = open(pdesc, "w")
-                fdesc.write(lchemdesc[0])
+            #write cluster and chemical
+            for cluster in dclust.keys():
+                prcluster = self.prCluster + "Clust" + str(cluster) + "/"
+                if not path.exists(prcluster + "cluster.csv"):
+                    pathFolder.createFolder(prcluster)
+                    pdesc = prcluster + "descClean.csv"
+                    fdesc = open(pdesc, "w")
+                    fdesc.write(lchemdesc[0])
 
-                for chemID in dclust[cluster]:
-                    fdesc.write(ddesc[chemID])
-                fdesc.close()
+                    for chemID in dclust[cluster]:
+                        fdesc.write(ddesc[chemID])
+                    fdesc.close()
 
-                runExternalSoft.clustering(pdesc, "0", prcluster, self.distmeth, self.aggType, self.clusterMeth, self.optimalNBclustMeth)
+                    runExternalSoft.clustering(pdesc, "0", prcluster, self.distmeth, self.aggType, self.clusterMeth, self.optimalNBclustMeth)
+
+
 
     def applyMainClusters(self, pAC50, prout):
 

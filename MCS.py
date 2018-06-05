@@ -17,8 +17,8 @@ class MCSMatrix:
 
     def computeMatrixMCS(self):
 
-        pfiloutTanimoto = self.prout + "tanimoto"
-        pfiloutNBatomMax = self.prout + "maxAtom"
+        pfiloutTanimoto = self.prout + "tanimoto.txt"
+        pfiloutNBatomMax = self.prout + "maxAtom.txt"
 
         if path.exists(pfiloutTanimoto) and path.exists(pfiloutNBatomMax):
             print "in"
@@ -30,20 +30,23 @@ class MCSMatrix:
         else:
             lSMI = listdir(self.prSMI)
             lcas = [smi[:-4] for smi in lSMI]
+            jmax = len(lcas)
 
             i = 0
-            imax = len(lcas)
-            dTanimoto = {}
-            dMaxMCS = {}
+            imax = jmax
+
+
             while i < imax:
                 print i
-                if not lcas[i] in dTanimoto.keys():
-                    dTanimoto[lcas[i]] = {}
-                    dMaxMCS[lcas[i]] = {}
+                if path.exists(self.prout + str(lcas[i])):
+                    i += 1
+                    continue
+
+                dTemp = {}
                 j = i
-                while j < imax:
+                while j < jmax:
                     #print i, j
-                    if not lcas[j] in dTanimoto[lcas[i]].keys():
+                    if not lcas[j] in dTemp.keys():
                         fsmii = open(self.prSMI + lcas[i] + ".smi", "r")
                         smii = fsmii.readlines()[0].strip()
                         fsmii.close()
@@ -52,13 +55,38 @@ class MCSMatrix:
                         fsmij.close()
 
                         ltanimoto_max = get_Tanimoto(smii, smij)
-                        dMaxMCS[lcas[i]][lcas[j]] = ltanimoto_max[1]
-                        dTanimoto[lcas[i]][lcas[j]] = ltanimoto_max[0]
+                        dTemp[lcas[j]] = ltanimoto_max
                     j += 1
                 i += 1
 
-            filoutTanimoto = open(self.prout + "tanimoto", "w")
-            filoutNBatomMax = open(self.prout + "maxAtom", "w")
+                # write temp matrix
+                filout = open(self.prout + str(lcas[i]), "w")
+                filout.write("CAS\tMCS\tMax atoms\n")
+                for k in dTemp.keys():
+                    filout.write(str(k) + "\t" + str(dTemp[k][0]) + "\t" + str(dTemp[k][1]) + "\n")
+                filout.close()
+
+
+            # merge matrix
+            dMaxMCS = {}
+            dTanimoto = {}
+            for nfile in listdir(self.prout):
+                if nfile[-3:] != "txt":
+                    cmpdID1 = nfile
+                    dMaxMCS[cmpdID1] = {}
+                    dTanimoto[cmpdID1] = {}
+
+                    filin = open(self.prout + cmpdID1, "r")
+                    lscores = filin.readlines()
+                    for score in lscores[1:]:
+                        lelemscore = score.strip().split("\t")
+                        cmpdID2 = lelemscore[0]
+                        dTanimoto[cmpdID1][cmpdID2] = lelemscore[1]
+                        dMaxMCS[cmpdID1][cmpdID2] = lelemscore[2]
+
+
+            filoutTanimoto = open(pfiloutTanimoto, "w")
+            filoutNBatomMax = open(pfiloutNBatomMax, "w")
 
 
             filoutTanimoto.write("\t".join(lcas) + "\n")
@@ -283,8 +311,10 @@ def get_Tanimoto(smile1, smile2):
     #print(smile1, smile2)
     mol_t1 = ("smi", smile1)
     mol_t2 = ("smi", smile2)
-    mol1, mol_info1 = ms.get_mol_info(mol_t1[0], mol_t1[1])
-    mol2, mol_info2 = ms.get_mol_info(mol_t2[0], mol_t2[1])
+    try:mol1, mol_info1 = ms.get_mol_info(mol_t1[0], mol_t1[1])
+    except:return ["NA", "NA"]
+    try:mol2, mol_info2 = ms.get_mol_info(mol_t2[0], mol_t2[1])
+    except:return ["NA", "NA"]
 
     #print mol_info1.keys()
     #print mol_info2.keys()

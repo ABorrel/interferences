@@ -124,6 +124,10 @@ class assays:
 
 
     def loadAC50(self):
+
+        if not "pAC50" in self.__dict__:
+            self.writeAC50()
+
         self.dAC50 = {}
         filin = open(self.pAC50, "r")
         llinecas = filin.readlines()
@@ -630,3 +634,60 @@ class assays:
                 print "Error ->", pdesc1D2D
 
         runExternalSoft.drawMDS(pdesc1D2Dclean, pAC50, prMDS)
+
+
+
+
+def mergeAssays(cluc, chepg2, chek293):
+
+    cluc.combineAC50()
+    cluc.loadAC50()
+    chepg2.loadAC50()
+    chek293.loadAC50()
+
+    pfilout = cluc.prout + "AC50_all"
+    filout = open(pfilout, "w")
+    lheader = ["CASID", "Luc_IC50", "hepg2_med_blue", "hepg2_med_green", "hepg2_med_red", "hepg2_med_blue_n",
+               "hepg2_med_green_n", "hepg2_med_red_n", "hek293_med_blue", "hek293_med_green", "hek293_med_red",
+               "hek293_med_blue_n", "hek293_med_green_n", "hek293_med_red_n", "hepg2_cell_blue", "hepg2_cell_green",
+               "hepg2_cell_red", "hepg2_cell_blue_n", "hepg2_cell_green_n", "hepg2_cell_red_n", "hek293_cell_blue",
+               "hek293_cell_green", "hek293_cell_red", "hek293_cell_blue_n", "hek293_cell_green_n", "hek293_cell_red_n"]
+
+    filout.write("\t".join(lheader) + "\n")
+
+    lCAS = list(set(cluc.dAC50.keys()).intersection(chepg2.dAC50.keys()))
+    lCAS = list(set(lCAS).intersection(chek293.dAC50.keys()))
+    for casID in lCAS:
+        #print chepg2.dAC50[casID]
+        #print chek293.dAC50[casID]
+
+        linew = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" \
+                "\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (casID, cluc.dAC50[casID]["IC50"],
+                                                                            chepg2.dAC50[casID]["med_blue"],
+                                                                            chepg2.dAC50[casID]["med_green"],
+                                                                            chepg2.dAC50[casID]["med_red"],
+                                                                            chepg2.dAC50[casID]["med_blue_n"],
+                                                                            chepg2.dAC50[casID]["med_green_n"],
+                                                                            chepg2.dAC50[casID]["med_red_n"],
+                                                                            chek293.dAC50[casID]["med_blue"],
+                                                                            chek293.dAC50[casID]["med_green"],
+                                                                            chek293.dAC50[casID]["med_red"],
+                                                                            chek293.dAC50[casID]["med_blue_n"],
+                                                                            chek293.dAC50[casID]["med_green_n"],
+                                                                            chek293.dAC50[casID]["med_red_n"],
+                                                                            chepg2.dAC50[casID]["cell_blue"],
+                                                                            chepg2.dAC50[casID]["cell_green"],
+                                                                            chepg2.dAC50[casID]["cell_red"],
+                                                                            chepg2.dAC50[casID]["cell_blue_n"],
+                                                                            chepg2.dAC50[casID]["cell_green_n"],
+                                                                            chepg2.dAC50[casID]["cell_red_n"],
+                                                                            chek293.dAC50[casID]["cell_blue"],
+                                                                            chek293.dAC50[casID]["cell_green"],
+                                                                            chek293.dAC50[casID]["cell_red"],
+                                                                            chek293.dAC50[casID]["cell_blue_n"],
+                                                                            chek293.dAC50[casID]["cell_green_n"],
+                                                                            chek293.dAC50[casID]["cell_red_n"])
+        filout.write(linew)
+    filout.close()
+
+    return pfilout

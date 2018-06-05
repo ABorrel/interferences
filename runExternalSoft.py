@@ -153,6 +153,24 @@ def clustering(pdesc, pAC50, prresult, dist, aggreg, clusteringMeth, optClusterM
         return 0
 
 
+
+def clusteringSimilarityMatrix(pmatrix, prresult, aggreg, clusteringMeth, optClusterMeth):
+
+    pcluster = prresult + "cluster.csv"
+    if path.exists(pcluster) and path.getsize(pcluster) > 10:
+            return pcluster
+    else:
+        cmd = "./clusterFromSimilarity.R " + pmatrix + " " + str(clusteringMeth) + " " + str(aggreg) + " " + str(optClusterMeth) + " " + str(prresult)
+        runRCMD(cmd)
+
+    if path.exists(pcluster) and path.getsize(pcluster) > 10:
+            return pcluster
+    else:
+        return 1
+
+
+
+
 def drawEnrichSOM(pdesc1D2Dclean, pAC50, pmodel, prSOM):
 
     cmdSOM = "./SOMaps.R " + str(pdesc1D2Dclean) + " " + pAC50 + " " + str(pmodel) + " " + str(prSOM)
@@ -219,4 +237,27 @@ def drawPCACross(pdesc1D2Dclean, pAC50_hepg2, pAC50_hek293, prCrossPCA):
 def drawMDS(pdesc1D2Dclean, pAC50, prMDS):
 
     cmd = "./MDSAnalysis.R " + str(pdesc1D2Dclean) + " " + str(pAC50) + " " + str(prMDS)
+    runRCMD(cmd)
+
+
+def enrichmentCluster(pclusters, pallAC50, prCluster):
+
+    cmd = "./enrichmentCluster.R " + str(pallAC50) + " " + str(pclusters) + " " + str(prCluster)
+    runRCMD(cmd)
+
+def enrichmentIndex(pdesc, prresult, pAC50All, methCluster, methDist, methAgg):
+
+    if methDist == None:
+        methDist = "None"
+
+    cmd = "./enrichmentIndex.R " + pdesc + " " + pAC50All + " " + prresult + " " + methCluster + " " + methDist + " " + methAgg
+    runRCMD(cmd)
+
+def preciseEnrichmentIndex(pdesc, presult, pAC50All, ptable, methCluster, methDist, methAgg):
+
+    if methDist == None:
+        methDist = "None"
+
+    cmd = "./enrichmentOptimal.R " + pdesc + " " + pAC50All + " " + presult + " " + ptable + " " + methCluster + " " \
+          + methDist + " " + methAgg
     runRCMD(cmd)
