@@ -13,7 +13,6 @@ import MCS
 # MAIN  #
 #########
 
-
 pSDFToxCast = "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
 pSDFTox21 = "/home/borrela2/Tox21/TOX21SL.sdf"
 
@@ -38,7 +37,6 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 #########################################
 
 pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
-
 
 
 # plot correlation #
@@ -118,7 +116,7 @@ AffFP = ["FPMol", "FPMACCS", "FPpairs", "FPTorsion", "FPMorgan"]
 prFP = prMain + "FP/"
 pathFolder.createFolder(prFP)
 #cDesc.computeFP(prFP, "FPMol", 'Sokal')
-cDesc.computeFP(prFP, "FPMol", 'Tanimoto')
+cDesc.computeFPMatrix(prFP, "FPMol", 'Tanimoto')
 #cDesc.computeFP(prFP, "FPMACCS", 'Tanimoto')
 #cDesc.computeFP(prFP, "FPpairs", 'Dice')
 #cDesc.computeFP(prFP, "FPTorsion", 'Dice')
@@ -149,7 +147,7 @@ nbCV = 10
 ##### analysis for all Chemical ######
 # Double clustering on the main data #
 ######################################
-distMeth = "euc"
+distMeth = "euclidean"
 aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
 clusterType = "hclust"#"hclust", "kmeans"
 optimalCluster = "silhouette"#"gap_stat", "silhouette", "wss", "gap_stat"
@@ -162,6 +160,8 @@ pathFolder.createFolder(prcluster)
 #cclust.createMainClustering(doublecluster=doubleclustering)
 #cclust.enrichmentCluster(pAC50All)
 #cclust.enrichmentIndex(pAC50All, FP=0)
+#cclust.optimalClusteringForEnrich(FP=0)
+#cclust.visualizeOptimalClustering(prresults, FP=0)
 
 #####################
 # clustering for FP #
@@ -170,6 +170,7 @@ pathFolder.createFolder(prcluster)
 # for dissimilarity matrix frey, mcclain, cindex, silhouette and dunn
 prcluster = prresults + "FPclusters/"
 optimalCluster = "silhouette"
+aggregtype = "average"
 distMeth = None
 pathFolder.createFolder(prcluster)
 cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
@@ -177,7 +178,7 @@ cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth
 #cclust.enrichmentCluster(pAC50All)
 cclust.enrichmentIndex(pAC50All, FP=1)
 cclust.optimalClusteringForEnrich(FP=1)
-ddd
+cclust.visualizeOptimalClustering(prresults, FP=1)
 
 ###############
 # MAIN - SOM  #

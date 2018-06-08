@@ -653,13 +653,27 @@ def mergeAssays(cluc, chepg2, chek293):
                "hepg2_cell_red", "hepg2_cell_blue_n", "hepg2_cell_green_n", "hepg2_cell_red_n", "hek293_cell_blue",
                "hek293_cell_green", "hek293_cell_red", "hek293_cell_blue_n", "hek293_cell_green_n", "hek293_cell_red_n"]
 
+    lchannel = ["med_blue", "med_green", "med_red", "med_blue_n", "med_green_n", "med_red_n", "cell_blue", "cell_green",
+                "cell_red", "cell_blue_n", "cell_green_n", "cell_red_n"]
     filout.write("\t".join(lheader) + "\n")
 
-    lCAS = list(set(cluc.dAC50.keys()).intersection(chepg2.dAC50.keys()))
-    lCAS = list(set(lCAS).intersection(chek293.dAC50.keys()))
+    lCAS = list(set(cluc.dAC50.keys() + chepg2.dAC50.keys()))
+    lCAS = list(set(lCAS + chek293.dAC50.keys()))
     for casID in lCAS:
         #print chepg2.dAC50[casID]
         #print chek293.dAC50[casID]
+        if not casID in chepg2.dAC50.keys():
+            chepg2.dAC50[casID] = {}
+            for i in lchannel:
+                chepg2.dAC50[casID][i] = "NA"
+        if not casID in cluc.dAC50.keys():
+            cluc.dAC50[casID] = {}
+            cluc.dAC50[casID]["IC50"] = "NA"
+        if not casID in chek293.dAC50.keys():
+            chek293.dAC50[casID] = {}
+            for i in lchannel:
+                chek293.dAC50[casID][i] = "NA"
+
 
         linew = "%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" \
                 "\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (casID, cluc.dAC50[casID]["IC50"],

@@ -258,6 +258,11 @@ def preciseEnrichmentIndex(pdesc, presult, pAC50All, ptable, methCluster, methDi
     if methDist == None:
         methDist = "None"
 
-    cmd = "./enrichmentOptimal.R " + pdesc + " " + pAC50All + " " + presult + " " + ptable + " " + methCluster + " " \
+    cmd = "./enrichmentOptimal.R " + pdesc + " " + pAC50All + " " + ptable + " " + presult + " " + methCluster + " " \
           + methDist + " " + methAgg
+    runRCMD(cmd)
+
+def finalClustering(pmatrixIn, pAC50Full, pcluster, channel, distMeth, aggMeth, prtemp):
+
+    cmd = "./finalCluster.R " + pmatrixIn + " " + pAC50Full + " " + pcluster + " " + channel + " " + distMeth + " " + aggMeth + " " + prtemp
     runRCMD(cmd)

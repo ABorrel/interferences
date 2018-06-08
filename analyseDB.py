@@ -20,6 +20,26 @@ class Descriptors:
         self.prout = prout
         self.prPNG = prPNG
 
+
+
+    def loadClassForPred(self, corval, maxQuantile, lCASID = []):
+
+        #Desc 1D and 2D
+        self.computeDesc()
+        pdescClean = runExternalSoft.dataManager(self.pdesc1D2D, "0", corval, maxQuantile, self.prout)
+        self.pdesc1D2Dclean = pdescClean
+
+        if lCASID != []:
+            self.reduceMatrixDes(self.pdesc1D2Dclean, lCASID)
+
+
+        self.computeFP("All")
+
+        if lCASID != []:
+            self.reduceMatrixFP(self.dFP, lCASID)
+
+
+
     def computeDesc(self):
 
 
@@ -47,7 +67,7 @@ class Descriptors:
         for pSMI in listdir(self.prSMI):
         #for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
             cas = pSMI.split("/")[-1].split(".")[0]
-            print cas
+            #print cas
 
             psmiles = self.prSMI + cas + ".smi"
             if path.exists(self.prSMI + cas + ".smi"):
@@ -67,31 +87,17 @@ class Descriptors:
 
 
 
-    def computeFP(self, prFP, FPtype, typeMetric):
-
-        from rdkit import DataStructs
-
+    def computeFP(self, FPtype):
 
         # set SMI after cleanning
         prSMIclean = self.prDesc + "SMIclean/"
         pathFolder.createFolder(prSMIclean)
         self.prSMIclean = prSMIclean
 
-        #set FP
-        self.prFP = prFP
-
-
-        # to just load the file
-        pfilout = prFP + str(FPtype) + "-" + str(typeMetric)
-        if path.exists(pfilout):
-            self.pFP = pfilout
-            return 0
-
-
 
         dFP = {}
         for pSMI in listdir(self.prSMI):
-        #for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
+            # for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
             cas = pSMI.split("/")[-1].split(".")[0]
             print cas
 
@@ -111,15 +117,34 @@ class Descriptors:
                     continue
                 else:
                     dFP[cas] = chem.FP
+
+        self.dFP = dFP
+
+
+    def computeFPMatrix(self, prFP, FPtype, typeMetric):
+
+        from rdkit import DataStructs
+
+        # set FP
+        self.prFP = prFP
+
+        # to just load the file
+        pfilout = prFP + str(FPtype) + "-" + str(typeMetric)
+        if path.exists(pfilout):
+            self.pFP = pfilout
+            return 0
+
+        self.computeFP(FPtype)
+
         if FPtype == "FPpairs" or FPtype == "FPTorsion" or FPtype == "FPMorgan":
             if typeMetric != "Dice":
                 print "Similarity metric incompatible for ", FPtype, typeMetric
                 return 1
 
-        lcas = dFP.keys()
+        lcas = self.dFP.keys()
         dmetric = {}
         i = 0
-        imax = len(dFP.keys())
+        imax = len(self.dFP.keys())
         while i < imax:
             if not lcas[i] in dmetric.keys():
                 dmetric[lcas[i]] = {}
@@ -129,47 +154,47 @@ class Descriptors:
                     dmetric[lcas[i]][lcas[j]] = {}
 
                 if typeMetric == 'Tanimoto':
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.TanimotoSimilarity)
                 elif typeMetric == "Dice":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.DiceSimilarity(dFP[lcas[i]][FPtype],dFP[lcas[j]][FPtype])
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.DiceSimilarity(self.dFP[lcas[i]][FPtype],self.dFP[lcas[j]][FPtype])
 
                 elif typeMetric == "Cosine":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.CosineSimilarity)
                 elif typeMetric == "Sokal":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.SokalSimilarity)
                 elif typeMetric == "Russel":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.RusselSimilarity)
                 elif typeMetric == "RogotGoldberg":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.RogotGoldbergSimilarity)
                 elif typeMetric == "AllBit":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.AllBitSimilarity)
                 elif typeMetric == "Kulczynski":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.KulczynskiSimilarity)
                 elif typeMetric == "McConnaughey":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.McConnaugheySimilarity)
                 elif typeMetric == "Asymmetric":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.AsymmetricSimilarity)
                 elif typeMetric == "BraunBlanquet":
-                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(dFP[lcas[i]][FPtype],
-                                                                                                  dFP[lcas[j]][FPtype],
+                    dmetric[lcas[i]][lcas[j]][typeMetric] = DataStructs.FingerprintSimilarity(self.dFP[lcas[i]][FPtype],
+                                                                                              self.dFP[lcas[j]][FPtype],
                                                                                                   metric=DataStructs.BraunBlanquetSimilarity)
                 j += 1
             i += 1

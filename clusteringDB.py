@@ -126,24 +126,25 @@ class clustering:
         self.pAC50All = pAC50All
 
         if FP == 1:
-            prenrich = self.prout + self.cdesc.pFP.split("/")[-1] + "/"
+            prenrich = self.prout + self.cdesc.pFP.split("/")[-1] + "_enrich-index" + "/"
         else:
-            prenrich = self.prout + "enrichmentIndex/"
+            prenrich = self.prout + "enrich-index/"
         pathFolder.createFolder(prenrich)
 
         self.prenrich = prenrich
 
         lfileenrich = listdir(prenrich)
-        if len(lfileenrich) > 2:
-            return 0
 
         if FP == 0:
             if not "pdesclean" in self.__dict__:
                 self.pdesclean = prenrich + "descClean.csv"
                 if not path.exists(self.pdesclean):
                     runExternalSoft.dataManager(self.cdesc.pdesc1D2D, 0, self.corval, self.maxquantile, prenrich)
+            if len(lfileenrich) > 2: return 0
             runExternalSoft.enrichmentIndex(self.pdesclean, prenrich, pAC50All, self.clusterMeth, self.distmeth, self.aggType)
         else:
+
+            if len(lfileenrich) > 2: return 0
             runExternalSoft.enrichmentIndex(self.cdesc.pFP, prenrich, pAC50All, self.clusterMeth, self.distmeth, self.aggType)
         return 0
 
@@ -154,17 +155,59 @@ class clustering:
         pathFolder.createFolder(proptimal)
         self.proptimal = proptimal
 
+        if len(listdir(proptimal)) > 20:
+            return 0
+
         lfilesenrich = listdir(self.prenrich)
         for fileenrich in lfilesenrich:
-            if search(".csv", fileenrich):
+            if search(".csv", fileenrich) and fileenrich != "descClean.csv":
                 ptable = self.prenrich + fileenrich
                 if FP == 1:
                     runExternalSoft.preciseEnrichmentIndex(self.cdesc.pFP, proptimal, self.pAC50All, ptable,
                                                            self.clusterMeth, self.distmeth, self.aggType)
                 else:
-                    runExternalSoft.preciseEnrichmentIndex(self.cdesc.pFP, proptimal, self.pAC50All, ptable,
+                    runExternalSoft.preciseEnrichmentIndex(self.pdesclean, proptimal, self.pAC50All, ptable,
                                                            self.clusterMeth, self.distmeth, self.aggType)
+        return 0
 
+
+    def visualizeOptimalClustering(self, prresult, FP = 0):
+
+
+        prFinalClustering = pathFolder.createFolder(prresult + "FinalClustering/")
+        prData = pathFolder.createFolder(prFinalClustering + "data/")
+        print prFinalClustering
+
+        if not "proptimal" in self.__dict__:
+            print "Error clustering no load"
+        else:
+            lfileopt = listdir(self.proptimal)
+            for fileopt in lfileopt:
+                if search("cluster.csv", fileopt):
+                    lelem = fileopt.split("_")
+                    cell = lelem [0]
+                    colorChannel = "_".join(lelem[1:-1])
+                    if FP == 1:
+                        desctype = self.cdesc.pFP.split("/")[-1]
+                        pdesc = self.cdesc.pFP
+                    else:
+                        desctype = "Desc"
+                        pdesc = self.pdesclean
+                    prtemp = pathFolder.createFolder(prFinalClustering + colorChannel + "/" + cell + "/" + desctype + "/")
+
+                    pAC50 = prData + self.pAC50All.split("/")[-1]
+                    pcluster = prtemp + fileopt
+                    copyfile(self.proptimal + fileopt, pcluster)
+                    copyfile(self.pAC50All, pAC50)
+
+                    runExternalSoft.finalClustering(pdesc, pAC50, pcluster, colorChannel, self.distmeth, self.aggType, prtemp)
+
+
+
+
+
+
+        return
 
     def createSecondaryClustering(self, pClusters):
 

@@ -325,21 +325,23 @@ class chemical:
             print self.smiclean
 
         dFP = {}
-        if typeFP == "FPMol":
+        if typeFP == "FPMol" or typeFP == "All":
             dFP["FPMol"] = FingerprintMols.FingerprintMol(self.mol)
-        elif typeFP == "FPMACCS":
+        if typeFP == "FPMACCS" or typeFP == "All":
             dFP["FPMACCS"] = MACCSkeys.GenMACCSKeys(self.mol)
-        elif typeFP == "FPpairs":
+        if typeFP == "FPpairs" or typeFP == "All":
             dFP["FPpairs"] = Pairs.GetAtomPairFingerprint(self.mol)
-        elif typeFP == "FPTorsion":
+        if typeFP == "FPTorsion" or typeFP == "All":
             dFP["FPTorsion"] = Torsions.GetTopologicalTorsionFingerprint(self.mol)
-        else:
+        if typeFP == "Morgan" or typeFP == "All":
             dFP["FPMorgan"] = AllChem.GetMorganFingerprint(self.mol, 2)
 
         self.FP = dFP
         return 0
 
+
     def writeDesc(self, ldesc, filin):
+
 
         if "allDesc" in self.__dict__:
             lw = []
@@ -379,18 +381,3 @@ class chemical:
             self.log = self.log + "No descriptors computed for table\n"
             return 1
 
-
-
-
-
-
-######## not Use
-    #def get_fingerprints(self):
-    #    # fingerprint
-    #    self.fingerAtomPairs = fingerprint.CalculateAtomPairsFingerprint(self.mol)
-    #    self.fingerDaylight = fingerprint.CalculateDaylightFingerprint(self.mol)
-    #    self.fingerEstate = fingerprint.CalculateEstateFingerprint(self.mol)
-    #    self.fingerFP4 = fingerprint.CalculateFP4Fingerprint(self.mol)
-    #    self.fingerMACCS = fingerprint.CalculateMACCSFingerprint(self.mol)
-    #    self.fingerMorgan = fingerprint.CalculateMorganFingerprint(self.mol)
-    #    self.fingerTorsion = fingerprint.CalculateTopologicalTorsionFingerprint(self.mol)
