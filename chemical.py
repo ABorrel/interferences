@@ -376,6 +376,7 @@ class chemical:
                 ftable.write("\t" + str(self.allDesc[desc]))
             ftable.write("\n")
             ftable.close()
+            self.pdesc = ptable
             return 0
         else:
             self.log = self.log + "No descriptors computed for table\n"

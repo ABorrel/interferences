@@ -89,7 +89,31 @@ def rankList(lin):
     return lrank
 
 
+def computeSimilarityFP(FP1, FP2, typeMetric ):
+    from rdkit import DataStructs
 
+    if typeMetric == 'Tanimoto':
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.TanimotoSimilarity)
+    elif typeMetric == "Dice":
+        return DataStructs.DiceSimilarity(FP1, FP2)
+    elif typeMetric == "Cosine":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.CosineSimilarity)
+    elif typeMetric == "Sokal":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.SokalSimilarity)
+    elif typeMetric == "Russel":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.RusselSimilarity)
+    elif typeMetric == "RogotGoldberg":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.RogotGoldbergSimilarity)
+    elif typeMetric == "AllBit":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.AllBitSimilarity)
+    elif typeMetric == "Kulczynski":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.KulczynskiSimilarity)
+    elif typeMetric == "McConnaughey":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.McConnaugheySimilarity)
+    elif typeMetric == "Asymmetric":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.AsymmetricSimilarity)
+    elif typeMetric == "BraunBlanquet":
+        return DataStructs.FingerprintSimilarity(FP1, FP2, metric=DataStructs.BraunBlanquetSimilarity)
 
 
 

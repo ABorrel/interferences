@@ -115,13 +115,14 @@ AffFP = ["FPMol", "FPMACCS", "FPpairs", "FPTorsion", "FPMorgan"]
 
 prFP = prMain + "FP/"
 pathFolder.createFolder(prFP)
-#cDesc.computeFP(prFP, "FPMol", 'Sokal')
-cDesc.computeFPMatrix(prFP, "FPMol", 'Tanimoto')
-#cDesc.computeFP(prFP, "FPMACCS", 'Tanimoto')
-#cDesc.computeFP(prFP, "FPpairs", 'Dice')
-#cDesc.computeFP(prFP, "FPTorsion", 'Dice')
-#cDesc.computeFP(prFP, "FPpairs", 'Dice')
-#cDesc.computeFP(prFP, "FPMorgan", 'Dice')
+#cDesc.computeFPMatrix(prFP, "FPMol", 'Sokal')
+#cDesc.computeFPMatrix(prFP, "FPMol", 'Tanimoto')
+#cDesc.computeFPMatrix(prFP, "FPMACCS", 'Tanimoto')
+cDesc.computeFPMatrix(prFP, "FPMACCS", 'Dice')
+#cDesc.computeFPMatrix(prFP, "FPpairs", 'Dice')
+#cDesc.computeFPMatrix(prFP, "FPTorsion", 'Dice')
+#cDesc.computeFPMatrix(prFP, "FPpairs", 'Dice')
+#cDesc.computeFPMatrix(prFP, "FPMorgan", 'Dice')
 #############
 ###  MCS  ###
 #############
@@ -156,7 +157,7 @@ doubleclustering = 0
 
 prcluster = prresults + "Descclusters/"
 pathFolder.createFolder(prcluster)
-#cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
 #cclust.createMainClustering(doublecluster=doubleclustering)
 #cclust.enrichmentCluster(pAC50All)
 #cclust.enrichmentIndex(pAC50All, FP=0)
@@ -170,7 +171,7 @@ pathFolder.createFolder(prcluster)
 # for dissimilarity matrix frey, mcclain, cindex, silhouette and dunn
 prcluster = prresults + "FPclusters/"
 optimalCluster = "silhouette"
-aggregtype = "average"
+aggregtype = "ward.D2"# take a look to be sure it is the best aggregation methods
 distMeth = None
 pathFolder.createFolder(prcluster)
 cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
@@ -179,7 +180,7 @@ cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth
 cclust.enrichmentIndex(pAC50All, FP=1)
 cclust.optimalClusteringForEnrich(FP=1)
 cclust.visualizeOptimalClustering(prresults, FP=1)
-
+www
 ###############
 # MAIN - SOM  #
 ###############
@@ -229,12 +230,12 @@ cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
 # rank AC50
 prRank = chepg2.proutSP + "ranking/"
 pathFolder.createFolder(prRank)
-chepg2.rankingTop(100, prPNG, prRank)
+#chepg2.rankingTop(100, prPNG, prRank)
 
 prRank = chepg2.proutSP + "rankinggood/"
 pathFolder.createFolder(prRank)
-chepg2.rankingTop(100, prPNG, prRank, 1)
-cDesc.rankingAC50()
+#chepg2.rankingTop(100, prPNG, prRank, 1)
+#cDesc.rankingAC50()
 
 # clustering
 disttype = "euc"
@@ -367,7 +368,7 @@ typeQSAR = "Reg"
 prQSAR = cluc.proutSP + "QSARReg/"
 pathFolder.createFolder(prQSAR)
 
-cluc.combineAC50()
+#cluc.combineAC50()
 #cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSAR)
 #cModelluc.prepData()
 #cModelluc.buildQSARReg()
@@ -378,7 +379,7 @@ typeQSAR = "class"
 prQSAR = cluc.proutSP + "QSARClass/"
 pathFolder.createFolder(prQSAR)
 
-cluc.combineAC50()
+#cluc.combineAC50()
 #cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSAR)
 #cModelluc.prepData()
 #cModelluc.buildQSARClass()

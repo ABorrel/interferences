@@ -128,7 +128,7 @@ class clustering:
         if FP == 1:
             prenrich = self.prout + self.cdesc.pFP.split("/")[-1] + "_enrich-index" + "/"
         else:
-            prenrich = self.prout + "enrich-index/"
+            prenrich = self.prout + str(self.clusterMeth) + "_" + str(self.distmeth) + "_" + str(self.aggType) + "_enrich-index/"
         pathFolder.createFolder(prenrich)
 
         self.prenrich = prenrich
@@ -175,7 +175,6 @@ class clustering:
 
 
         prFinalClustering = pathFolder.createFolder(prresult + "FinalClustering/")
-        prData = pathFolder.createFolder(prFinalClustering + "data/")
         print prFinalClustering
 
         if not "proptimal" in self.__dict__:
@@ -195,19 +194,11 @@ class clustering:
                         pdesc = self.pdesclean
                     prtemp = pathFolder.createFolder(prFinalClustering + colorChannel + "/" + cell + "/" + desctype + "/")
 
-                    pAC50 = prData + self.pAC50All.split("/")[-1]
                     pcluster = prtemp + fileopt
                     copyfile(self.proptimal + fileopt, pcluster)
-                    copyfile(self.pAC50All, pAC50)
 
-                    runExternalSoft.finalClustering(pdesc, pAC50, pcluster, colorChannel, self.distmeth, self.aggType, prtemp)
-
-
-
-
-
-
-        return
+                    runExternalSoft.finalClustering(pdesc, self.pAC50All, pcluster, cell + "_" + colorChannel, self.distmeth, self.aggType, prtemp)
+        return 0
 
     def createSecondaryClustering(self, pClusters):
 

@@ -30,7 +30,7 @@ class Descriptors:
         self.pdesc1D2Dclean = pdescClean
 
         if lCASID != []:
-            self.reduceMatrixDes(self.pdesc1D2Dclean, lCASID)
+            self.reduceMatrixDesc(self.pdesc1D2Dclean, lCASID)
 
 
         self.computeFP("All")
@@ -57,7 +57,9 @@ class Descriptors:
 
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
             return pdesc1D2D
+            fff
         else:
+            ddd
             fdesc1D2D = open(pdesc1D2D, "w")
             ldesc = chemical.getLdesc("1D2D")
             fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")

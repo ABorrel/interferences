@@ -3,13 +3,18 @@ from re import search
 from time import sleep
 
 
-def runRCMD(cmd):
+def runRCMD(cmd, out = 0):
 
     chdir("./../Rscripts/")
     print cmd
-    system(cmd)
+    if out == 0:
+        system(cmd)
+        output = 0
+    else:
+        import subprocess
+        output = subprocess.check_output(cmd, shell=True)
     chdir("./../fluo/")
-
+    return output
 
 def runRQSARModeling(cmd):
 
@@ -103,15 +108,17 @@ def crossResponseCurve(prresponse1, prresponse2, pAC501, pAC502, prout):
 
 def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
 
-    cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 1 " + str(prout)
-    runRCMD(cmd)
 
-    pfilout = prout + "DescClean.txt"
-
+    pfilout = prout + "descClean.csv"
     if path.exists(pfilout):
         return pfilout
     else:
-        return 0
+        cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 1 " + str(prout)
+        runRCMD(cmd)
+        if path.exists(pfilout):
+            return pfilout
+
+    return 1
 
 
 def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, logAff = "1", typeAff="All"):
@@ -262,7 +269,27 @@ def preciseEnrichmentIndex(pdesc, presult, pAC50All, ptable, methCluster, methDi
           + methDist + " " + methAgg
     runRCMD(cmd)
 
-def finalClustering(pmatrixIn, pAC50Full, pcluster, channel, distMeth, aggMeth, prtemp):
+def finalClustering(pmatrixIn, pAC50Full, pcluster, channel, distMeth, aggMeth, prtemp, verbose = 0):
 
-    cmd = "./finalCluster.R " + pmatrixIn + " " + pAC50Full + " " + pcluster + " " + channel + " " + distMeth + " " + aggMeth + " " + prtemp
+    if verbose == 1:
+        print pmatrixIn, ": matrix in"
+        print pAC50Full, ": AC50 full"
+        print pcluster, ": cluster"
+        print channel, "chanell"
+        print distMeth, "dist meth"
+        print aggMeth, "aggregation"
+        print prtemp, "path out"
+
+
+    cmd = "./finalCluster.R " + pmatrixIn + " " + str(pAC50Full) + " " + pcluster + " " + channel + " " + str(distMeth) + " " + aggMeth + " " + prtemp
     runRCMD(cmd)
+
+
+def findCluster(pdescAll, pdescChem, penrichment, pcluster, distMeth, aggMeth):
+
+    cmd = "./findBestCluster.R " + str(pdescAll) + " " + str(pdescChem) + " " + str(penrichment) + " " + str(pcluster) + " " + str(distMeth) + " " + str(aggMeth)
+    out = runRCMD(cmd, 1)
+
+    out = out.strip().split(" ")[-1]
+    return out
+
