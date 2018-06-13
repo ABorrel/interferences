@@ -322,19 +322,19 @@ class chemical:
             return 1
         else:
             self.mol = Chem.MolFromSmiles(self.smiclean)
-            print self.smiclean
+            #print self.smiclean
 
         dFP = {}
-        if typeFP == "FPMol" or typeFP == "All":
-            dFP["FPMol"] = FingerprintMols.FingerprintMol(self.mol)
-        if typeFP == "FPMACCS" or typeFP == "All":
-            dFP["FPMACCS"] = MACCSkeys.GenMACCSKeys(self.mol)
-        if typeFP == "FPpairs" or typeFP == "All":
-            dFP["FPpairs"] = Pairs.GetAtomPairFingerprint(self.mol)
-        if typeFP == "FPTorsion" or typeFP == "All":
-            dFP["FPTorsion"] = Torsions.GetTopologicalTorsionFingerprint(self.mol)
+        if typeFP == "Mol" or typeFP == "All":
+            dFP["Mol"] = FingerprintMols.FingerprintMol(self.mol)
+        if typeFP == "MACCS" or typeFP == "All":
+            dFP["MACCS"] = MACCSkeys.GenMACCSKeys(self.mol)
+        if typeFP == "pairs" or typeFP == "All":
+            dFP["pairs"] = Pairs.GetAtomPairFingerprint(self.mol)
+        if typeFP == "Torsion" or typeFP == "All":
+            dFP["Torsion"] = Torsions.GetTopologicalTorsionFingerprint(self.mol)
         if typeFP == "Morgan" or typeFP == "All":
-            dFP["FPMorgan"] = AllChem.GetMorganFingerprint(self.mol, 2)
+            dFP["Morgan"] = AllChem.GetMorganFingerprint(self.mol, 2)
 
         self.FP = dFP
         return 0

@@ -293,3 +293,7 @@ def findCluster(pdescAll, pdescChem, penrichment, pcluster, distMeth, aggMeth):
     out = out.strip().split(" ")[-1]
     return out
 
+def generateCardResult(pfilout):
+
+    cmd = "./cardResult.R " + str(pfilout)
+    runRCMD(cmd)

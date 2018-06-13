@@ -15,12 +15,14 @@ prPNG = prMain + "PNG/"
 
 corval = 0.90
 maxquantile = 90
+distMeth = "euclidian"
+distAgg = "ward.D2"
 
 cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
 cDesc.loadClassForPred(corval, maxquantile)
 
 lcasID = []
-predictor = predictInterference.predictor(cDesc, prclusters, lcasID, prpredict)
+predictor = predictInterference.predictor(cDesc, prclusters, lcasID, prpredict, distMeth, distAgg)
 
 lpSMI = ["/home/borrela2/interference/spDataAnalysis/predictions/test.smi"]
 

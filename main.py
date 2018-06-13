@@ -115,14 +115,14 @@ AffFP = ["FPMol", "FPMACCS", "FPpairs", "FPTorsion", "FPMorgan"]
 
 prFP = prMain + "FP/"
 pathFolder.createFolder(prFP)
-#cDesc.computeFPMatrix(prFP, "FPMol", 'Sokal')
-#cDesc.computeFPMatrix(prFP, "FPMol", 'Tanimoto')
-#cDesc.computeFPMatrix(prFP, "FPMACCS", 'Tanimoto')
-cDesc.computeFPMatrix(prFP, "FPMACCS", 'Dice')
-#cDesc.computeFPMatrix(prFP, "FPpairs", 'Dice')
-#cDesc.computeFPMatrix(prFP, "FPTorsion", 'Dice')
-#cDesc.computeFPMatrix(prFP, "FPpairs", 'Dice')
-#cDesc.computeFPMatrix(prFP, "FPMorgan", 'Dice')
+#cDesc.computeFPMatrix(prFP, "Mol", 'Sokal')
+#cDesc.computeFPMatrix(prFP, "Mol", 'Tanimoto')
+#cDesc.computeFPMatrix(prFP, "MACCS", 'Tanimoto')
+#cDesc.computeFPMatrix(prFP, "MACCS", 'Dice')
+cDesc.computeFPMatrix(prFP, "pairs", 'Dice')
+#cDesc.computeFPMatrix(prFP, "Torsion", 'Dice')
+#cDesc.computeFPMatrix(prFP, "Morgan", 'Dice')
+
 #############
 ###  MCS  ###
 #############

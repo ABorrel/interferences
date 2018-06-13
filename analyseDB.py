@@ -57,7 +57,6 @@ class Descriptors:
 
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
             return pdesc1D2D
-            fff
         else:
             ddd
             fdesc1D2D = open(pdesc1D2D, "w")
@@ -98,10 +97,12 @@ class Descriptors:
 
 
         dFP = {}
-        for pSMI in listdir(self.prSMI):
+        i = 1
+        for pSMI in listdir(self.prSMI): # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
             cas = pSMI.split("/")[-1].split(".")[0]
-            print cas
+            print cas, i, len(listdir(self.prSMI))
+            i += 1
 
             psmiles = self.prSMI + cas + ".smi"
             if path.exists(self.prSMI + cas + ".smi"):

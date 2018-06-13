@@ -104,7 +104,6 @@ class predictor:
             print self.ChemClust[self.ChemClust.keys()[1]]
             print self.dcluster.keys()[1]
             print self.dcluster[self.dcluster.keys()[1]]
-
         return 0
 
 
@@ -123,7 +122,7 @@ class predictor:
 
 
 
-    def predictSMI(self, nameChemical, smiles):
+    def predictSMI(self, nameChemical, smiles, verbose = 0):
 
         dpred = {}
         prresult = pathFolder.createFolder(self.prout + nameChemical + "/")
@@ -131,14 +130,14 @@ class predictor:
         chem.prepareChem(prresult)
         chem.compute1D2DDesc(prresult)
         chem.writeTablesDesc(prresult)
-        chem.computeFP(typeFP="All")
+        chem.computeFP(typeFP="MACCS")
 
         for channel in self.dcluster:
             dpred[channel] = {}
             for cell in self.dcluster[channel].keys():
                 dpred[channel][cell] = {}
                 for typeDesc in self.dcluster[channel][cell].keys():
-                    print channel, cell, typeDesc
+                    if verbose == 1: print channel, cell, typeDesc
                     if typeDesc == "Desc":
                         enrichment = runExternalSoft.findCluster(self.cDB.pdesc1D2Dclean, chem.pdesc,
                                                     self.dcluster[channel][cell][typeDesc]["files"][0],
@@ -147,12 +146,16 @@ class predictor:
 
                     else:
                         # generate FP
-                        typeFP = typeDesc.split("-")[0][2:]
+                        typeFP = typeDesc.split("-")[0]
                         metric = typeDesc.split("-")[-1]
-                        print typeFP, metric
+                        if verbose == 1:print typeFP, metric
                         dFP = {}
                         for CASID in self.cDB.dFP.keys():
-                            dFP[CASID] = float(toolbox.computeSimilarityFP(self.cDB.dFP[CASID], chem.FP[typeFP], metric))
+                            if verbose == 1:
+                                print self.cDB.dFP[CASID]
+                                print chem.FP[typeFP]
+                                print metric
+                            dFP[CASID] = float(toolbox.computeSimilarityFP(self.cDB.dFP[CASID][typeFP], chem.FP[typeFP], metric))
                         maxSim = max(dFP.values())
                         i = 0
                         imax = len(dFP.keys())
@@ -161,20 +164,29 @@ class predictor:
                             if float(dFP[lCAS[i]] == maxSim):
                                 CASclose = lCAS[i]
                             i += 1
+                        if verbose == 1:
+                            print CASclose
+                            print channel, cell
+                            print self.ChemClust[CASclose][channel][cell]
 
-                        clusterfound = self.ChemClust[CASclose][channel][cell][typeFP]["Cluster"]
+                        clusterfound = self.ChemClust[CASclose][channel][cell][str(typeFP) + "-" + str(metric)]
                         enrichment = self.dcluster[channel][cell][typeDesc][clusterfound]['Enrichment']
                     dpred[channel][cell][typeDesc] = enrichment
 
 
-        print dpred
+
+        lheader = dpred[dpred.keys()[0]][dpred[dpred.keys()[0]].keys()[0]].keys()
 
 
-        pfilout = self.prout + "pred.csv"
+        pfilout = prresult+ "pred"
         filout = open(pfilout, "w")
-        filout.write("Clustering\tEnrichment\n")
+        filout.write("Interferences" + "\t" + "\t".join(lheader) + "\n")
         for k in dpred.keys():
-            filout.write(str(k) + "\t" + str(dpred[k]) + "\n")
+            for k2 in dpred[k].keys():
+                filout.write(str(k2) + "_" + str(k))
+                for h in lheader:
+                    filout.write("\t" + str(dpred[k][k2][h]))
+                filout.write("\n")
         filout.close()
 
-        #runExternalSoft.generateResultFig(pfilout)
+        runExternalSoft.generateCardResult(pfilout)
