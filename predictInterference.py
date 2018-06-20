@@ -4,7 +4,7 @@ import runExternalSoft
 import toolbox
 
 from os import path, listdir
-
+from re import search
 
 
 
@@ -43,9 +43,7 @@ class predictor:
                     lclustering = lclustConsidered
 
                 for clustering in lclustering:
-
                     dclustering[chanel][cell][clustering]={}
-
                     # file in
                     pcluster = self.prcluster + chanel + "/" + str(cell) + "/" + str(
                         clustering) + "/enrichment_cluster.csv"
@@ -130,15 +128,17 @@ class predictor:
         chem.prepareChem(prresult)
         chem.compute1D2DDesc(prresult)
         chem.writeTablesDesc(prresult)
-        chem.computeFP(typeFP="MACCS")
+        chem.computeFP(typeFP="All")
 
         for channel in self.dcluster:
             dpred[channel] = {}
             for cell in self.dcluster[channel].keys():
                 dpred[channel][cell] = {}
                 for typeDesc in self.dcluster[channel][cell].keys():
-                    if verbose == 1: print channel, cell, typeDesc
-                    if typeDesc == "Desc":
+                    if verbose == 1:
+                        print channel, cell, typeDesc
+                        print self.dcluster[channel][cell].keys()
+                    if search("Desc", typeDesc):
                         enrichment = runExternalSoft.findCluster(self.cDB.pdesc1D2Dclean, chem.pdesc,
                                                     self.dcluster[channel][cell][typeDesc]["files"][0],
                                                     self.dcluster[channel][cell][typeDesc]["files"][1],
@@ -147,8 +147,9 @@ class predictor:
                     else:
                         # generate FP
                         typeFP = typeDesc.split("-")[0]
-                        metric = typeDesc.split("-")[-1]
-                        if verbose == 1:print typeFP, metric
+                        metric = typeDesc.split("-")[-1].split("_")[0]
+                        metricAgg = typeDesc.split("-")[-1]
+                        if verbose == 1: print typeFP, metric
                         dFP = {}
                         for CASID in self.cDB.dFP.keys():
                             if verbose == 1:
@@ -169,7 +170,7 @@ class predictor:
                             print channel, cell
                             print self.ChemClust[CASclose][channel][cell]
 
-                        clusterfound = self.ChemClust[CASclose][channel][cell][str(typeFP) + "-" + str(metric)]
+                        clusterfound = self.ChemClust[CASclose][channel][cell][str(typeFP) + "-" + str(metricAgg)]
                         enrichment = self.dcluster[channel][cell][typeDesc][clusterfound]['Enrichment']
                     dpred[channel][cell][typeDesc] = enrichment
 
@@ -185,7 +186,8 @@ class predictor:
             for k2 in dpred[k].keys():
                 filout.write(str(k2) + "_" + str(k))
                 for h in lheader:
-                    filout.write("\t" + str(dpred[k][k2][h]))
+                    try: filout.write("\t" + str(dpred[k][k2][h]))
+                    except: filout.write("\tNA")
                 filout.write("\n")
         filout.close()
 

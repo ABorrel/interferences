@@ -119,6 +119,54 @@ def computeSimilarityFP(FP1, FP2, typeMetric ):
 
 
 
+def loadMatrix(pmatrixIn):
+
+    filin = open(pmatrixIn, "r")
+    llinesMat = filin.readlines()
+    filin.close()
+
+    dout = {}
+    lheaders = llinesMat[0].strip().split("\t")
+
+    i = 1
+    imax = len(llinesMat)
+    while i < imax:
+        lvalues = llinesMat[i].strip().split("\t")
+        kin = lvalues[0]
+        dout[kin] = {}
+        j = 0
+        jmax = len(lheaders)
+        while j < jmax:
+            dout[kin][lheaders[j]] = lvalues[j]
+            j += 1
+        i += 1
+
+    return dout
+
+
+
+def writeMatrix(ddesc, pdescAct):
+
+
+    filout = open(pdescAct, "w")
+    lheader = ddesc[ddesc.keys()[0]].keys()
+
+    # put header in first
+    try:
+        del lheader[lheader.index("CAS")]
+        lheader = ["CAS"] + lheader
+    except:
+        del lheader[lheader.index("CASID")]
+        lheader = ["CASID"] + lheader
+
+
+
+    filout.write("\t".join(lheader) + "\n")
+    for casID in ddesc.keys():
+        lval = [str(ddesc[casID][i]) for i in lheader]
+        filout.write("\t".join(lval) + "\n")
+    filout.close()
+
 
 
 

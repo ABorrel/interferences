@@ -109,17 +109,42 @@ cDesc.computeDesc()
 ###################################
 
 # FP type
-lAllMetrics = ['Tanimoto', "Dice", "Cosine", "Sokal", "Russel", "RogotGoldberg", "AllBit", "Kulczynski",
+lMetrics = ['Tanimoto', "Dice", "Cosine", "Sokal", "Russel", "RogotGoldberg", "AllBit", "Kulczynski",
                        "McConnaughey", "Asymmetric", "BraunBlanquet"]
-AffFP = ["FPMol", "FPMACCS", "FPpairs", "FPTorsion", "FPMorgan"]
+lAffFP = ["Mol", "MACCS", "pairs", "Torsion", "Morgan"]
 
 prFP = prMain + "FP/"
 pathFolder.createFolder(prFP)
+laggregtype = ["ward.D2", "complete", "single", "average"]
+distMeth = None
+corval = 0.9
+maxQuantile = 90
+clusterType = "hclust"
+optimalCluster = "silhouette"
+
+# run FP have to add in function
+prcluster = prresults + "FPclusters/"
+pathFolder.createFolder(prcluster)
+
+
+#for Metric in lMetrics:
+#    for AffFP in lAffFP:
+#        cDesc.computeFPMatrix(prFP, AffFP, Metric)
+
+#        for aggregtype in laggregtype:
+#            cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth,
+#                                             aggregtype=aggregtype, clusterType=clusterType,
+#                                             optimalCluster=optimalCluster)
+#            cclust.enrichmentIndex(pAC50All, FP=1)
+#            cclust.optimalClusteringForEnrich(FP=1)
+#            cclust.visualizeOptimalClustering(prresults, FP=1)
+
+#dd
 #cDesc.computeFPMatrix(prFP, "Mol", 'Sokal')
 #cDesc.computeFPMatrix(prFP, "Mol", 'Tanimoto')
 #cDesc.computeFPMatrix(prFP, "MACCS", 'Tanimoto')
 #cDesc.computeFPMatrix(prFP, "MACCS", 'Dice')
-cDesc.computeFPMatrix(prFP, "pairs", 'Dice')
+#cDesc.computeFPMatrix(prFP, "pairs", 'Dice')
 #cDesc.computeFPMatrix(prFP, "Torsion", 'Dice')
 #cDesc.computeFPMatrix(prFP, "Morgan", 'Dice')
 
@@ -155,14 +180,19 @@ optimalCluster = "silhouette"#"gap_stat", "silhouette", "wss", "gap_stat"
 doubleclustering = 0
 
 
+laggregtype =  ["ward.D2", "complete", "single", "average"]
+ldistMeth = ["maximum", "manhattan", "canberra", "binary","minkowski"]
 prcluster = prresults + "Descclusters/"
 pathFolder.createFolder(prcluster)
-cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
-#cclust.createMainClustering(doublecluster=doubleclustering)
-#cclust.enrichmentCluster(pAC50All)
-#cclust.enrichmentIndex(pAC50All, FP=0)
-#cclust.optimalClusteringForEnrich(FP=0)
-#cclust.visualizeOptimalClustering(prresults, FP=0)
+#for aggregtype in laggregtype:
+#    for distMeth in ldistMeth:
+#        cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+        #cclust.createMainClustering(doublecluster=doubleclustering)
+        #cclust.enrichmentCluster(pAC50All)
+#        cclust.enrichmentIndex(pAC50All, FP=0)
+#        cclust.optimalClusteringForEnrich(FP=0)
+#        cclust.visualizeOptimalClustering(prresults, FP=0)
+
 
 #####################
 # clustering for FP #
@@ -171,16 +201,18 @@ cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth
 # for dissimilarity matrix frey, mcclain, cindex, silhouette and dunn
 prcluster = prresults + "FPclusters/"
 optimalCluster = "silhouette"
-aggregtype = "ward.D2"# take a look to be sure it is the best aggregation methods
+laggregtype = ["ward.D2", "complete", "single", "average"]# take a look to be sure it is the best aggregation methods
 distMeth = None
 pathFolder.createFolder(prcluster)
-cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
-#cclust.createMainClustering(doublecluster=doubleclustering)
-#cclust.enrichmentCluster(pAC50All)
-cclust.enrichmentIndex(pAC50All, FP=1)
-cclust.optimalClusteringForEnrich(FP=1)
-cclust.visualizeOptimalClustering(prresults, FP=1)
-www
+#for aggregtype in laggregtype:
+#    cclust = clusteringDB.clustering(cDesc, prcluster, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+    ####cclust.createMainClustering(doublecluster=doubleclustering)
+    ###cclust.enrichmentCluster(pAC50All)
+#    cclust.enrichmentIndex(pAC50All, FP=1)
+#    cclust.optimalClusteringForEnrich(FP=1)
+#    cclust.visualizeOptimalClustering(prresults, FP=1)
+
+
 ###############
 # MAIN - SOM  #
 ###############
@@ -189,17 +221,27 @@ pathFolder.createFolder(prSOM)
 #cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
 #pmodelSOM = cDesc.MainSOM(15)
 
+
+# SOM active  #
+###############
+prSOM = prresults + "SOMactive/"
+pathFolder.createFolder(prSOM)
+
+cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOM)
+cDesc.createActiveSOM(15, prSOM)
+cDesc.extractActivebySOM()
+ff
+
 ### for luc  ###
 ################
 ################
 # prep
-cluc.writeAC50()
-cluc.combineAC50()
-pranalysis = cluc.proutSP + "Stat/"
-pathFolder.createFolder(pranalysis)
+#cluc.writeAC50()
+#cluc.combineAC50()
+#pranalysis = cluc.proutSP + "Stat/"
+#pathFolder.createFolder(pranalysis)
 #cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, pranalysis)
 #cluc.summarize(pranalysis)
-
 #ranking chemical based on AC50
 #cDesc.rankingAC50()
 prRank = cluc.proutSP + "ranking/"
@@ -216,10 +258,10 @@ pathFolder.createFolder(prRank)
 ############
 
 # prep
-chepg2.writeAC50()
+#chepg2.writeAC50()
 pranalysis = chepg2.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
+#cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
 #chepg2.summarize(pranalysis)
 #prVenn = pathFolder.createFolder(pranalysis + "Venn/")
 #chepg2.drawVennPlot(prVenn, prPNG)
@@ -267,7 +309,7 @@ pathFolder.createFolder(pranalysis)
 #chek293.drawVennPlot(prVeen, prPNG)
 
 #rank by AC50
-cDesc.rankingAC50()
+#cDesc.rankingAC50()
 prRank = chek293.proutSP + "ranking/"
 pathFolder.createFolder(prRank)
 #chek293.rankingTop(100, prPNG, prRank)
@@ -418,7 +460,7 @@ prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
 ##########################
 
 prCrossVenn = pathFolder.createFolder(prresults + "CrossVenn/")
-#analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)
+analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)
 
 
 #################

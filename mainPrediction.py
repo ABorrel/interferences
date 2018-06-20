@@ -1,3 +1,6 @@
+from os import listdir
+from re import search
+
 import analyseDB
 import predictInterference
 
@@ -24,7 +27,8 @@ cDesc.loadClassForPred(corval, maxquantile)
 lcasID = []
 predictor = predictInterference.predictor(cDesc, prclusters, lcasID, prpredict, distMeth, distAgg)
 
-lpSMI = ["/home/borrela2/interference/spDataAnalysis/predictions/test.smi"]
+#lpSMI = [prpredict + "smi/" + i for i in listdir(prpredict + "smi/")]
+lpSMI = [prpredict + "smi/test.smi"]
 
 predictor.predictlpSMI(lpSMI)
 

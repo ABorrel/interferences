@@ -39,6 +39,94 @@ class Descriptors:
             self.reduceMatrixFP(self.dFP, lCASID)
 
 
+    def prepareActiveMatrix(self, corval, maxQuantile, pAC50All, prout):
+
+        self.corval = corval
+        self.maxQuantile = maxQuantile
+
+        pdescAct = prout + "descActive"
+        pAC50Act = prout + "AC50ACactive"
+
+        if path.exists(pdescAct) and path.getsize(pdescAct) > 10 and path.exists(pAC50Act) and path.getsize(pAC50Act) > 10:
+            pdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+            self.pdescCleanActive = pdescActClean
+            self.pAC50AllActive = pAC50Act
+            return 0
+
+        ddesc = toolbox.loadMatrix(self.pdesc1D2D)
+        dAC50All = toolbox.loadMatrix(pAC50All)
+
+
+        i = 0
+        imax = len(ddesc.keys())
+
+        while i < imax:
+            casID = ddesc.keys()[i]
+            nbNA = 0
+            for kAC50 in dAC50All[casID].keys():
+                if kAC50 == "CASID" or kAC50 == "Luc_IC50":
+                    continue
+                else:
+                    if dAC50All[casID][kAC50] == "NA":
+                        nbNA += 1
+            print nbNA, len(dAC50All[casID].keys())
+            if nbNA == (len(dAC50All[casID].keys()) -2):
+                del dAC50All[casID]
+                del ddesc[casID]
+                imax = imax -1
+            else:
+                i += 1
+
+        toolbox.writeMatrix(ddesc, pdescAct)
+        toolbox.writeMatrix(dAC50All, pAC50Act)
+
+        pdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+
+        self.pdescCleanActive = pdescActClean
+        self.pAC50AllActive = pAC50Act
+
+        return 0
+
+
+    def createActiveSOM(self, sizeMap, prout):
+
+        import clusteringDB
+
+        pModel = prout + "SOMmodel.Rdata"
+        if not path.exists(pModel):
+            runExternalSoft.generateMainSOM(self.pdescCleanActive, prout, sizeMap)
+
+        clusteringDB.createSOM(self.pdescCleanActive, self.pAC50AllActive, self.corval, self.maxQuantile, pModel, prout)
+
+        self.prSOMactive = prout
+
+
+    def extractActivebySOM(self):
+
+        lfolders = listdir(self.prSOMactive)
+        dAC50all = toolbox.loadMatrix(self.pAC50AllActive)
+        for assay in lfolders:
+            pclust = self.prSOMactive + assay + "/SOMClust"
+
+            if not path.exists(pclust):
+                continue
+            fclust = open(pclust, "r")
+            lchemicals = fclust.readlines()
+            fclust.close()
+
+            for lineChem in lchemicals[1:]:
+                lchemClust = lineChem.strip().replace("\"", "").split(",")
+                CAS = lchemClust[0]
+                clust = lchemClust[-1]
+
+                if not assay in dAC50all[CAS].keys():
+                    continue
+                if dAC50all[CAS][assay] != "NA":
+                    pclust = pathFolder.createFolder(self.prSOMactive + assay + "/" + str(clust) + "/")
+                    copyfile(self.prPNG + CAS + ".png", pclust + CAS + ".png")
+
+
+
 
     def computeDesc(self):
 
@@ -139,7 +227,7 @@ class Descriptors:
 
         self.computeFP(FPtype)
 
-        if FPtype == "FPpairs" or FPtype == "FPTorsion" or FPtype == "FPMorgan":
+        if FPtype == "pairs" or FPtype == "Torsion" or FPtype == "Morgan":
             if typeMetric != "Dice":
                 print "Similarity metric incompatible for ", FPtype, typeMetric
                 return 1
@@ -404,7 +492,7 @@ class Descriptors:
 
 
 
-def VennCross(cluc, chepg2, chek293, prPNG, prout):
+def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
 
 
     if not "dresponse" in chepg2.__dict__:
@@ -414,7 +502,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
         chek293.responseCurves(drawn=0)
 
     lsample = chepg2.dresponse[chepg2.dresponse.keys()[0]].keys()
-    lcolor = ["blue", "blue_n", "red", "green"]
+    lcolor = ["blue", "blue_n", "red", "red_n", "green", "green_n"]
 
     for sample in lsample:
         prsub = pathFolder.createFolder(prout + str(sample) + "/")
@@ -432,7 +520,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
     for color in lcolor:
         prsub = pathFolder.createFolder(prout + str(color) + "/")
 
-        print len(chepg2.dresponse.keys()), "ddd"
+        if verbose == 1: print len(chepg2.dresponse.keys())
 
         for CASID in chepg2.dresponse.keys():
             if chepg2.dresponse[CASID]["cell_" + color]["AC50"] == "NA" or chek293.dresponse[CASID]["cell_" + color]["AC50"] == "NA"\
@@ -444,8 +532,6 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout):
 
             if path.exists(prPNG + CASID + ".png"):
                 copyfile(prPNG + CASID + ".png", prsub + CASID + ".png")
-
-
 
     runExternalSoft.crossVenn(cluc.pAC50, chepg2.pAC50, chek293.pAC50, prout)
 

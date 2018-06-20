@@ -126,7 +126,7 @@ class clustering:
         self.pAC50All = pAC50All
 
         if FP == 1:
-            prenrich = self.prout + self.cdesc.pFP.split("/")[-1] + "_enrich-index" + "/"
+            prenrich = self.prout + self.cdesc.pFP.split("/")[-1] + "_" + str(self.aggType) + "_enrich-index" + "/"
         else:
             prenrich = self.prout + str(self.clusterMeth) + "_" + str(self.distmeth) + "_" + str(self.aggType) + "_enrich-index/"
         pathFolder.createFolder(prenrich)
@@ -187,10 +187,10 @@ class clustering:
                     cell = lelem [0]
                     colorChannel = "_".join(lelem[1:-1])
                     if FP == 1:
-                        desctype = self.cdesc.pFP.split("/")[-1]
+                        desctype = self.proptimal.split("/")[-3][0:-13]
                         pdesc = self.cdesc.pFP
                     else:
-                        desctype = "Desc"
+                        desctype = "Desc" + "-" + str(self.distmeth) + "-" + str(self.aggType)
                         pdesc = self.pdesclean
                     prtemp = pathFolder.createFolder(prFinalClustering + colorChannel + "/" + cell + "/" + desctype + "/")
 

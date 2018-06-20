@@ -37,7 +37,8 @@ class MCSMatrix:
 
 
             while i < imax:
-                print i
+                print i, imax
+                print self.prout + str(lcas[i])
                 if path.exists(self.prout + str(lcas[i])):
                     i += 1
                     continue
@@ -45,7 +46,7 @@ class MCSMatrix:
                 dTemp = {}
                 j = i
                 while j < jmax:
-                    #print i, j
+                    print i, j
                     if not lcas[j] in dTemp.keys():
                         fsmii = open(self.prSMI + lcas[i] + ".smi", "r")
                         smii = fsmii.readlines()[0].strip()
