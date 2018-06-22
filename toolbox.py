@@ -169,8 +169,15 @@ def writeMatrix(ddesc, pdescAct):
 
 
 
+def loadSMILES(psmi):
 
 
+    filin = open(psmi, "r")
+    smiles = filin.readlines()[0]
+    smiles.strip()
+    filin.close()
+
+    return smiles
 
 
 

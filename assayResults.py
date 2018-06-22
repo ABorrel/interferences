@@ -637,6 +637,12 @@ class assays:
 
 
 
+def histogramAC50(pAC50All, prhist):
+
+    runExternalSoft.histGlobal(pAC50All, prhist)
+
+
+
 
 def mergeAssays(cluc, chepg2, chek293):
 

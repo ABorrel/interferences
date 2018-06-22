@@ -224,9 +224,9 @@ def crossVenn(plucAC50, phepg2AC50, phek293AC50, prout):
     runRCMD(cmd)
 
 
-def generateMainSOM(pdesc, prout, sizeMap):
+def generateMainSOM(pdesc, prout, sizeMap, pSOMmodel):
 
-    cmd = "./generateSOMModel.R " + pdesc + " " + prout + " " + str(sizeMap)
+    cmd = "./generateSOMModel.R " + pdesc + " " + prout + " " + str(sizeMap) + " " + pSOMmodel
     runRCMD(cmd)
 
 
@@ -297,4 +297,11 @@ def findCluster(pdescAll, pdescChem, penrichment, pcluster, distMeth, aggMeth):
 def generateCardResult(pfilout):
 
     cmd = "./cardResult.R " + str(pfilout)
+    runRCMD(cmd)
+
+
+
+def histGlobal(pAC50All, prhist):
+
+    cmd = "./histAff.R " + str(pAC50All) + " " + str(prhist)
     runRCMD(cmd)

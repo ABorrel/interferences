@@ -88,14 +88,19 @@ class Descriptors:
         return 0
 
 
-    def createActiveSOM(self, sizeMap, prout):
+    def createActiveSOM(self, sizeMap, prout, pmodelAll):
 
         import clusteringDB
 
+        # create model
+        prall = pathFolder.createFolder(prout + "all/")
+        runExternalSoft.drawEnrichSOM(self.pdescCleanActive, self.pAC50AllActive, pmodelAll, prall)
+
         pModel = prout + "SOMmodel.Rdata"
         if not path.exists(pModel):
-            runExternalSoft.generateMainSOM(self.pdescCleanActive, prout, sizeMap)
-
+            runExternalSoft.generateMainSOM(self.pdescCleanActive, prout, sizeMap, "0")
+        else:
+            runExternalSoft.generateMainSOM(self.pdescCleanActive, prout, sizeMap, pModel)
         clusteringDB.createSOM(self.pdescCleanActive, self.pAC50AllActive, self.corval, self.maxQuantile, pModel, prout)
 
         self.prSOMactive = prout
@@ -129,7 +134,6 @@ class Descriptors:
 
 
     def computeDesc(self):
-
 
         pdesc1D2D = self.prDesc + "tableDesc1D2D"
         self.pdesc1D2D = pdesc1D2D
@@ -429,8 +433,9 @@ class Descriptors:
 
     def MainSOM(self, sizeMap):
 
-        runExternalSoft.generateMainSOM(self.pdesc1D2Dclean, self.prAnalysis, sizeMap)
+
         pModel = self.prAnalysis + "SOMmodel.Rdata"
+        runExternalSoft.generateMainSOM(self.pdesc1D2Dclean, self.prAnalysis, sizeMap, pModel)
         if path.exists(pModel):
             return pModel
         return "0"

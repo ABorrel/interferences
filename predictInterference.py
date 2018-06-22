@@ -5,6 +5,7 @@ import toolbox
 
 from os import path, listdir
 from re import search
+from numpy import mean, std
 
 
 
@@ -109,18 +110,14 @@ class predictor:
 
         for psmi in lpsmi:
             nameChemical = psmi.split("/")[-1][0:-4]
-            filin = open(psmi, "r")
-            smiles = filin.readlines()[0]
-            smiles.strip()
-            print smiles
-            filin.close()
-
-            self.predictSMI(nameChemical, smiles)
+            smiles = toolbox.loadSMILES(psmi)
+            self.predictSMI(nameChemical, smiles, plot=1)
 
 
 
 
-    def predictSMI(self, nameChemical, smiles, verbose = 0):
+
+    def predictSMI(self, nameChemical, smiles, plot = 0, verbose = 0):
 
         dpred = {}
         prresult = pathFolder.createFolder(self.prout + nameChemical + "/")
@@ -139,10 +136,13 @@ class predictor:
                         print channel, cell, typeDesc
                         print self.dcluster[channel][cell].keys()
                     if search("Desc", typeDesc):
+                        distMeth = typeDesc.split("-")[1]
+                        aggMeth = typeDesc.split("-")[2]
+
                         enrichment = runExternalSoft.findCluster(self.cDB.pdesc1D2Dclean, chem.pdesc,
                                                     self.dcluster[channel][cell][typeDesc]["files"][0],
                                                     self.dcluster[channel][cell][typeDesc]["files"][1],
-                                                    self.distMeth, self.aggMeth)
+                                                    distMeth, aggMeth)
 
                     else:
                         # generate FP
@@ -174,21 +174,85 @@ class predictor:
                         enrichment = self.dcluster[channel][cell][typeDesc][clusterfound]['Enrichment']
                     dpred[channel][cell][typeDesc] = enrichment
 
+        if plot == 1:
+            self.writeResultBySMI(dpred, prresult)
 
+
+
+
+    def writeResultBySMI(self, dpred, prresult):
 
         lheader = dpred[dpred.keys()[0]][dpred[dpred.keys()[0]].keys()[0]].keys()
 
-
-        pfilout = prresult+ "pred"
+        pfilout = prresult + "pred"
         filout = open(pfilout, "w")
         filout.write("Interferences" + "\t" + "\t".join(lheader) + "\n")
         for k in dpred.keys():
             for k2 in dpred[k].keys():
                 filout.write(str(k2) + "_" + str(k))
                 for h in lheader:
-                    try: filout.write("\t" + str(dpred[k][k2][h]))
-                    except: filout.write("\tNA")
+                    try:
+                        filout.write("\t" + str(dpred[k][k2][h]))
+                    except:
+                        filout.write("\tNA")
                 filout.write("\n")
         filout.close()
 
         runExternalSoft.generateCardResult(pfilout)
+
+
+    def summarizePredictor(self):
+
+        psum = self.prout + "summary.txt"
+        fsum = open(psum, "w")
+        fsum.write("Channel\tCell\tDesc\tMSize\tSDsize\n")
+
+        for channel in self.dcluster.keys():
+            for cell in self.dcluster[channel].keys():
+                for desc in self.dcluster[channel][cell].keys():
+                    #print self.dcluster[channel][cell][desc]
+                    lsize = []
+                    for clust in self.dcluster[channel][cell][desc].keys():
+                        try:lsize.append(float(self.dcluster[channel][cell][desc][clust]["size"]))
+                        except:pass
+                    fsum.write(str(channel) + "\t" + str(cell) + "\t" + str(desc) + "\t" + str(mean(lsize)) + "\t" + str(std(lsize)) + "\n")
+
+        fsum.close()
+
+
+    def validationPredictor (self, pAC50All):
+
+        dAC50All = toolbox.loadMatrix(pAC50All)
+        print dAC50All
+
+        ltypeCellChannel = ["hepg2_cell_blue_n", "hepg2_cell_green_n", "hepg2_cell_red_n", "IC50", "hepg2_med_blue_n", "hepg2_med_green_n", "hepg2_med_red_n", "hek293_cell_blue_n", "hek293_cell_green_n", "hek293_cell_red_n", "hek293_med_blue_n", "hek293_med_green_n", "hek293_med_red_n"]
+
+        dCASact = {}
+        dpredict = {}
+        for typeCellChannel in ltypeCellChannel:
+            dCASact[typeCellChannel] = []
+            for CASID in dAC50All.keys()[0:10]:
+                if dAC50All[CASID][typeCellChannel] != "NA":
+                    dCASact[typeCellChannel].append(CASID)
+                if not CASID in dpredict.keys():
+                    smiles = toolbox.loadSMILES(self.cDB.prSMIclean + CASID + ".smi")
+                    dpredict[CASID] = self.predictSMI(CASID, smiles)
+
+
+        prval = pathFolder.createFolder(self.prout + "validation/")
+
+        for typeAssay in dCASact.keys():
+            channel = "_".join(typeAssay.split("_")[1:])
+            cell = typeAssay.split("_")[0]
+            ldesc = dpredict[dpredict.keys()[0]][channel][cell]
+            filout = open(prval + typeCellChannel, "w")
+            filout.write("CASID" + "\t".join(typeCellChannel) + "\n")
+            for CASID in dpredict.keys()[:10]:
+                filout.write(CASID)
+                for desc in ldesc:
+                    filout.write("\t" + str(dpredict[CASID][channel][cell][desc]))
+                filout.write("\n")
+            filout.close()
+        return 0
+
+

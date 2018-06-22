@@ -8,6 +8,7 @@ import predictInterference
 prMain = "/home/borrela2/interference/"
 prresults = "/home/borrela2/interference/spDataAnalysis/"
 prclusters = "/home/borrela2/interference/spDataAnalysis/FinalClustering/"
+pAC50all = "/home/borrela2/interference/spDataAnalysis/AC50_all"
 
 prpredict = "/home/borrela2/interference/spDataAnalysis/predictions/"
 
@@ -26,9 +27,12 @@ cDesc.loadClassForPred(corval, maxquantile)
 
 lcasID = []
 predictor = predictInterference.predictor(cDesc, prclusters, lcasID, prpredict, distMeth, distAgg)
+#predictor.summarizePredictor()
+
+predictor.validationPredictor(pAC50all)
 
 #lpSMI = [prpredict + "smi/" + i for i in listdir(prpredict + "smi/")]
-lpSMI = [prpredict + "smi/test.smi"]
+lpSMI = [prpredict + "luciferin.smi"]
 
-predictor.predictlpSMI(lpSMI)
+#predictor.predictlpSMI(lpSMI)
 

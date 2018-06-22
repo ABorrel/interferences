@@ -37,8 +37,8 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 #########################################
 
 pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
-
-
+prhist = pathFolder.createFolder(prresults + "hist/")
+assayResults.histogramAC50(pAC50All, prhist)
 # plot correlation #
 ####################
 #cluc.cor3assays(chepg2, chek293)
@@ -77,7 +77,6 @@ pathFolder.createFolder(prbarplot)
 #cluc.AC50Distribution()
 #chek293.AC50Distribution()
 #chepg2.AC50Distribution()
-
 
 # MOLECULAR DESCRIPTOR #
 ########################
@@ -181,7 +180,7 @@ doubleclustering = 0
 
 
 laggregtype =  ["ward.D2", "complete", "single", "average"]
-ldistMeth = ["maximum", "manhattan", "canberra", "binary","minkowski"]
+ldistMeth = ["euclidean", "maximum", "manhattan", "canberra", "binary","minkowski"]
 prcluster = prresults + "Descclusters/"
 pathFolder.createFolder(prcluster)
 #for aggregtype in laggregtype:
@@ -218,8 +217,8 @@ pathFolder.createFolder(prcluster)
 ###############
 prSOM = prresults + "SOM/"
 pathFolder.createFolder(prSOM)
-#cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
-#pmodelSOM = cDesc.MainSOM(15)
+cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
+pmodelSOM = cDesc.MainSOM(15)
 
 
 # SOM active  #
@@ -227,10 +226,9 @@ pathFolder.createFolder(prSOM)
 prSOM = prresults + "SOMactive/"
 pathFolder.createFolder(prSOM)
 
-cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOM)
-cDesc.createActiveSOM(15, prSOM)
-cDesc.extractActivebySOM()
-ff
+#cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOM)
+#cDesc.createActiveSOM(15, prSOM, pmodelSOM)
+#cDesc.extractActivebySOM()
 
 ### for luc  ###
 ################
@@ -421,10 +419,12 @@ typeQSAR = "class"
 prQSAR = cluc.proutSP + "QSARClass/"
 pathFolder.createFolder(prQSAR)
 
-#cluc.combineAC50()
-#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSAR)
-#cModelluc.prepData()
-#cModelluc.buildQSARClass()
+cluc.combineAC50()
+cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSAR)
+cModelluc.prepData()
+cModelluc.buildQSARClass()
+
+ggg
 
 # for HEPG2 #
 #############
