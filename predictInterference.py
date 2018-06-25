@@ -121,6 +121,13 @@ class predictor:
 
         dpred = {}
         prresult = pathFolder.createFolder(self.prout + nameChemical + "/")
+
+        ppred = prresult + "pred"
+        if path.exists(ppred):
+            dpred = toolbox.loadMatrix(ppred)
+            return dpred
+
+
         chem = chemical.chemical(nameChemical, smiles)
         chem.prepareChem(prresult)
         chem.compute1D2DDesc(prresult)
@@ -128,9 +135,9 @@ class predictor:
         chem.computeFP(typeFP="All")
 
         for channel in self.dcluster:
-            dpred[channel] = {}
             for cell in self.dcluster[channel].keys():
-                dpred[channel][cell] = {}
+                kpred = str(cell) + "_" + str(channel)
+                dpred[kpred] = {}
                 for typeDesc in self.dcluster[channel][cell].keys():
                     if verbose == 1:
                         print channel, cell, typeDesc
@@ -172,32 +179,32 @@ class predictor:
 
                         clusterfound = self.ChemClust[CASclose][channel][cell][str(typeFP) + "-" + str(metricAgg)]
                         enrichment = self.dcluster[channel][cell][typeDesc][clusterfound]['Enrichment']
-                    dpred[channel][cell][typeDesc] = enrichment
+                    dpred[kpred][typeDesc] = enrichment
 
         if plot == 1:
             self.writeResultBySMI(dpred, prresult)
+
+        return dpred
 
 
 
 
     def writeResultBySMI(self, dpred, prresult):
 
-        lheader = dpred[dpred.keys()[0]][dpred[dpred.keys()[0]].keys()[0]].keys()
+        lheader = dpred[dpred.keys()[0]].keys()
 
         pfilout = prresult + "pred"
         filout = open(pfilout, "w")
         filout.write("Interferences" + "\t" + "\t".join(lheader) + "\n")
         for k in dpred.keys():
-            for k2 in dpred[k].keys():
-                filout.write(str(k2) + "_" + str(k))
-                for h in lheader:
-                    try:
-                        filout.write("\t" + str(dpred[k][k2][h]))
-                    except:
-                        filout.write("\tNA")
+            filout.write(str(k))
+            for h in lheader:
+                try:
+                    filout.write("\t" + str(dpred[k][h]))
+                except:
+                    filout.write("\tNA")
                 filout.write("\n")
         filout.close()
-
         runExternalSoft.generateCardResult(pfilout)
 
 
@@ -220,23 +227,20 @@ class predictor:
         fsum.close()
 
 
-    def validationPredictor (self, pAC50All):
+    def validationPredictor (self, typeCellChannel, pAC50All):
 
         dAC50All = toolbox.loadMatrix(pAC50All)
-        print dAC50All
 
-        ltypeCellChannel = ["hepg2_cell_blue_n", "hepg2_cell_green_n", "hepg2_cell_red_n", "IC50", "hepg2_med_blue_n", "hepg2_med_green_n", "hepg2_med_red_n", "hek293_cell_blue_n", "hek293_cell_green_n", "hek293_cell_red_n", "hek293_med_blue_n", "hek293_med_green_n", "hek293_med_red_n"]
 
         dCASact = {}
         dpredict = {}
-        for typeCellChannel in ltypeCellChannel:
-            dCASact[typeCellChannel] = []
-            for CASID in dAC50All.keys()[0:10]:
-                if dAC50All[CASID][typeCellChannel] != "NA":
-                    dCASact[typeCellChannel].append(CASID)
-                if not CASID in dpredict.keys():
-                    smiles = toolbox.loadSMILES(self.cDB.prSMIclean + CASID + ".smi")
-                    dpredict[CASID] = self.predictSMI(CASID, smiles)
+        dCASact[typeCellChannel] = []
+        for CASID in dAC50All.keys()[0:10]:
+            if dAC50All[CASID][typeCellChannel] != "NA":
+                dCASact[typeCellChannel].append(CASID)
+            if not CASID in dpredict.keys():
+                smiles = toolbox.loadSMILES(self.cDB.prSMIclean + CASID + ".smi")
+                dpredict[CASID] = self.predictSMI(CASID, smiles, plot=1)
 
 
         prval = pathFolder.createFolder(self.prout + "validation/")
@@ -244,13 +248,14 @@ class predictor:
         for typeAssay in dCASact.keys():
             channel = "_".join(typeAssay.split("_")[1:])
             cell = typeAssay.split("_")[0]
-            ldesc = dpredict[dpredict.keys()[0]][channel][cell]
+            kpred = str(cell) + "_" + str(channel)
+            ldesc = dpredict[dpredict.keys()[0]][kpred]
             filout = open(prval + typeCellChannel, "w")
             filout.write("CASID" + "\t".join(typeCellChannel) + "\n")
             for CASID in dpredict.keys()[:10]:
                 filout.write(CASID)
                 for desc in ldesc:
-                    filout.write("\t" + str(dpredict[CASID][channel][cell][desc]))
+                    filout.write("\t" + str(dpredict[CASID][kpred][desc]))
                 filout.write("\n")
             filout.close()
         return 0

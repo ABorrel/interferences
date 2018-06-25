@@ -8,7 +8,7 @@ from os import path
 
 class Model:
 
-    def __init__(self, pdesc, pAC50, typeQSAR, corval, maxQuantile, splitRatio, nbCV, prresult):
+    def __init__(self, pdesc, pAC50, typeQSAR, corval, maxQuantile, splitRatio, nbCV, ratioAct, prresult):
 
         self.corval = corval
         self.maxQauntile = maxQuantile
@@ -16,6 +16,7 @@ class Model:
         self.pdesc = pdesc
         self.pAC50 = pAC50
         self.splitRatio = splitRatio
+        self.ratioAct = ratioAct
         self.nbCV = nbCV
         self.typeQSAR = typeQSAR
 
@@ -96,6 +97,7 @@ class Model:
 
 
     def writeClass(self):
+        from random import shuffle
 
         for typeAC50 in self.dpresult:
             pclass = self.dpresult[typeAC50] + "actClass.txt"
@@ -112,15 +114,36 @@ class Model:
                 filout = open(pclass, "w")
                 filout.write(llines[0])
 
+                # shuffle lines
+                llines = llines[1:]
+                shuffle(llines)
+
+                nbact = 0
+                for lineChem in llines:
+                    AC50 = lineChem.strip().split("\t")[-1]
+                    if AC50 != "NA":
+                        nbact = nbact + 1
+
+                nbinact = int(100*nbact/(100*self.ratioAct)) - nbact
+
+
+                nwinact = 0
+                flaginact = 0
                 for lineChem in llines[1:]:
                     lAC50 = lineChem.strip().split("\t")
                     lnew = [lAC50[0]]
                     for AC50 in lAC50[1:]:
                         if AC50 == "NA":
                             lnew.append("0")
+                            nwinact += 1
+                            flaginact = 1
                         else:
                             lnew.append("1")
-                    filout.write("\t".join(lnew) + "\n")
+                            flaginact = 0
+                    if flaginact == 1 and nwinact <= nbinact:
+                        filout.write("\t".join(lnew) + "\n")
+                    elif flaginact == 0:
+                        filout.write("\t".join(lnew) + "\n")
                 filout.close()
                 self.dpAC50[typeAC50] = pclass
 

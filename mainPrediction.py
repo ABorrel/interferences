@@ -29,7 +29,28 @@ lcasID = []
 predictor = predictInterference.predictor(cDesc, prclusters, lcasID, prpredict, distMeth, distAgg)
 #predictor.summarizePredictor()
 
-predictor.validationPredictor(pAC50all)
+ltypeCellChannel = ["hepg2_cell_blue_n", "hepg2_cell_green_n", "hepg2_cell_red_n", "IC50", "hepg2_med_blue_n", "hepg2_med_green_n", "hepg2_med_red_n", "hek293_cell_blue_n", "hek293_cell_green_n", "hek293_cell_red_n", "hek293_med_blue_n", "hek293_med_green_n", "hek293_med_red_n"]
+
+
+#luc
+predictor.validationPredictor("Luc_IC50",pAC50all)# to fix
+#hepg2
+predictor.validationPredictor("hepg2_cell_blue_n", pAC50all)
+predictor.validationPredictor("hepg2_cell_green_n", pAC50all)
+predictor.validationPredictor("hepg2_cell_red_n", pAC50all)
+predictor.validationPredictor("hepg2_med_blue_n", pAC50all)
+predictor.validationPredictor("hepg2_med_green_n", pAC50all)
+predictor.validationPredictor("hepg2_med_red_n", pAC50all)
+
+#hek293
+predictor.validationPredictor("hek293_cell_blue_n", pAC50all)
+predictor.validationPredictor("hek293_cell_green_n", pAC50all)
+predictor.validationPredictor("hek293_cell_red_n", pAC50all)
+predictor.validationPredictor("hek293_med_blue_n", pAC50all)
+predictor.validationPredictor("hek293_med_green_n", pAC50all)
+predictor.validationPredictor("hek293_med_red_n", pAC50all)
+
+
 
 #lpSMI = [prpredict + "smi/" + i for i in listdir(prpredict + "smi/")]
 lpSMI = [prpredict + "luciferin.smi"]

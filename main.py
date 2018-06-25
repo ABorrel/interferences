@@ -38,7 +38,9 @@ chek293 = assayResults.assays(phek293, prresults, prlog)
 
 pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
 prhist = pathFolder.createFolder(prresults + "hist/")
-assayResults.histogramAC50(pAC50All, prhist)
+#assayResults.histogramAC50(pAC50All, prhist)
+
+
 # plot correlation #
 ####################
 #cluc.cor3assays(chepg2, chek293)
@@ -218,7 +220,7 @@ pathFolder.createFolder(prcluster)
 prSOM = prresults + "SOM/"
 pathFolder.createFolder(prSOM)
 cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
-pmodelSOM = cDesc.MainSOM(15)
+#pmodelSOM = cDesc.MainSOM(15)
 
 
 # SOM active  #
@@ -400,6 +402,7 @@ pathFolder.createFolder(prMDS)
 
 ##### QSAR modeling ######
 ##########################
+ratioAct = 0.3
 
 # for luc #
 ###########
@@ -420,11 +423,9 @@ prQSAR = cluc.proutSP + "QSARClass/"
 pathFolder.createFolder(prQSAR)
 
 cluc.combineAC50()
-cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSAR)
-cModelluc.prepData()
-cModelluc.buildQSARClass()
-
-ggg
+#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, prQSAR)
+#cModelluc.prepData()
+#cModelluc.buildQSARClass()
 
 # for HEPG2 #
 #############
@@ -433,11 +434,10 @@ typeQSAR = "class"
 prQSARClass = chepg2.proutSP + "QSARclass/"
 pathFolder.createFolder(prQSARClass)
 
-#cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
-#cModelHEPG2.prepData()
-#cModelHEPG2.buildQSARClass()
-
-
+cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct,prQSARClass)
+cModelHEPG2.prepData()
+cModelHEPG2.buildQSARClass()
+dd
 # ---> regression
 typeQSAR = "Reg"
 prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
