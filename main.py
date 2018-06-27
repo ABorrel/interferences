@@ -157,6 +157,7 @@ pathFolder.createFolder(prcluster)
 #mcs = MCS.MCSMatrix(cDesc.prSMIclean, prMCS)
 #mcs.computeMatrixMCS()
 
+
 #####################
 ####  ANALYSIS   ####
 #####################
@@ -181,7 +182,7 @@ optimalCluster = "silhouette"#"gap_stat", "silhouette", "wss", "gap_stat"
 doubleclustering = 0
 
 
-laggregtype =  ["ward.D2", "complete", "single", "average"]
+laggregtype = ["ward.D2", "complete", "single", "average"]
 ldistMeth = ["euclidean", "maximum", "manhattan", "canberra", "binary","minkowski"]
 prcluster = prresults + "Descclusters/"
 pathFolder.createFolder(prcluster)
@@ -193,6 +194,20 @@ pathFolder.createFolder(prcluster)
 #        cclust.enrichmentIndex(pAC50All, FP=0)
 #        cclust.optimalClusteringForEnrich(FP=0)
 #        cclust.visualizeOptimalClustering(prresults, FP=0)
+
+
+#######
+# clusterize only active chemicals
+######
+prDescAct = pathFolder.createFolder(prresults + "DescActive/")
+cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+cclustAct.clusterActive(pAC50All)
+
+
+
+cDesc.visualize
+dd
+
 
 
 #####################
@@ -219,7 +234,7 @@ pathFolder.createFolder(prcluster)
 ###############
 prSOM = prresults + "SOM/"
 pathFolder.createFolder(prSOM)
-cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
+#cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
 #pmodelSOM = cDesc.MainSOM(15)
 
 
@@ -403,9 +418,53 @@ pathFolder.createFolder(prMDS)
 ##### QSAR modeling ######
 ##########################
 ratioAct = 0.3
+ltypeCellChannel = ["cell_blue_n", "cell_green_n", "cell_red_n", "med_blue_n", "med_green_n", "med_red_n"]
+typeQSAR = "class"
 
-# for luc #
-###########
+##### Classification  #####
+###########################
+# for clustering
+for i in range(1, 6):
+    # for luc #
+    ###########
+    # --> classification
+    prQSAR = cluc.proutSP + "QSARClass/" + str(i) + "/"
+    pathFolder.createFolder(prQSAR)
+
+    cluc.combineAC50()
+    cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ["IC50"], prQSAR)
+    cModelluc.prepData()
+    cModelluc.buildQSARClass()
+
+    # for HEK293 #
+    ##############
+    # --> classification
+    prQSARClass = chek293.proutSP + "QSARclass/" + str(i) + "/"
+    pathFolder.createFolder(prQSARClass)
+
+    cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
+    cModelHEK293.prepData()
+    cModelHEK293.buildQSARClass()
+
+
+    # for HEPG2 #
+    #############
+    # --> classification
+    prQSARClass = chepg2.proutSP + "QSARclass/" + str(i) + "/"
+    pathFolder.createFolder(prQSARClass)
+
+    cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
+    cModelHEPG2.prepData()
+    cModelHEPG2.buildQSARClass()
+dd
+# develop model to compute average
+
+
+
+##### Regression  #####
+#######################
+
+# luciferase
 # ----> Regression
 typeQSAR = "Reg"
 prQSAR = cluc.proutSP + "QSARReg/"
@@ -416,28 +475,13 @@ pathFolder.createFolder(prQSAR)
 #cModelluc.prepData()
 #cModelluc.buildQSARReg()
 
+# hepg2
+# ---> regression
+typeQSAR = "Reg"
+prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
 
-# ----> Classification
-typeQSAR = "class"
-prQSAR = cluc.proutSP + "QSARClass/"
-pathFolder.createFolder(prQSAR)
 
-cluc.combineAC50()
-#cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, prQSAR)
-#cModelluc.prepData()
-#cModelluc.buildQSARClass()
-
-# for HEPG2 #
-#############
-# --> classification
-typeQSAR = "class"
-prQSARClass = chepg2.proutSP + "QSARclass/"
-pathFolder.createFolder(prQSARClass)
-
-cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct,prQSARClass)
-cModelHEPG2.prepData()
-cModelHEPG2.buildQSARClass()
-dd
+#hek293
 # ---> regression
 typeQSAR = "Reg"
 prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
@@ -445,6 +489,7 @@ prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
 #cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
 #cModelHEPG2.prepData()
 #cModelHEPG2.buildQSARClass()
+
 
 
 ###################################
@@ -458,9 +503,8 @@ prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
 ##########################
 # Venn diagram by color  #
 ##########################
-
 prCrossVenn = pathFolder.createFolder(prresults + "CrossVenn/")
-analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)
+#analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)
 
 
 #################

@@ -45,13 +45,13 @@ class Descriptors:
         self.maxQuantile = maxQuantile
 
         pdescAct = prout + "descActive"
-        pAC50Act = prout + "AC50ACactive"
+        pAC50Act = prout + "AC50Active"
 
         if path.exists(pdescAct) and path.getsize(pdescAct) > 10 and path.exists(pAC50Act) and path.getsize(pAC50Act) > 10:
             pdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
             self.pdescCleanActive = pdescActClean
             self.pAC50AllActive = pAC50Act
-            return 0
+            return [self.pdescCleanActive, self.pAC50AllActive]
 
         ddesc = toolbox.loadMatrix(self.pdesc1D2D)
         dAC50All = toolbox.loadMatrix(pAC50All)
@@ -64,7 +64,7 @@ class Descriptors:
             casID = ddesc.keys()[i]
             nbNA = 0
             for kAC50 in dAC50All[casID].keys():
-                if kAC50 == "CASID" or kAC50 == "Luc_IC50":
+                if kAC50 == "CASID" or kAC50 == "Luc_IC50": # not considered luciferase
                     continue
                 else:
                     if dAC50All[casID][kAC50] == "NA":
@@ -85,7 +85,7 @@ class Descriptors:
         self.pdescCleanActive = pdescActClean
         self.pAC50AllActive = pAC50Act
 
-        return 0
+        return [self.pdescCleanActive, self.pAC50AllActive]
 
 
     def createActiveSOM(self, sizeMap, prout, pmodelAll):

@@ -203,7 +203,7 @@ class predictor:
                     filout.write("\t" + str(dpred[k][h]))
                 except:
                     filout.write("\tNA")
-                filout.write("\n")
+            filout.write("\n")
         filout.close()
         runExternalSoft.generateCardResult(pfilout)
 
@@ -231,19 +231,21 @@ class predictor:
 
         dAC50All = toolbox.loadMatrix(pAC50All)
 
-
         dCASact = {}
         dpredict = {}
         dCASact[typeCellChannel] = []
-        for CASID in dAC50All.keys()[0:10]:
+        for CASID in dAC50All.keys():# have to change
             if dAC50All[CASID][typeCellChannel] != "NA":
                 dCASact[typeCellChannel].append(CASID)
             if not CASID in dpredict.keys():
-                smiles = toolbox.loadSMILES(self.cDB.prSMIclean + CASID + ".smi")
-                dpredict[CASID] = self.predictSMI(CASID, smiles, plot=1)
+                if not path.exists(self.cDB.prSMIclean + CASID + ".smi"):
+                    continue
+                else:
+                    smiles = toolbox.loadSMILES(self.cDB.prSMIclean + CASID + ".smi")
+                    dpredict[CASID] = self.predictSMI(CASID, smiles, plot=1)
 
 
-        prval = pathFolder.createFolder(self.prout + "validation/")
+        prval = pathFolder.createFolder(self.prout + "validation/" + typeCellChannel + "/")
 
         for typeAssay in dCASact.keys():
             channel = "_".join(typeAssay.split("_")[1:])
@@ -252,7 +254,7 @@ class predictor:
             ldesc = dpredict[dpredict.keys()[0]][kpred]
             filout = open(prval + typeCellChannel, "w")
             filout.write("CASID" + "\t".join(typeCellChannel) + "\n")
-            for CASID in dpredict.keys()[:10]:
+            for CASID in dpredict.keys():
                 filout.write(CASID)
                 for desc in ldesc:
                     filout.write("\t" + str(dpredict[CASID][kpred][desc]))

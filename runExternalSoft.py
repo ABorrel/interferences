@@ -305,3 +305,10 @@ def histGlobal(pAC50All, prhist):
 
     cmd = "./histAff.R " + str(pAC50All) + " " + str(prhist)
     runRCMD(cmd)
+
+
+def visualizeActive(pdesc, pAC50, distmeth, aggType, prout):
+
+
+    cmd = "./visuActive.R " + str(pdesc) + " " + str(pAC50) + " " + str(distmeth) + " " + str(aggType) + " " + str(prout)
+    runRCMD(cmd)

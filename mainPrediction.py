@@ -33,7 +33,7 @@ ltypeCellChannel = ["hepg2_cell_blue_n", "hepg2_cell_green_n", "hepg2_cell_red_n
 
 
 #luc
-predictor.validationPredictor("Luc_IC50",pAC50all)# to fix
+#predictor.validationPredictor("Luc_IC50",pAC50all)# to fix
 #hepg2
 predictor.validationPredictor("hepg2_cell_blue_n", pAC50all)
 predictor.validationPredictor("hepg2_cell_green_n", pAC50all)

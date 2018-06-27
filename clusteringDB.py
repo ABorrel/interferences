@@ -26,6 +26,16 @@ class clustering:
         self.optimalNBclustMeth = optimalCluster
 
 
+
+
+    def clusterActive(self, pAC50All):
+
+        lfileAct = self.cdesc.prepareActiveMatrix(self.corval, self.maxquantile, pAC50All, self.prout)
+
+        runExternalSoft.visualizeActive(lfileAct[0], lfileAct[1], self.distmeth, self.aggType, self.prout)
+
+
+
     def createMainClustering(self, doublecluster = 0, lcas = []):
 
         if self.distmeth == None: # case of fp

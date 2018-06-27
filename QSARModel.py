@@ -8,7 +8,7 @@ from os import path
 
 class Model:
 
-    def __init__(self, pdesc, pAC50, typeQSAR, corval, maxQuantile, splitRatio, nbCV, ratioAct, prresult):
+    def __init__(self, pdesc, pAC50, typeQSAR, corval, maxQuantile, splitRatio, nbCV, ratioAct, lchannels, prresult):
 
         self.corval = corval
         self.maxQauntile = maxQuantile
@@ -19,6 +19,7 @@ class Model:
         self.ratioAct = ratioAct
         self.nbCV = nbCV
         self.typeQSAR = typeQSAR
+        self.lchannel = lchannels
 
 
     def prepData(self):
@@ -32,8 +33,10 @@ class Model:
 
         dfileAC50 = {}
         dprresult = {}
-        lAC50type = llinesAC50[0].strip().split("\t")[1:]
-        print lAC50type
+        if self.lchannel == []:
+            lAC50type = llinesAC50[0].strip().split("\t")[1:]
+        else:
+            lAC50type = self.lchannel
         imax = len(lAC50type)
         i = 0
         while i < imax:
@@ -56,10 +59,9 @@ class Model:
                 dfileAC50[lAC50type[i]].write(str(CAS) + "\t" + str(lem[i+1]) + "\n")
                 i += 1
 
-        for typeAC50 in dfileAC50.keys():
+        for typeAC50 in self.lchannel:
             dfileAC50[typeAC50].close()
             dfileAC50[typeAC50] = dfileAC50[typeAC50].name
-
 
         self.dpAC50 = dfileAC50
         self.dpresult = dprresult
