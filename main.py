@@ -1,4 +1,4 @@
-from os import path
+from os import path, listdir
 
 import assayResults
 import pathFolder
@@ -199,14 +199,14 @@ pathFolder.createFolder(prcluster)
 #######
 # clusterize only active chemicals
 ######
-prDescAct = pathFolder.createFolder(prresults + "DescActive/")
-cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
-cclustAct.clusterActive(pAC50All)
+#-> by descriptors
+#prDescAct = pathFolder.createFolder(prresults + "DescActive/")
+#cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+#cclustAct.clusterActive(pAC50All)
 
+# using FP
+# => to do
 
-
-cDesc.visualize
-dd
 
 
 
@@ -430,21 +430,21 @@ for i in range(1, 6):
     # --> classification
     prQSAR = cluc.proutSP + "QSARClass/" + str(i) + "/"
     pathFolder.createFolder(prQSAR)
-
-    cluc.combineAC50()
-    cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ["IC50"], prQSAR)
-    cModelluc.prepData()
-    cModelluc.buildQSARClass()
+    if len(listdir(prQSAR)) == 0:
+        cluc.combineAC50()
+        cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ["IC50"], prQSAR)
+        cModelluc.prepData()
+        cModelluc.buildQSARClass()
 
     # for HEK293 #
     ##############
     # --> classification
     prQSARClass = chek293.proutSP + "QSARclass/" + str(i) + "/"
     pathFolder.createFolder(prQSARClass)
-
-    cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
-    cModelHEK293.prepData()
-    cModelHEK293.buildQSARClass()
+    if len(listdir(prQSARClass)) == 0:
+        cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
+        cModelHEK293.prepData()
+        cModelHEK293.buildQSARClass()
 
 
     # for HEPG2 #
@@ -452,12 +452,28 @@ for i in range(1, 6):
     # --> classification
     prQSARClass = chepg2.proutSP + "QSARclass/" + str(i) + "/"
     pathFolder.createFolder(prQSARClass)
+    if len(listdir(prQSARClass)) == 0:
+        cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
+        cModelHEPG2.prepData()
+        cModelHEPG2.buildQSARClass()
 
-    cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
-    cModelHEPG2.prepData()
-    cModelHEPG2.buildQSARClass()
-dd
-# develop model to compute average
+# for luc #
+###########
+# --> merge
+prQSARAV = cluc.proutSP + "QSARClass/Average/"
+QSARModel.mergeResults(cluc.proutSP + "QSARClass/" , prQSARAV)
+
+# for HEPG2#
+############
+# --> merge
+prQSARAV = chepg2.proutSP + "QSARClass/Average/"
+QSARModel.mergeResults(chepg2.proutSP + "QSARClass/" , prQSARAV)
+
+# for HEK293#
+#############
+# --> merge
+prQSARAV = chek293.proutSP + "QSARClass/Average/"
+QSARModel.mergeResults(chek293.proutSP + "QSARClass/" , prQSARAV)
 
 
 

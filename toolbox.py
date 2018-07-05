@@ -119,19 +119,19 @@ def computeSimilarityFP(FP1, FP2, typeMetric ):
 
 
 
-def loadMatrix(pmatrixIn):
+def loadMatrix(pmatrixIn, sep = "\t"):
 
     filin = open(pmatrixIn, "r")
     llinesMat = filin.readlines()
     filin.close()
 
     dout = {}
-    lheaders = llinesMat[0].strip().split("\t")
+    lheaders = llinesMat[0].strip().split(sep)
 
     i = 1
     imax = len(llinesMat)
     while i < imax:
-        lvalues = llinesMat[i].strip().split("\t")
+        lvalues = llinesMat[i].strip().split(sep)
         kin = lvalues[0]
         dout[kin] = {}
         j = 0

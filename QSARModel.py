@@ -1,8 +1,9 @@
 import runExternalSoft
 import pathFolder
+import toolbox
 
-from os import path
-
+from os import path, listdir
+from numpy import mean, sd
 
 
 
@@ -149,3 +150,67 @@ class Model:
                 filout.close()
                 self.dpAC50[typeAC50] = pclass
 
+
+def mergeResults(prout):
+
+    dresult = {}
+    dperf = {}
+    dperf["ACC"] = []
+    dperf["SP"] = []
+    dperf["SE"] = []
+    dperf["MCC"] = []
+
+    lprrun = listdir(prout)
+    for prrun in lprrun:
+        lprcell = listdir(prout + "/" + prrun + "/")
+        for prcell in lprcell:
+            pperfCV = prout + "/" + prrun + "/" + prcell + "/perfCV.csv"
+            pperftrain = prout + "/" + prrun + "/" + prcell + "/perfCV.csv"
+            pperftest = prout + "/" + prrun + "/" + prcell + "/perfCV.csv"
+
+            MCV = toolbox.loadMatrix(pperfCV, sep=",")
+            Mtrain = toolbox.loadMatrix(pperftrain, sep=",")
+            Mtest = toolbox.loadMatrix(pperftest, sep=",")
+
+            lML = MCV[MCV.keys()[0]].keys()
+
+            dresult[prcell] = {}
+            dresult[prcell]["CV"] = {}
+            for ML in lML:
+                dresult[prcell]["CV"][ML] = dperf
+                dresult[prcell]["train"][ML] = dperf
+                dresult[prcell]["test"][ML] = dperf
+
+            for criteria in MCV.keys():
+                for ML in MCV[criteria].keys():
+                    dresult[prcell]["CV"][ML][criteria].append(MCV[criteria][ML])
+                    dresult[prcell]["train"][ML][criteria].append(Mtrain[criteria][ML])
+                    dresult[prcell]["test"][ML][criteria].append(Mtest[criteria][ML])
+
+
+    for celltype in dresult.keys():
+        for set in dresult[celltype].keys():
+            for ML in dresult[celltype][set].keys():
+                for criteria in dresult[celltype][set][ML].keys():
+                    AV = round(mean(dresult[celltype][set][ML][criteria]),2)
+                    SD = round(sd(dresult[celltype][set][ML][criteria]),2)
+
+                    dresult[celltype][set][ML][criteria] = [AV, SD]
+
+    # write result
+    for celltype in dresult.keys():
+        pfilout = prout + celltype + ".csv"
+        filout = open(pfilout, "w")
+        for set in dresult[celltype].keys():
+            filout.write(str(set) + "\n")
+            filout.write("\t".join(["M-" + str(c) + "\t" + "SD-" + str(c) for c in dperf.keys()]) + "\n")
+            for ML in dresult[celltype][set].keys():
+                filout.write(ML)
+                for criteria in dperf.keys():
+                    filout.write("\t" + str(dresult[celltype][set][ML][criteria][0]) + "\t" + str(dresult[celltype][set][ML][criteria][1]))
+                filout.write("\n")
+
+        filout.close()
+
+
+    return 0
