@@ -1,12 +1,10 @@
 from os import path, listdir
 
-from mxnet.symbol import mean
-
 import pathFolder
 from scipy import stats
 from shutil import copyfile
 
-import chemical
+#import chemical
 import runExternalSoft
 import toolbox
 from re import search
@@ -150,6 +148,7 @@ class Descriptors:
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
             return pdesc1D2D
         else:
+            print pdesc1D2D, "No found"
             ddd
             fdesc1D2D = open(pdesc1D2D, "w")
             ldesc = chemical.getLdesc("1D2D")

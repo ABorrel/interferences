@@ -2,6 +2,7 @@ from os import system, path, remove, chdir, getcwd
 from re import search
 from time import sleep
 
+prMain = pa
 
 def runRCMD(cmd, out = 0):
 

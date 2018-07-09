@@ -7,24 +7,26 @@ import loadDB
 import runExternalSoft
 import clusteringDB
 import QSARModel
-import MCS
+#import MCS
 
 #########
 # MAIN  #
 #########
 
+prMain = "/home/borrela2/interference/"
+prMain = "c://Users/Aborrel/Desktop/NIEHS-work/interference/"
+
 pSDFToxCast = "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
 pSDFTox21 = "/home/borrela2/Tox21/TOX21SL.sdf"
 
-pluc = "/home/borrela2/interference/data/luc/tox21-luc-biochem-p1/tox21-luc-biochem-p1.txt"
-phek293 = "/home/borrela2/interference/data/luc/tox21-spec-hek293-p1/tox21-spec-hek293-p1.txt"
-phepg2 = "/home/borrela2/interference/data/luc/tox21-spec-hepg2-p1/tox21-spec-hepg2-p1.txt"
+pluc = prMain + "data/luc/tox21-luc-biochem-p1/tox21-luc-biochem-p1.txt"
+phek293 = prMain +"data/luc/tox21-spec-hek293-p1/tox21-spec-hek293-p1.txt"
+phepg2 = prMain + "data/luc/tox21-spec-hepg2-p1/tox21-spec-hepg2-p1.txt"
 
-prMain = "/home/borrela2/interference/"
-prresults = "/home/borrela2/interference/spDataAnalysis/"
+prresults = prMain + "spDataAnalysis/"
 
 # log folders
-prlog = "/home/borrela2/interference/spDataAnalysis/log/"
+prlog = prMain +  "spDataAnalysis/log/"
 pathFolder.createFolder(prlog)
 
 # load assays
@@ -428,23 +430,24 @@ for i in range(1, 6):
     # for luc #
     ###########
     # --> classification
-    prQSAR = cluc.proutSP + "QSARClass/" + str(i) + "/"
+    prQSAR = cluc.proutSP + "QSARclass/" + str(i) + "/"
     pathFolder.createFolder(prQSAR)
     if len(listdir(prQSAR)) == 0:
         cluc.combineAC50()
-        cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ["IC50"], prQSAR)
+        cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, cluc.proutSP.split("-")[-2], ["IC50"], prQSAR)
         cModelluc.prepData()
         cModelluc.buildQSARClass()
 
     # for HEK293 #
     ##############
     # --> classification
-    prQSARClass = chek293.proutSP + "QSARclass/" + str(i) + "/"
+    prQSARClass = chek293.proutSP + "QSARclassAct/" + str(i) + "/"
     pathFolder.createFolder(prQSARClass)
     if len(listdir(prQSARClass)) == 0:
-        cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
+        cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chek293.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
         cModelHEK293.prepData()
         cModelHEK293.buildQSARClass()
+    sss
 
 
     # for HEPG2 #
@@ -453,28 +456,27 @@ for i in range(1, 6):
     prQSARClass = chepg2.proutSP + "QSARclass/" + str(i) + "/"
     pathFolder.createFolder(prQSARClass)
     if len(listdir(prQSARClass)) == 0:
-        cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, ltypeCellChannel, prQSARClass)
+        cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chepg2.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
         cModelHEPG2.prepData()
         cModelHEPG2.buildQSARClass()
 
 # for luc #
 ###########
 # --> merge
-prQSARAV = cluc.proutSP + "QSARClass/Average/"
-QSARModel.mergeResults(cluc.proutSP + "QSARClass/" , prQSARAV)
-
+prQSARAV = pathFolder.createFolder(cluc.proutSP + "QSARclass/Average/")
+QSARModel.mergeResults(cluc.proutSP + "QSARclass/" , prQSARAV)
 # for HEPG2#
 ############
 # --> merge
-prQSARAV = chepg2.proutSP + "QSARClass/Average/"
-QSARModel.mergeResults(chepg2.proutSP + "QSARClass/" , prQSARAV)
+prQSARAV = pathFolder.createFolder(chepg2.proutSP + "QSARclass/Average/")
+QSARModel.mergeResults(chepg2.proutSP + "QSARclass/" , prQSARAV)
 
 # for HEK293#
 #############
 # --> merge
-prQSARAV = chek293.proutSP + "QSARClass/Average/"
-QSARModel.mergeResults(chek293.proutSP + "QSARClass/" , prQSARAV)
-
+prQSARAV = pathFolder.createFolder(chek293.proutSP + "QSARclass/Average/")
+QSARModel.mergeResults(chek293.proutSP + "QSARclass/" , prQSARAV)
+ss
 
 
 ##### Regression  #####

@@ -126,12 +126,14 @@ def loadMatrix(pmatrixIn, sep = "\t"):
     filin.close()
 
     dout = {}
-    lheaders = llinesMat[0].strip().split(sep)
+    line0 = llinesMat[0].replace("\"", "")
+    lheaders = line0.strip().split(sep)
 
     i = 1
     imax = len(llinesMat)
     while i < imax:
-        lvalues = llinesMat[i].strip().split(sep)
+        lineMat = llinesMat[i].replace("\"","")
+        lvalues = lineMat.strip().split(sep)
         kin = lvalues[0]
         dout[kin] = {}
         j = 0
