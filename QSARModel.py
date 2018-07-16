@@ -3,6 +3,7 @@ import pathFolder
 import toolbox
 
 from os import path, listdir
+from shutil import rmtree
 from numpy import mean, std
 from copy import deepcopy
 from re import search
@@ -26,25 +27,82 @@ class Model:
         self.cell = cell
 
 
-    def prepData(self):
+    def prepDataColor(self):
 
         # format by type of AC50
         # change self with one folder by type of AC50
 
-        fAC50 = open(self.pAC50, "r")
-        llinesAC50 = fAC50.readlines()
-        fAC50.close()
+        from random import shuffle
+
+        color = self.cell + "_n"
+        dAC50 = toolbox.loadMatrix(self.pAC50All, sep = "\t")
+
+        self.dpAC50 = {}
+        self.dpAC50[self.cell] = self.pAC50All
+
+        presult = pathFolder.createFolder(self.prresult + self.cell + "/")
+        self.dpresult = {}
+        self.dpresult[self.cell] = presult
+
+        pClass = presult + "AC50_" + str(self.cell)
+        fclass = open(pClass, "w")
+        fclass.write("CAS\tAff\n")
+
+        lCASID = dAC50.keys()[1:]# remove ""
+        shuffle(lCASID)
+
+        lact = []
+        linact = []
+        for CASID in lCASID:
+            flagAct = 0
+            for channel in dAC50[CASID].keys():
+                if search(color, channel):
+                    #print dAC50[CASID][channel]
+                    if dAC50[CASID][channel] != "NA":
+                        lact.append(str(CASID) + "\t1")
+                        flagAct = 1
+                        break
+            if flagAct == 0:
+                linact.append(str(CASID) + "\t0")
+
+        nbinact = int(100 * len(lact) / (100 * self.ratioAct)) - len(lact)
+
+        lw = lact + linact[:nbinact]
+        shuffle(lw)
+
+        fclass.write("\n".join(lw))
+        fclass.close()
+
+        runExternalSoft.prepDataQSAR(self.pdesc, pClass, presult, self.corval, self.maxQauntile, self.splitRatio, "0")
+
+        dtrain = {}
+        dtrain[self.cell] = presult + "trainSet.csv"
+
+        dtest = {}
+        dtest[self.cell] = presult + "testSet.csv"
+
+        self.dptrain = dtrain
+        self.dptest = dtest
+
+
+
+
+    def prepData(self, typeData):
+
+        # format by type of AC50
+        # change self with one folder by type of AC50
+
+
+        dAC50 = toolbox.loadMatrix(self.pAC50, sep = "\t")
 
         dfileAC50 = {}
         dprresult = {}
-        if self.lchannel == []:
-            lAC50type = llinesAC50[0].strip().split("\t")[1:]
-        else:
-            lAC50type = self.lchannel
-        imax = len(lAC50type)
+
+
+        imax = len(self.lchannel)
         i = 0
         while i < imax:
-            AC50type = lAC50type[i]
+            AC50type = self.lchannel[i]
             presult = pathFolder.createFolder(self.prresult + AC50type + "/")
             dprresult[AC50type] = presult
 
@@ -53,15 +111,10 @@ class Model:
 
             i += 1
 
-        for lineAC50 in llinesAC50[1:]:
-            lem = lineAC50.strip().split("\t")
-            CAS = lem[0]
-            print CAS
+        for CAS in dAC50.keys():
+            for channel in self.lchannel:
+                dfileAC50[channel].write(str(CAS) + "\t" + str(dAC50[CAS][channel]) + "\n")
 
-            i = 0
-            while i < len(lAC50type):
-                dfileAC50[lAC50type[i]].write(str(CAS) + "\t" + str(lem[i+1]) + "\n")
-                i += 1
 
         for typeAC50 in self.lchannel:
             dfileAC50[typeAC50].close()
@@ -77,7 +130,10 @@ class Model:
                 runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile, self.splitRatio)
 
             else:
-                self.writeClassActive()
+                if typeData == "all":
+                    self.writeClass()
+                elif typeData == "active":
+                    self.writeClassActive()
                 runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile,
                                              self.splitRatio, "0")
 
@@ -114,7 +170,6 @@ class Model:
 
         for typeAC50 in self.dpresult:
             pclass = self.dpresult[typeAC50] + "actClass.txt"
-            print pclass
 
             if path.exists(pclass) and path.getsize(pclass) > 10:
                 self.dpAC50[typeAC50] = pclass
@@ -199,6 +254,7 @@ class Model:
                 filout.close()
 
 
+
     def writeClass(self):
         from random import shuffle
 
@@ -249,6 +305,28 @@ class Model:
                         filout.write("\t".join(lnew) + "\n")
                 filout.close()
                 self.dpAC50[typeAC50] = pclass
+
+
+
+def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbrepeat, nameCell, lchannels, typeData,  prout):
+
+    for i in range(1, nbrepeat):
+        prQSAR = prout + str(i) + "/"
+        #rmtree(prQSAR)############################################################################### to remove
+        pathFolder.createFolder(prQSAR)
+        if len(listdir(prQSAR)) <= 100:
+            if nameCell == "Luc":
+                cAssay.combineAC50()
+            cModel = Model(cDesc.pdesc1D2D, cAssay.pAC50, pAC50All, "class", corval, maxQuantile, splitratio,
+                                        nbCV, ratioAct, nameCell, lchannels, prQSAR)
+            if typeData == "color":
+                cModel.prepDataColor()
+            else:
+                cModel.prepData(typeData)
+            cModel.buildQSARClass()
+
+    prQSARAV = pathFolder.createFolder(prout + "Average/")
+    mergeResults(prout, prQSARAV)
 
 
 def mergeResults(prin, prout):

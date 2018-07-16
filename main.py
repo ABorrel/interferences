@@ -14,7 +14,7 @@ import QSARModel
 #########
 
 prMain = "/home/borrela2/interference/"
-prMain = "c://Users/Aborrel/Desktop/NIEHS-work/interference/"
+#prMain = "c://Users/Aborrel/Desktop/NIEHS-work/interference/"
 
 pSDFToxCast = "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
 pSDFTox21 = "/home/borrela2/Tox21/TOX21SL.sdf"
@@ -420,63 +420,90 @@ pathFolder.createFolder(prMDS)
 ##### QSAR modeling ######
 ##########################
 ratioAct = 0.3
+nbRepeat = 10
 ltypeCellChannel = ["cell_blue_n", "cell_green_n", "cell_red_n", "med_blue_n", "med_green_n", "med_red_n"]
 typeQSAR = "class"
 
 ##### Classification  #####
 ###########################
+
+# for each chanel and cell line #
+#################################
+typeData = "all"
+#QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
+
+
+# for each chanel and active #
+##############################
+typeData = "active"
+#QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclassActive/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclassActive/")
+#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclassActive/")
+
+# for each color #
+##################
+typeData = "color"
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+
+
 # for clustering
-for i in range(1, 6):
+#for i in range(1, 10):
     # for luc #
     ###########
     # --> classification
-    prQSAR = cluc.proutSP + "QSARclass/" + str(i) + "/"
-    pathFolder.createFolder(prQSAR)
-    if len(listdir(prQSAR)) == 0:
-        cluc.combineAC50()
-        cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, cluc.proutSP.split("-")[-2], ["IC50"], prQSAR)
-        cModelluc.prepData()
-        cModelluc.buildQSARClass()
+#    prQSAR = cluc.proutSP + "QSARclassAct/" + str(i) + "/"
+#    pathFolder.createFolder(prQSAR)
+#    if len(listdir(prQSAR)) == 0:
+#        cluc.combineAC50()
+#        cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, "Luc", ["IC50"], prQSAR)
+#        cModelluc.prepData()
+#        cModelluc.buildQSARClass()
 
     # for HEK293 #
     ##############
     # --> classification
-    prQSARClass = chek293.proutSP + "QSARclassAct/" + str(i) + "/"
-    pathFolder.createFolder(prQSARClass)
-    if len(listdir(prQSARClass)) == 0:
-        cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chek293.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
-        cModelHEK293.prepData()
-        cModelHEK293.buildQSARClass()
-    sss
+#    prQSARClass = chek293.proutSP + "QSARclassAct/" + str(i) + "/"
+#    pathFolder.createFolder(prQSARClass)
+#    if len(listdir(prQSARClass)) == 0:
+#        cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chek293.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
+#        cModelHEK293.prepData()
+#        cModelHEK293.buildQSARClass()
 
 
     # for HEPG2 #
     #############
     # --> classification
-    prQSARClass = chepg2.proutSP + "QSARclass/" + str(i) + "/"
-    pathFolder.createFolder(prQSARClass)
-    if len(listdir(prQSARClass)) == 0:
-        cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chepg2.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
-        cModelHEPG2.prepData()
-        cModelHEPG2.buildQSARClass()
+#    prQSARClass = chepg2.proutSP + "QSARclassAct/" + str(i) + "/"
+#    pathFolder.createFolder(prQSARClass)
+#    if len(listdir(prQSARClass)) == 0:
+#        cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chepg2.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
+#        cModelHEPG2.prepData()
+#        cModelHEPG2.buildQSARClass()
+
+
+
+
 
 # for luc #
 ###########
 # --> merge
-prQSARAV = pathFolder.createFolder(cluc.proutSP + "QSARclass/Average/")
-QSARModel.mergeResults(cluc.proutSP + "QSARclass/" , prQSARAV)
+#prQSARAV = pathFolder.createFolder(cluc.proutSP + "QSARclass/Average/")
+#QSARModel.mergeResults(cluc.proutSP + "QSARclass/" , prQSARAV)
 # for HEPG2#
 ############
 # --> merge
-prQSARAV = pathFolder.createFolder(chepg2.proutSP + "QSARclass/Average/")
-QSARModel.mergeResults(chepg2.proutSP + "QSARclass/" , prQSARAV)
+#prQSARAV = pathFolder.createFolder(chepg2.proutSP + "QSARclass/Average/")
+#QSARModel.mergeResults(chepg2.proutSP + "QSARclass/" , prQSARAV)
 
 # for HEK293#
 #############
 # --> merge
-prQSARAV = pathFolder.createFolder(chek293.proutSP + "QSARclass/Average/")
-QSARModel.mergeResults(chek293.proutSP + "QSARclass/" , prQSARAV)
-ss
+#prQSARAV = pathFolder.createFolder(chek293.proutSP + "QSARclass/Average/")
+#QSARModel.mergeResults(chek293.proutSP + "QSARclass/" , prQSARAV)
 
 
 ##### Regression  #####
