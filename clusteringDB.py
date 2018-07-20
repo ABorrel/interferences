@@ -31,9 +31,12 @@ class clustering:
     def clusterActive(self, pAC50All):
 
         lfileAct = self.cdesc.prepareActiveMatrix(self.corval, self.maxquantile, pAC50All, self.prout)
-
         runExternalSoft.visualizeActive(lfileAct[0], lfileAct[1], self.distmeth, self.aggType, self.prout)
 
+        #for luc
+        prout = pathFolder.createFolder(self.prout + "luc/")
+        lfileAct = self.cdesc.prepareActiveMatrix(self.corval, self.maxquantile, pAC50All, prout, luciferase=1)
+        runExternalSoft.visualizeActive(lfileAct[0], lfileAct[1], self.distmeth, self.aggType, prout)
 
 
     def createMainClustering(self, doublecluster = 0, lcas = []):
@@ -372,11 +375,7 @@ class clustering:
 
 
 
-
-
 def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, pModel, prSOM):
-
-
 
     # output
     pdesc1D2Dclean = prSOM + "descClean.csv"

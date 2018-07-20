@@ -3,6 +3,7 @@ from os import path, listdir
 import pathFolder
 from scipy import stats
 from shutil import copyfile
+from copy import deepcopy
 
 #import chemical
 import runExternalSoft
@@ -24,8 +25,9 @@ class Descriptors:
 
         #Desc 1D and 2D
         self.computeDesc()
-        pdescClean = runExternalSoft.dataManager(self.pdesc1D2D, "0", corval, maxQuantile, self.prout)
-        self.pdesc1D2Dclean = pdescClean
+        lpdescClean = runExternalSoft.dataManager(self.pdesc1D2D, "0", corval, maxQuantile, self.prout)
+
+        self.pdesc1D2Dclean = lpdescClean[0]
 
         if lCASID != []:
             self.reduceMatrixDesc(self.pdesc1D2Dclean, lCASID)
@@ -37,7 +39,7 @@ class Descriptors:
             self.reduceMatrixFP(self.dFP, lCASID)
 
 
-    def prepareActiveMatrix(self, corval, maxQuantile, pAC50All, prout):
+    def prepareActiveMatrix(self, corval, maxQuantile, pAC50All, prout, luciferase=0):
 
         self.corval = corval
         self.maxQuantile = maxQuantile
@@ -46,44 +48,77 @@ class Descriptors:
         pAC50Act = prout + "AC50Active"
 
         if path.exists(pdescAct) and path.getsize(pdescAct) > 10 and path.exists(pAC50Act) and path.getsize(pAC50Act) > 10:
-            pdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
-            self.pdescCleanActive = pdescActClean
-            self.pAC50AllActive = pAC50Act
+            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+            self.pdescCleanActive = lpdescActClean[0]
+            self.pAC50AllActive = lpdescActClean[1]
             return [self.pdescCleanActive, self.pAC50AllActive]
 
         ddesc = toolbox.loadMatrix(self.pdesc1D2D)
         dAC50All = toolbox.loadMatrix(pAC50All)
 
 
-        i = 0
-        imax = len(ddesc.keys())
+        if luciferase == 0:
+            i = 0
+            imax = len(ddesc.keys())
 
-        while i < imax:
-            casID = ddesc.keys()[i]
-            nbNA = 0
-            for kAC50 in dAC50All[casID].keys():
-                if kAC50 == "CASID" or kAC50 == "Luc_IC50": # not considered luciferase
-                    continue
+            while i < imax:
+                casID = ddesc.keys()[i]
+                nbNA = 0
+                for kAC50 in dAC50All[casID].keys():
+                    if kAC50 == "CASID" or kAC50 == "Luc_IC50":# not considered luciferase
+                        continue
+                    else:
+                        if dAC50All[casID][kAC50] == "NA":
+                            nbNA += 1
+                print nbNA, len(dAC50All[casID].keys())
+                if nbNA == (len(dAC50All[casID].keys()) -2):
+                    del dAC50All[casID]
+                    del ddesc[casID]
+                    imax = imax -1
                 else:
-                    if dAC50All[casID][kAC50] == "NA":
-                        nbNA += 1
-            print nbNA, len(dAC50All[casID].keys())
-            if nbNA == (len(dAC50All[casID].keys()) -2):
-                del dAC50All[casID]
-                del ddesc[casID]
-                imax = imax -1
-            else:
-                i += 1
+                    i += 1
 
-        toolbox.writeMatrix(ddesc, pdescAct)
-        toolbox.writeMatrix(dAC50All, pAC50Act)
+            toolbox.writeMatrix(ddesc, pdescAct)
+            toolbox.writeMatrix(dAC50All, pAC50Act)
 
-        pdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
 
-        self.pdescCleanActive = pdescActClean
-        self.pAC50AllActive = pAC50Act
+            self.pdescCleanActive = lpdescActClean[0]
+            self.pAC50AllActive = lpdescActClean[1]
 
-        return [self.pdescCleanActive, self.pAC50AllActive]
+            return [self.pdescCleanActive, self.pAC50AllActive]
+
+
+        else:
+            i = 0
+            imax = len(ddesc.keys())
+
+            while i < imax:
+                casID = ddesc.keys()[i]
+                nbNA = 0
+                for kAC50 in dAC50All[casID].keys():
+                    if kAC50 != "Luc_IC50":  # not considered luciferase
+                        continue
+                    else:
+                        if dAC50All[casID][kAC50] == "NA":
+                            del dAC50All[casID]
+                            del ddesc[casID]
+                            imax = imax - 1
+                            i = i -1
+                            break
+                    i += 1
+
+            toolbox.writeMatrix(ddesc, pdescAct)
+            toolbox.writeMatrix(dAC50All, pAC50Act)
+
+            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+
+            self.pdescCleanActive = lpdescActClean[0]
+            self.pAC50AllActive = lpdescActClean[1]
+
+            return [self.pdescCleanActive, self.pAC50AllActive]
+
+
 
 
     def createActiveSOM(self, sizeMap, prout, pmodelAll):
@@ -93,6 +128,7 @@ class Descriptors:
         # create model
         prall = pathFolder.createFolder(prout + "all/")
         runExternalSoft.drawEnrichSOM(self.pdescCleanActive, self.pAC50AllActive, pmodelAll, prall)
+        # to better calibrate => change the max in the R script
 
         pModel = prout + "SOMmodel.Rdata"
         if not path.exists(pModel):
@@ -107,7 +143,7 @@ class Descriptors:
     def extractActivebySOM(self):
 
         lfolders = listdir(self.prSOMactive)
-        dAC50all = toolbox.loadMatrix(self.pAC50AllActive)
+        dAC50all = toolbox.loadMatrix(self.pAC50AllActive, sep=",")
         for assay in lfolders:
             pclust = self.prSOMactive + assay + "/SOMClust"
 
@@ -335,7 +371,7 @@ class Descriptors:
 
 
         # output
-        paffclean = self.prAnalysis + "IC50Clean.csv"
+        paffclean = self.prAnalysis + "AC50Clean.csv"
         pdesc1D2Dclean = self.prAnalysis + "descClean.csv"
 
         if path.exists(paffclean):

@@ -109,14 +109,15 @@ def crossResponseCurve(prresponse1, prresponse2, pAC501, pAC502, prout):
 def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
 
 
-    pfilout = prout + "descClean.csv"
-    if path.exists(pfilout):
-        return pfilout
+    pfiloutDesc = prout + "descClean.csv"
+    pfiloutAff = prout + "AC50Clean.csv"
+    if path.exists(pfiloutDesc): # control only desc because AC50 can be 0
+        return [pfiloutDesc, pfiloutAff]
     else:
-        cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 1 " + str(prout)
+        cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 0 " + str(prout)
         runRCMD(cmd)
-        if path.exists(pfilout):
-            return pfilout
+        if path.exists(pfiloutDesc):
+            return [pfiloutDesc, pfiloutAff]
 
     return 1
 
@@ -308,7 +309,6 @@ def histGlobal(pAC50All, prhist):
 
 
 def visualizeActive(pdesc, pAC50, distmeth, aggType, prout):
-
 
     cmd = "./visuActive.R " + str(pdesc) + " " + str(pAC50) + " " + str(distmeth) + " " + str(aggType) + " " + str(prout)
     runRCMD(cmd)

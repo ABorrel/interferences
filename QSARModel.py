@@ -37,13 +37,7 @@ class Model:
         color = self.cell + "_n"
         dAC50 = toolbox.loadMatrix(self.pAC50All, sep = "\t")
 
-        self.dpAC50 = {}
-        self.dpAC50[self.cell] = self.pAC50All
-
         presult = pathFolder.createFolder(self.prresult + self.cell + "/")
-        self.dpresult = {}
-        self.dpresult[self.cell] = presult
-
         pClass = presult + "AC50_" + str(self.cell)
         fclass = open(pClass, "w")
         fclass.write("CAS\tAff\n")
@@ -134,11 +128,19 @@ class Model:
                     self.writeClass()
                 elif typeData == "active":
                     self.writeClassActive()
-                runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile,
+
+                ptrain = self.dpresult[typeAC50] + "trainSet.csv"
+                ptest = self.dpresult[typeAC50] + "testSet.csv"
+
+                print ptrain
+                print ptest
+
+                if not path.exists(ptrain) and not path.exists(ptest):
+                    runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile,
                                              self.splitRatio, "0")
 
-            dtrain[typeAC50] = self.dpresult[typeAC50] + "trainSet.csv"
-            dtest[typeAC50] = self.dpresult[typeAC50] + "testSet.csv"
+            dtrain[typeAC50] = ptrain
+            dtest[typeAC50] = ptest
 
 
         self.dptrain = dtrain
@@ -252,7 +254,7 @@ class Model:
 
                 filout.write("\n".join(lw))
                 filout.close()
-
+                self.dpAC50[typeAC50] = pclass
 
 
     def writeClass(self):
@@ -310,11 +312,11 @@ class Model:
 
 def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbrepeat, nameCell, lchannels, typeData,  prout):
 
-    for i in range(1, nbrepeat):
+    for i in range(1, nbrepeat + 1):
         prQSAR = prout + str(i) + "/"
         #rmtree(prQSAR)############################################################################### to remove
         pathFolder.createFolder(prQSAR)
-        if len(listdir(prQSAR)) <= 100:
+        if len(listdir(prQSAR)) == 0:
             if nameCell == "Luc":
                 cAssay.combineAC50()
             cModel = Model(cDesc.pdesc1D2D, cAssay.pAC50, pAC50All, "class", corval, maxQuantile, splitratio,

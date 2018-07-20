@@ -26,7 +26,7 @@ phepg2 = prMain + "data/luc/tox21-spec-hepg2-p1/tox21-spec-hepg2-p1.txt"
 prresults = prMain + "spDataAnalysis/"
 
 # log folders
-prlog = prMain +  "spDataAnalysis/log/"
+prlog = prMain + "spDataAnalysis/log/"
 pathFolder.createFolder(prlog)
 
 # load assays
@@ -93,7 +93,6 @@ pathFolder.createFolder(prbarplot)
 
 prSMI = prMain + "SMI/"
 # compute descriptors
-
 prDesc = prMain + "Desc/"
 pathFolder.createFolder(prDesc)
 
@@ -202,12 +201,12 @@ pathFolder.createFolder(prcluster)
 # clusterize only active chemicals
 ######
 #-> by descriptors
-#prDescAct = pathFolder.createFolder(prresults + "DescActive/")
-#cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
-#cclustAct.clusterActive(pAC50All)
+prDescAct = pathFolder.createFolder(prresults + "DescActive/")
+cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+cclustAct.clusterActive(pAC50All)
 
 # using FP
-# => to do
+# => to do but no used at the moment
 
 
 
@@ -242,12 +241,13 @@ pathFolder.createFolder(prSOM)
 
 # SOM active  #
 ###############
-prSOM = prresults + "SOMactive/"
-pathFolder.createFolder(prSOM)
+prSOMAct = prresults + "SOMactive/"
+pathFolder.createFolder(prSOMAct)
 
-#cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOM)
-#cDesc.createActiveSOM(15, prSOM, pmodelSOM)
+#cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct)
+#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
 #cDesc.extractActivebySOM()
+
 
 ### for luc  ###
 ################
@@ -438,7 +438,6 @@ typeData = "all"
 # for each chanel and active #
 ##############################
 typeData = "active"
-#QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclassActive/")
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclassActive/")
 #QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclassActive/")
 
@@ -447,7 +446,7 @@ typeData = "active"
 typeData = "color"
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 
 
 # for clustering
