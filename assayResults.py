@@ -7,6 +7,7 @@ from numpy import mean, std
 from PIL import Image, ImageFont, ImageDraw
 from math import log10
 from shutil import copyfile
+from re import search
 
 font = ImageFont.truetype("OpenSans-Regular.ttf", size=30)
 
@@ -391,6 +392,8 @@ class assays:
             self.responseCurves(drawn=0)
 
         dfile = {}
+        dfile["all"] = open(prout + "all", "w")
+        dfile["all"].write("CASID\tCurve\n")
         for CASID in self.dresponse.keys():
             for sample in self.dresponse[CASID].keys():
                 if not sample in dfile.keys():
@@ -399,6 +402,15 @@ class assays:
 
                 if self.dresponse[CASID][sample]["AC50"] != "NA" and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
                     dfile[sample].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+
+                # case all color
+                if self.dresponse[CASID][sample]["AC50"] != "NA" and search("_n", sample) and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
+                    dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+
+                #case all set
+                if self.dresponse[CASID][sample]["AC50"] != "NA" and search("set", sample) and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
+                    dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+
 
         for sample in dfile.keys():
             pfile = dfile[sample].name

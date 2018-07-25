@@ -32,13 +32,35 @@ class Model:
         # format by type of AC50
         # change self with one folder by type of AC50
 
+        presult = pathFolder.createFolder(self.prresult + self.cell + "/")
+        pClass = presult + "AC50_" + str(self.cell)
+
+        # by pass
+        if path.exists(presult + "trainSet.csv") and path.exists(presult + "testSet.csv") and path.exists(pClass):
+            dtrain = {}
+            dtrain[self.cell] = presult + "trainSet.csv"
+
+            dtest = {}
+            dtest[self.cell] = presult + "testSet.csv"
+
+            self.dptrain = dtrain
+            self.dptest = dtest
+
+            self.dpAC50 = {}
+            self.dpAC50[self.cell] = pClass
+
+            self.dpresult = {}
+            self.dpresult[self.cell] = presult
+            return 0
+
+
         from random import shuffle
 
         color = self.cell + "_n"
         dAC50 = toolbox.loadMatrix(self.pAC50All, sep = "\t")
 
-        presult = pathFolder.createFolder(self.prresult + self.cell + "/")
-        pClass = presult + "AC50_" + str(self.cell)
+
+
         fclass = open(pClass, "w")
         fclass.write("CAS\tAff\n")
 
@@ -78,8 +100,100 @@ class Model:
         self.dptrain = dtrain
         self.dptest = dtest
 
+        self.dpAC50 = {}
+        self.dpAC50[self.cell] = pClass
+
+        self.dpresult = {}
+        self.dpresult[self.cell] = presult
 
 
+
+
+    def prepDataCrossColor(self):
+
+        # format by type of AC50
+        # change self with one folder by type of AC50
+
+        presult = pathFolder.createFolder(self.prresult + "crossColor/")
+        pClass = presult + "AC50_" + str(self.cell)
+        # by pass
+        if path.exists(presult + "trainSet.csv") and path.exists(presult + "testSet.csv") and path.exists(pClass):
+            dtrain = {}
+            dtrain[self.cell] = presult + "trainSet.csv"
+
+            dtest = {}
+            dtest[self.cell] = presult + "testSet.csv"
+
+            self.dptrain = dtrain
+            self.dptest = dtest
+
+            self.dpAC50 = {}
+            self.dpAC50[self.cell] = pClass
+
+            self.dpresult = {}
+            self.dpresult[self.cell] = presult
+
+            return 0
+
+        from random import shuffle
+
+
+        lcolors = ["blue_n", "green_n", "red_n"]
+        dAC50 = toolbox.loadMatrix(self.pAC50All, sep="\t")
+
+
+
+        fclass = open(pClass, "w")
+        fclass.write("CAS\tAff\n")
+
+        lCASID = dAC50.keys()[1:]  # remove ""
+        shuffle(lCASID)
+
+        lact = []
+        linact = []
+        for CASID in lCASID:
+            flag = 0
+            for color in lcolors:
+                print flag
+                if flag == 4:
+                    break
+                else:
+                    flag = 0
+                for channel in dAC50[CASID].keys():
+                    if search(color, channel):
+                        print color, channel
+                        if dAC50[CASID][channel] != "NA":
+                            flag = flag + 1
+
+            if flag == 4:
+                lact.append(str(CASID) + "\t1")
+            else:
+                linact.append(str(CASID) + "\t0")
+
+        nbinact = int(100 * len(lact) / (100 * self.ratioAct)) - len(lact)
+
+        lw = lact + linact[:nbinact]
+        shuffle(lw)
+
+        fclass.write("\n".join(lw))
+        fclass.close()
+
+        runExternalSoft.prepDataQSAR(self.pdesc, pClass, presult, self.corval, self.maxQauntile, self.splitRatio, "0")
+
+        dtrain = {}
+        dtrain[self.cell] = presult + "trainSet.csv"
+
+        dtest = {}
+        dtest[self.cell] = presult + "testSet.csv"
+
+        self.dptrain = dtrain
+        self.dptest = dtest
+
+        self.dpAC50 = {}
+        self.dpAC50[self.cell] = pClass
+
+        self.dpresult = {}
+        self.dpresult[self.cell] = presult
 
     def prepData(self, typeData):
 
@@ -157,7 +271,8 @@ class Model:
     def buildQSARClass(self):
 
         for typeAC50 in self.dpAC50:
-            runExternalSoft.QSARClass(self.dptrain[typeAC50], self.dptest[typeAC50], self.dpresult[typeAC50], self.nbCV)
+            if not path.exists(self.dpresult[typeAC50] + "perf.txt") and not path.exists(self.dpresult[typeAC50] + "perfCV.txt"):
+                runExternalSoft.QSARClass(self.dptrain[typeAC50], self.dptest[typeAC50], self.dpresult[typeAC50], self.nbCV)
 
 
 
@@ -316,16 +431,18 @@ def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV,
         prQSAR = prout + str(i) + "/"
         #rmtree(prQSAR)############################################################################### to remove
         pathFolder.createFolder(prQSAR)
-        if len(listdir(prQSAR)) == 0:
-            if nameCell == "Luc":
-                cAssay.combineAC50()
-            cModel = Model(cDesc.pdesc1D2D, cAssay.pAC50, pAC50All, "class", corval, maxQuantile, splitratio,
+
+        if nameCell == "Luc":
+            cAssay.combineAC50()
+        cModel = Model(cDesc.pdesc1D2D, cAssay.pAC50, pAC50All, "class", corval, maxQuantile, splitratio,
                                         nbCV, ratioAct, nameCell, lchannels, prQSAR)
-            if typeData == "color":
-                cModel.prepDataColor()
-            else:
-                cModel.prepData(typeData)
-            cModel.buildQSARClass()
+        if typeData == "color":
+            cModel.prepDataColor()
+        elif typeData == "crosscolor":
+            cModel.prepDataCrossColor()
+        else:
+            cModel.prepData(typeData)
+        cModel.buildQSARClass()
 
     prQSARAV = pathFolder.createFolder(prout + "Average/")
     mergeResults(prout, prQSARAV)

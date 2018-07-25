@@ -1,5 +1,7 @@
 from os import path, listdir
 
+from scipy.linalg import lu
+
 import assayResults
 import pathFolder
 import analyseDB
@@ -61,15 +63,18 @@ prCrossCurve = prresults + "crossCurvesResponse/"
 pathFolder.createFolder(prCrossCurve)
 #chepg2.crossResponseCurves(chek293, prCrossCurve)
 
+
 # barplot curve type #
 ######################
 prbarplot = chepg2.proutSP + "curveType/"
 pathFolder.createFolder(prbarplot)
 #chepg2.barplotCurveClass(prbarplot)
 
+
 prbarplot = cluc.proutSP + "curveType/"
 pathFolder.createFolder(prbarplot)
 #cluc.barplotCurveClass(prbarplot)
+
 
 prbarplot = chek293.proutSP + "curveType/"
 pathFolder.createFolder(prbarplot)
@@ -202,9 +207,8 @@ pathFolder.createFolder(prcluster)
 ######
 #-> by descriptors
 prDescAct = pathFolder.createFolder(prresults + "DescActive/")
-cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
-cclustAct.clusterActive(pAC50All)
-
+#cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+#cclustAct.clusterActive(pAC50All)
 # using FP
 # => to do but no used at the moment
 
@@ -235,19 +239,30 @@ pathFolder.createFolder(prcluster)
 ###############
 prSOM = prresults + "SOM/"
 pathFolder.createFolder(prSOM)
-#cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
-#pmodelSOM = cDesc.MainSOM(15)
+cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
+pmodelSOM = cDesc.MainSOM(15)
 
 
 # SOM active  #
 ###############
+# for luciferase
+prSOMAct = prresults + "SOMactiveluc/"
+pathFolder.createFolder(prSOMAct)
+
+cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct, luciferase=1)
+cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+cDesc.extractActivebySOM()
+ddd
+
+# for autofluorescence
 prSOMAct = prresults + "SOMactive/"
 pathFolder.createFolder(prSOMAct)
 
-#cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct)
-#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
-#cDesc.extractActivebySOM()
+cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct)
+cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+cDesc.extractActivebySOM()
 
+ggg
 
 ### for luc  ###
 ################
@@ -386,6 +401,13 @@ pathFolder.createFolder(prSOM)
 #   PCA analysis   #
 ####################
 
+##### for luc #####
+###################
+prPCA = cluc.proutSP + "PCA/"
+pathFolder.createFolder(prPCA)
+cluc.combineAC50()
+#cluc.createPCA(cDesc.pdesc1D2D, cluc.pAC50, corval, maxQuantile, prPCA)
+
 #### for chepg2  ####
 #####################
 prPCA = chepg2.proutSP + "PCA/"
@@ -420,7 +442,7 @@ pathFolder.createFolder(prMDS)
 ##### QSAR modeling ######
 ##########################
 ratioAct = 0.3
-nbRepeat = 10
+nbRepeat = 20
 ltypeCellChannel = ["cell_blue_n", "cell_green_n", "cell_red_n", "med_blue_n", "med_green_n", "med_red_n"]
 typeQSAR = "class"
 
@@ -435,8 +457,8 @@ typeData = "all"
 #QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
 
 
-# for each chanel and active #
-##############################
+# for each chanel and favorize active chemical #
+################################################
 typeData = "active"
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclassActive/")
 #QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclassActive/")
@@ -447,6 +469,11 @@ typeData = "color"
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+
+# for each color #
+##################
+typeData = "crosscolor"
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "all", ltypeCellChannel, typeData, prresults + "QSARclassCrossColor/")
 
 
 # for clustering

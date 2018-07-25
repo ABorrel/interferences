@@ -62,7 +62,7 @@ class Descriptors:
             imax = len(ddesc.keys())
 
             while i < imax:
-                casID = ddesc.keys()[i]
+                casID = dAC50All.keys()[i]
                 nbNA = 0
                 for kAC50 in dAC50All[casID].keys():
                     if kAC50 == "CASID" or kAC50 == "Luc_IC50":# not considered luciferase
@@ -91,22 +91,27 @@ class Descriptors:
 
         else:
             i = 0
-            imax = len(ddesc.keys())
+            imax = len(dAC50All.keys())
 
             while i < imax:
-                casID = ddesc.keys()[i]
-                nbNA = 0
+                casID = dAC50All.keys()[i]
+                if not casID in ddesc.keys():
+                    del dAC50All[casID]
+                    imax = imax - 1
+                    i = i - 1
+                    continue
                 for kAC50 in dAC50All[casID].keys():
-                    if kAC50 != "Luc_IC50":  # not considered luciferase
-                        continue
+                    if kAC50 != "Luc_IC50" and kAC50 != "CASID":  # not considered luciferase
+                        del dAC50All[casID][kAC50]
                     else:
                         if dAC50All[casID][kAC50] == "NA":
                             del dAC50All[casID]
-                            del ddesc[casID]
+                            try:del ddesc[casID]
+                            except: pass
                             imax = imax - 1
                             i = i -1
                             break
-                    i += 1
+                i += 1
 
             toolbox.writeMatrix(ddesc, pdescAct)
             toolbox.writeMatrix(dAC50All, pAC50Act)
@@ -128,6 +133,7 @@ class Descriptors:
         # create model
         prall = pathFolder.createFolder(prout + "all/")
         runExternalSoft.drawEnrichSOM(self.pdescCleanActive, self.pAC50AllActive, pmodelAll, prall)
+        self.extractActivebySOM(prall)
         # to better calibrate => change the max in the R script
 
         pModel = prout + "SOMmodel.Rdata"
@@ -140,12 +146,16 @@ class Descriptors:
         self.prSOMactive = prout
 
 
-    def extractActivebySOM(self):
+    def extractActivebySOM(self, prin = ""):
 
-        lfolders = listdir(self.prSOMactive)
+        if prin == "":
+            prin = self.prSOMactive
+
+        lfolders = listdir(prin)
+
         dAC50all = toolbox.loadMatrix(self.pAC50AllActive, sep=",")
         for assay in lfolders:
-            pclust = self.prSOMactive + assay + "/SOMClust"
+            pclust = prin + assay + "/SOMClust"
 
             if not path.exists(pclust):
                 continue
@@ -158,11 +168,31 @@ class Descriptors:
                 CAS = lchemClust[0]
                 clust = lchemClust[-1]
 
-                if not assay in dAC50all[CAS].keys():
+                if assay in dAC50all[CAS].keys():
+                    if dAC50all[CAS][assay] != "NA":
+                        pclust = pathFolder.createFolder(prin + assay + "/" + str(clust) + "/")
+                        copyfile(self.prPNG + CAS + ".png", pclust + CAS + ".png")
                     continue
-                if dAC50all[CAS][assay] != "NA":
-                    pclust = pathFolder.createFolder(self.prSOMactive + assay + "/" + str(clust) + "/")
-                    copyfile(self.prPNG + CAS + ".png", pclust + CAS + ".png")
+                elif assay == "red" or assay == "green" or assay == "blue":
+                    lassays = ["hepg2_cell_X_n", "hepg2_med_X_n", "hek293_med_X_n", "hek293_cell_X_n"]
+                    lassays = [i.replace("X", assay) for i in lassays]
+                    for ass in lassays:
+                        if dAC50all[CAS][ass] != "NA":
+                            pclust = pathFolder.createFolder(prin + assay + "/" + str(clust) + "/")
+                            copyfile(self.prPNG + CAS + ".png", pclust + CAS + ".png")
+                            break
+                elif search("hepg2", assay) or search("hek293", assay):
+                    lassays = ["X_cell_Y_n", "X_med_Y_n"]
+                    lass = assay.split("_")
+                    lassays = [i.replace("X", lass[0]).replace("Y", lass[1]) for i in lassays]
+
+                    for ass in lassays:
+                        if dAC50all[CAS][ass] != "NA":
+                            pclust = pathFolder.createFolder(prin + assay + "/" + str(clust) + "/")
+                            copyfile(self.prPNG + CAS + ".png", pclust + CAS + ".png")
+                            break
+
+
 
 
 
@@ -470,9 +500,12 @@ class Descriptors:
 
 
         pModel = self.prAnalysis + "SOMmodel.Rdata"
-        runExternalSoft.generateMainSOM(self.pdesc1D2Dclean, self.prAnalysis, sizeMap, pModel)
         if path.exists(pModel):
             return pModel
+        else:
+            runExternalSoft.generateMainSOM(self.pdesc1D2Dclean, self.prAnalysis, sizeMap, pModel)
+            if path.exists(pModel):
+                return pModel
         return "0"
 
 
@@ -542,7 +575,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
         chek293.responseCurves(drawn=0)
 
     lsample = chepg2.dresponse[chepg2.dresponse.keys()[0]].keys()
-    lcolor = ["blue", "blue_n", "red", "red_n", "green", "green_n"]
+    lcolor = ["blue_n", "red_n", "green_n"]
 
     for sample in lsample:
         prsub = pathFolder.createFolder(prout + str(sample) + "/")
@@ -572,6 +605,34 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
 
             if path.exists(prPNG + CASID + ".png"):
                 copyfile(prPNG + CASID + ".png", prsub + CASID + ".png")
+
+
+
+    # all active
+    prsub = pathFolder.createFolder(prout + "all/")
+
+    for CASID in chepg2.dresponse.keys():
+        flag = 1
+        for color in lcolor:
+            if chepg2.dresponse[CASID]["med_" + color]["AC50"] != "NA" and float(chepg2.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) < 4:
+                continue
+
+            if chek293.dresponse[CASID]["med_" + color]["AC50"] != "NA" and float(chek293.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) < 4:
+                continue
+
+            if chepg2.dresponse[CASID]["cell_" + color]["AC50"] != "NA" and float(chepg2.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) < 4:
+                continue
+
+            if chek293.dresponse[CASID]["cell_" + color]["AC50"] != "NA" and float(chek293.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) < 4:
+                continue
+
+            flag = 0
+            break
+
+        if flag == 1:
+            if path.exists(prPNG + CASID + ".png"):
+                copyfile(prPNG + CASID + ".png", prsub + CASID + ".png")
+
 
     runExternalSoft.crossVenn(cluc.pAC50, chepg2.pAC50, chek293.pAC50, prout)
 
