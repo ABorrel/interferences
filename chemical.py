@@ -78,7 +78,17 @@ LMOE = ['EstateVSA8', 'EstateVSA9', 'EstateVSA4', 'EstateVSA5', 'EstateVSA6', 'E
         'slogPVSA11', 'MRVSA8', 'MRVSA7', 'MRVSA6', 'EstateVSA10', 'slogPVSA2', 'slogPVSA3', 'slogPVSA0', 'slogPVSA1',
         'slogPVSA6', 'slogPVSA7', 'slogPVSA4', 'slogPVSA5', 'slogPVSA8', 'slogPVSA9', 'VSAEstate9', 'VSAEstate10']
 
+LOPERA = ["MolWeight", "nbAtoms", "nbHeavyAtoms", "nbC", "nbO", "nbH", "nbAromAtom", "nbRing", "nbHeteroRing",
+          "Sp3Sp2HybRatio", "nbRotBd", "nbHBdAcc", "ndHBdDon", "nbLipinskiFailures", "TopoPolSurfAir", "MolarRefract",
+          "CombDipolPolariz", "LogBCF_pred", "Sim_index_BCF", "BP_pred", "Sim_index_BP", "LogP_pred", "Sim_index_LogP",
+          "MP_pred", "Sim_index_MP", "LogVP_pred", "Sim_index_VP", "LogWS_pred", "Sim_index_WS", "LogOH_pred",
+          "Sim_index_AOH", "BioDeg_LogHalfLife_pred", "Sim_index_BioDeg", "Sim_index_ReadyBiodeg", "LogHL_pred",
+          "Sim_index_HL", "LogKM_pred", "Sim_index_KM", "LogKOA_pred", "Sim_index_KOA", "LogKoc_pred",
+          "Sim_index_LogKoc", "RT_pred", "Sim_index_RT", "pka_acid", "pka_basic"]
+
+
 loader = pydrug.PyDrug()
+
 
 
 
@@ -96,6 +106,8 @@ def getLdesc (typeDesc):
     if typeDesc == "1D2D":
         # listdesc
         lout = lout + constitution._constitutional.keys() + ["nheavy"] + molproperty.MolecularProperty.keys() + topology._Topology.keys() +connectivity._connectivity.keys() + LKAPA + LBUCUT + basak._basak.keys() + LESTATE + LMOREAUBROTO + LMORAN + LGEARY + charge._Charge.keys() + LMOE
+    if typeDesc == "Opera":
+        lout = LOPERA
 
     return lout
 
@@ -308,6 +320,22 @@ class chemical:
             else:
                 return 0
 
+
+
+
+
+    def loadOperaDesc(self, dOperaAll,flog):
+
+        if not self.name in dOperaAll.keys():
+            print self.name, "Not in Opera table"
+            flog.write(self.name + "\n")
+            return
+
+        self.Opera = dOperaAll[self.name]
+        if not "allDesc" in self.__dict__:
+            self.allDesc = self.Opera
+        else:
+            self.allDesc.update(deepcopy(dOperaAll[self.name]))
 
 
     def computeFP(self, typeFP):

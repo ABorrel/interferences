@@ -11,7 +11,7 @@ from re import search
 
 class Model:
 
-    def __init__(self, pdesc, pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitRatio, nbCV, ratioAct, cell, lchannels, prresult):
+    def __init__(self, pdesc, pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitRatio, nbCV, ratioAct, nbNA, cell, lchannels, prresult):
 
         self.corval = corval
         self.maxQauntile = maxQuantile
@@ -25,6 +25,7 @@ class Model:
         self.typeQSAR = typeQSAR
         self.lchannel = lchannels
         self.cell = cell
+        self.nbNA = nbNA
 
 
     def prepDataColor(self):
@@ -59,8 +60,6 @@ class Model:
         color = self.cell + "_n"
         dAC50 = toolbox.loadMatrix(self.pAC50All, sep = "\t")
 
-
-
         fclass = open(pClass, "w")
         fclass.write("CAS\tAff\n")
 
@@ -89,7 +88,7 @@ class Model:
         fclass.write("\n".join(lw))
         fclass.close()
 
-        runExternalSoft.prepDataQSAR(self.pdesc, pClass, presult, self.corval, self.maxQauntile, self.splitRatio, "0")
+        runExternalSoft.prepDataQSAR(self.pdesc, pClass, presult, self.corval, self.maxQauntile, self.splitRatio, self.nbNA, "0")
 
         dtrain = {}
         dtrain[self.cell] = presult + "trainSet.csv"
@@ -154,14 +153,14 @@ class Model:
         for CASID in lCASID:
             flag = 0
             for color in lcolors:
-                print flag
+                #print flag
                 if flag == 4:
                     break
                 else:
                     flag = 0
                 for channel in dAC50[CASID].keys():
                     if search(color, channel):
-                        print color, channel
+                        #print color, channel
                         if dAC50[CASID][channel] != "NA":
                             flag = flag + 1
 
@@ -178,7 +177,7 @@ class Model:
         fclass.write("\n".join(lw))
         fclass.close()
 
-        runExternalSoft.prepDataQSAR(self.pdesc, pClass, presult, self.corval, self.maxQauntile, self.splitRatio, "0")
+        runExternalSoft.prepDataQSAR(self.pdesc, pClass, presult, self.corval, self.maxQauntile, self.splitRatio, self.nbNA)
 
         dtrain = {}
         dtrain[self.cell] = presult + "trainSet.csv"
@@ -195,11 +194,11 @@ class Model:
         self.dpresult = {}
         self.dpresult[self.cell] = presult
 
-    def prepData(self, typeData):
 
+
+    def prepData(self, typeData):
         # format by type of AC50
         # change self with one folder by type of AC50
-
 
         dAC50 = toolbox.loadMatrix(self.pAC50, sep = "\t")
 
@@ -235,7 +234,7 @@ class Model:
         dtest = {}
         for typeAC50 in self.dpAC50.keys():
             if self.typeQSAR == "Reg":
-                runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile, self.splitRatio)
+                runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile, self.splitRatio, self.nbNA)
 
             else:
                 if typeData == "all":
@@ -251,7 +250,7 @@ class Model:
 
                 if not path.exists(ptrain) and not path.exists(ptest):
                     runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile,
-                                             self.splitRatio, "0")
+                                             self.splitRatio, self.nbNA)
 
             dtrain[typeAC50] = ptrain
             dtest[typeAC50] = ptest
@@ -425,7 +424,7 @@ class Model:
 
 
 
-def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbrepeat, nameCell, lchannels, typeData,  prout):
+def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbrepeat, nbNA, nameCell, lchannels, typeData,  prout):
 
     for i in range(1, nbrepeat + 1):
         prQSAR = prout + str(i) + "/"
@@ -435,7 +434,7 @@ def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV,
         if nameCell == "Luc":
             cAssay.combineAC50()
         cModel = Model(cDesc.pdesc1D2D, cAssay.pAC50, pAC50All, "class", corval, maxQuantile, splitratio,
-                                        nbCV, ratioAct, nameCell, lchannels, prQSAR)
+                                        nbCV, ratioAct, nbNA, nameCell, lchannels, prQSAR)
         if typeData == "color":
             cModel.prepDataColor()
         elif typeData == "crosscolor":

@@ -126,17 +126,20 @@ def loadMatrix(pmatrixIn, sep = "\t"):
     filin.close()
 
     dout = {}
-    line0 = llinesMat[0].replace("\"", "")
-    lheaders = line0.strip().split(sep)
+    line0 = formatLine(llinesMat[0])
+    lheaders = line0.split(sep)
 
     i = 1
     imax = len(llinesMat)
     while i < imax:
-        lineMat = llinesMat[i].replace("\"","")
-        lvalues = lineMat.strip().split(sep)
+        lineMat = formatLine(llinesMat[i])
+        lvalues = lineMat.split(sep)
         kin = lvalues[0]
         dout[kin] = {}
         j = 0
+        if len(lvalues) != len(lheaders):
+            print lvalues
+            print lheaders
         jmax = len(lheaders)
         while j < jmax:
             dout[kin][lheaders[j]] = lvalues[j]
@@ -147,26 +150,55 @@ def loadMatrix(pmatrixIn, sep = "\t"):
 
 
 
-def writeMatrix(ddesc, pdescAct):
+def formatLine(linein):
+
+    linein = linein.strip()
+    linenew = ""
+
+    imax = len(linein)
+    i = 0
+    flagchar = 0
+    while i < imax:
+        if linein[i] == '"' and flagchar == 0:
+            flagchar = 1
+        elif linein[i] == '"' and flagchar == 1:
+            flagchar = 0
+
+        if flagchar == 1 and linein[i] == ",":
+            linenew = linenew + " "
+        else:
+            linenew = linenew + linein[i]
+        i += 1
+
+    linenew = linenew.replace('\"', "")
+    return linenew
+
+
+
+def writeMatrix(ddesc, pdescAct, sep = "\t"):
 
 
     filout = open(pdescAct, "w")
     lheader = ddesc[ddesc.keys()[0]].keys()
 
     # put header in first
-    try:
+
+    if "CAS" in lheader:
         del lheader[lheader.index("CAS")]
         lheader = ["CAS"] + lheader
-    except:
+    elif "CASID" in lheader:
         del lheader[lheader.index("CASID")]
         lheader = ["CASID"] + lheader
+    else:
+        lheader = ["CASID"] + lheader
+        for casID in ddesc.keys():
+            ddesc[casID]["CASID"] = casID
 
 
-
-    filout.write("\t".join(lheader) + "\n")
+    filout.write(sep.join(lheader) + "\n")
     for casID in ddesc.keys():
         lval = [str(ddesc[casID][i]) for i in lheader]
-        filout.write("\t".join(lval) + "\n")
+        filout.write(sep.join(lval) + "\n")
     filout.close()
 
 

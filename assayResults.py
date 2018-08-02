@@ -1,6 +1,7 @@
 import pathFolder
 import runExternalSoft
 import loadDB
+import toolbox
 
 from os import path
 from numpy import mean, std
@@ -67,25 +68,27 @@ class assays:
         filout.close()
 
 
-    def writeAC50(self, filtercurvefit = 1):
+    def writeAC50(self, filtercurvefit = 1, filterburst = 1):
 
         dAC50 = {}
         lsample = []
 
-        if filtercurvefit == 1:
+        if filtercurvefit == 1 and filterburst == 1:
+            pfilout = self.proutSP + "AC50_sample_curve_burst"
+        elif filtercurvefit == 1 and filterburst == 0:
             pfilout = self.proutSP + "AC50_sample_curve"
         else:
             pfilout = self.proutSP + "AC50_sample"
 
         if path.exists(pfilout):
             self.pAC50 = pfilout
-            self.loadAC50()
+            if not "dAC50" in self.__dict__:
+                self.loadAC50()
             return pfilout
 
         if filtercurvefit == 1:
             if not "dresponse" in self.__dict__:
                 self.responseCurves(drawn=0)
-
 
         for chem in self.lchem:
             if chem["AC50"] == "":
@@ -393,23 +396,23 @@ class assays:
 
         dfile = {}
         dfile["all"] = open(prout + "all", "w")
-        dfile["all"].write("CASID\tCurve\n")
+        dfile["all"].write("CASID\tCurves\tAff\n")
         for CASID in self.dresponse.keys():
             for sample in self.dresponse[CASID].keys():
                 if not sample in dfile.keys():
                     dfile[sample] = open(prout + str(sample), "w")
-                    dfile[sample].write("CASID\tCurve\n")
+                    dfile[sample].write("CASID\tCurves\tAff\n")
 
                 if self.dresponse[CASID][sample]["AC50"] != "NA" and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
-                    dfile[sample].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+                    dfile[sample].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
 
                 # case all color
                 if self.dresponse[CASID][sample]["AC50"] != "NA" and search("_n", sample) and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
-                    dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+                    dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
 
                 #case all set
                 if self.dresponse[CASID][sample]["AC50"] != "NA" and search("set", sample) and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
-                    dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
+                    dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
 
 
         for sample in dfile.keys():
@@ -546,33 +549,33 @@ class assays:
 
 
 
-    def summarize(self, prout):
+    def summarize(self, prout, namefile):
 
         # table nbChem/active/inactive/M and SD AC50 + M and SD log10
-        if not "dresponse" in self.__dict__:
-            self.responseCurves(drawn=0)
         if not "dAC50" in self.__dict__:
             self.writeAC50()
 
-
-
         dsum = {}
-        for sample in self.dresponse[self.dresponse.keys()[0]].keys():
+        lsample = self.dAC50[self.dAC50.keys()[0]].keys()
+        if "CASID" in lsample:
+            del lsample[lsample.index("CASID")]
+        for sample in lsample:
+            print sample
+            if sample == "CASID":
+                continue
             dsum[sample] = {}
             dsum[sample]["act"] = []
             dsum[sample]["inact"] = []
 
-        for CASID in self.dresponse.keys():
-            for sample in dsum.keys():
-                if self.dresponse[CASID][sample]["AC50"] == "NA":
-                    dsum[sample]["inact"].append(CASID)
-                elif float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) >=4 :
+        for CASID in self.dAC50.keys():
+            for sample in lsample:
+                if self.dAC50[CASID][sample] == "NA":
                     dsum[sample]["inact"].append(CASID)
                 else:
-                    dsum[sample]["act"].append(float(self.dresponse[CASID][sample]["AC50"]))
+                    dsum[sample]["act"].append(float(self.dAC50[CASID][sample]))
 
 
-        pfilout = prout + "summarize.txt"
+        pfilout = prout + "summarize_" + str(namefile)
         filout = open(pfilout, "w")
         filout.write("Raw\tNb Chemical\tNb active\tNb inactive\tMean(AC50)\tSD(AC50)\tMean(-(logAC50))\tSD(-log(AC50))\n")
         for sample in dsum.keys():
@@ -648,6 +651,36 @@ class assays:
         runExternalSoft.drawMDS(pdesc1D2Dclean, pAC50, prMDS)
 
 
+    def filterCytox(self, dcytox):
+
+        if not "pAC50" in self.__dict__:
+            self.writeAC50()
+
+        #print dcytox.keys()
+        #print self.dAC50.keys()
+        #print list(set(dcytox.keys()) & set(self.dAC50.keys()))
+        linter = list(set(dcytox.keys()) & set(self.dAC50.keys()))
+        print len(linter), "-> l662"
+
+        pfilout = self.pAC50 + "_burst"
+        if path.exists(pfilout):
+            self.pAC50 = pfilout
+        else:
+            for CASinter in linter:
+                print CASinter
+                for channel in self.dAC50[CASinter].keys():
+                    print self.dAC50[CASinter][channel]
+                    if self.dAC50[CASinter][channel] != "NA":
+                        print "INNN"
+                        if float(self.dAC50[CASinter][channel]) > float(dcytox[CASinter]["CytoxMin"]):
+                            self.dAC50[CASinter][channel] = "NA"
+
+        toolbox.writeMatrix(self.dAC50, pfilout)
+        self.pAC50 = pfilout
+
+
+
+
 
 def histogramAC50(pAC50All, prhist):
 
@@ -657,11 +690,6 @@ def histogramAC50(pAC50All, prhist):
 
 
 def mergeAssays(cluc, chepg2, chek293):
-
-    cluc.combineAC50()
-    cluc.loadAC50()
-    chepg2.loadAC50()
-    chek293.loadAC50()
 
     pfilout = cluc.prout + "AC50_all"
     filout = open(pfilout, "w")

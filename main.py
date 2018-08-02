@@ -1,5 +1,4 @@
 from os import path, listdir
-
 from scipy.linalg import lu
 
 import assayResults
@@ -10,6 +9,7 @@ import runExternalSoft
 import clusteringDB
 import QSARModel
 #import MCS
+import cytox
 
 #########
 # MAIN  #
@@ -20,6 +20,8 @@ prMain = "/home/borrela2/interference/"
 
 pSDFToxCast = "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
 pSDFTox21 = "/home/borrela2/Tox21/TOX21SL.sdf"
+pOperaDesc = prMain + "data/OPERA_pred_Tox21.csv"
+prCytox = prMain + "data/Judson_2016-cytotox/"
 
 pluc = prMain + "data/luc/tox21-luc-biochem-p1/tox21-luc-biochem-p1.txt"
 phek293 = prMain +"data/luc/tox21-spec-hek293-p1/tox21-spec-hek293-p1.txt"
@@ -37,12 +39,33 @@ chepg2 = assayResults.assays(phepg2, prresults, prlog)
 chek293 = assayResults.assays(phek293, prresults, prlog)
 
 
+# filter cytox => from judson 2016 #
+####################################
+dcytox = cytox.parsepdf(prCytox, prresults)
+# for luc
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"), "curve_filter")
+cluc.combineAC50()
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"), "curve_combine_filter")
+cluc.filterCytox(dcytox)
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"), "curve_combine_cytox_filter")
+
+# for hepg2
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"), "curve_filter")
+chepg2.filterCytox(dcytox)
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"), "curve_cytox_filter")
+
+# for hek293
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"), "curve_filter")
+chek293.filterCytox(dcytox)
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"), "curve_cytox_filter")
+
+
 # merge AC50/IC50 from different assays #
 #########################################
 
 pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
 prhist = pathFolder.createFolder(prresults + "hist/")
-#assayResults.histogramAC50(pAC50All, prhist)
+assayResults.histogramAC50(pAC50All, prhist)
 
 
 # plot correlation #
@@ -70,19 +93,16 @@ prbarplot = chepg2.proutSP + "curveType/"
 pathFolder.createFolder(prbarplot)
 #chepg2.barplotCurveClass(prbarplot)
 
-
 prbarplot = cluc.proutSP + "curveType/"
 pathFolder.createFolder(prbarplot)
 #cluc.barplotCurveClass(prbarplot)
-
 
 prbarplot = chek293.proutSP + "curveType/"
 pathFolder.createFolder(prbarplot)
 #chek293.barplotCurveClass(prbarplot)
 
-
-# IC50 hist #
-#############
+# IC50 hist -> by cell #
+########################
 #cluc.AC50Distribution()
 #chek293.AC50Distribution()
 #chepg2.AC50Distribution()
@@ -108,7 +128,7 @@ prPNG = prMain + "PNG/"
 pathFolder.createFolder(prPNG)
 
 cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
-cDesc.computeDesc()
+cDesc.computeDesc(opera=1, pOperaDesc=pOperaDesc)
 #cDesc.generatePNG()
 
 
@@ -207,8 +227,8 @@ pathFolder.createFolder(prcluster)
 ######
 #-> by descriptors
 prDescAct = pathFolder.createFolder(prresults + "DescActive/")
-#cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
-#cclustAct.clusterActive(pAC50All)
+cclustAct = clusteringDB.clustering(cDesc, prDescAct, corval, maxQuantile, distmeth=distMeth, aggregtype=aggregtype, clusterType=clusterType, optimalCluster=optimalCluster)
+cclustAct.clusterActive(pAC50All)
 # using FP
 # => to do but no used at the moment
 
@@ -239,8 +259,8 @@ pathFolder.createFolder(prcluster)
 ###############
 prSOM = prresults + "SOM/"
 pathFolder.createFolder(prSOM)
-cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
-pmodelSOM = cDesc.MainSOM(15)
+#cDesc.setConstantPreproc("0", corval, maxQuantile, prSOM)
+#pmodelSOM = cDesc.MainSOM(15)
 
 
 # SOM active  #
@@ -249,20 +269,17 @@ pmodelSOM = cDesc.MainSOM(15)
 prSOMAct = prresults + "SOMactiveluc/"
 pathFolder.createFolder(prSOMAct)
 
-cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct, luciferase=1)
-cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
-cDesc.extractActivebySOM()
-ddd
+#cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct, luciferase=1)
+#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+#cDesc.extractActivebySOM()
 
 # for autofluorescence
 prSOMAct = prresults + "SOMactive/"
 pathFolder.createFolder(prSOMAct)
 
-cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct)
-cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
-cDesc.extractActivebySOM()
-
-ggg
+#cDesc.prepareActiveMatrix(corval, maxQuantile, pAC50All, prSOMAct)
+#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+#cDesc.extractActivebySOM()
 
 ### for luc  ###
 ################
@@ -288,15 +305,12 @@ pathFolder.createFolder(prRank)
 # for HEPG #
 ############
 ############
-
-# prep
-#chepg2.writeAC50()
 pranalysis = chepg2.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
-#cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
-#chepg2.summarize(pranalysis)
-#prVenn = pathFolder.createFolder(pranalysis + "Venn/")
-#chepg2.drawVennPlot(prVenn, prPNG)
+cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, pranalysis)
+
+prVenn = pathFolder.createFolder(pranalysis + "Venn/")
+chepg2.drawVennPlot(prVenn, prPNG)
 
 # cor with different AC50 available
 ###################################
@@ -331,7 +345,6 @@ optimalCluster = "gap_stat"
 ############
 
 # prep and preliminary analysis
-chek293.writeAC50()
 #chek293.corAC50()
 pranalysis = chek293.proutSP + "Stat/"
 pathFolder.createFolder(pranalysis)
@@ -443,6 +456,7 @@ pathFolder.createFolder(prMDS)
 ##########################
 ratioAct = 0.3
 nbRepeat = 20
+nbNA = 1000
 ltypeCellChannel = ["cell_blue_n", "cell_green_n", "cell_red_n", "med_blue_n", "med_green_n", "med_red_n"]
 typeQSAR = "class"
 
@@ -452,29 +466,28 @@ typeQSAR = "class"
 # for each chanel and cell line #
 #################################
 typeData = "all"
-#QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
-#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
 
 
 # for each chanel and favorize active chemical #
 ################################################
 typeData = "active"
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclassActive/")
-#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclassActive/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclassActive/")
+#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclassActive/")
 
 # for each color #
 ##################
 typeData = "color"
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 
 # for each color #
 ##################
 typeData = "crosscolor"
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, "all", ltypeCellChannel, typeData, prresults + "QSARclassCrossColor/")
-
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "all", ltypeCellChannel, typeData, prresults + "QSARclassCrossColor/")
 
 # for clustering
 #for i in range(1, 10):
@@ -485,7 +498,7 @@ typeData = "crosscolor"
 #    pathFolder.createFolder(prQSAR)
 #    if len(listdir(prQSAR)) == 0:
 #        cluc.combineAC50()
-#        cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, "Luc", ["IC50"], prQSAR)
+#        cModelluc = QSARModel.Model(cDesc.pdesc1D2D, cluc.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, nbNA,"Luc", ["IC50"], prQSAR)
 #        cModelluc.prepData()
 #        cModelluc.buildQSARClass()
 
@@ -495,7 +508,7 @@ typeData = "crosscolor"
 #    prQSARClass = chek293.proutSP + "QSARclassAct/" + str(i) + "/"
 #    pathFolder.createFolder(prQSARClass)
 #    if len(listdir(prQSARClass)) == 0:
-#        cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chek293.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
+#        cModelHEK293 = QSARModel.Model(cDesc.pdesc1D2D, chek293.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, nbNA,chek293.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
 #        cModelHEK293.prepData()
 #        cModelHEK293.buildQSARClass()
 
@@ -506,7 +519,7 @@ typeData = "crosscolor"
 #    prQSARClass = chepg2.proutSP + "QSARclassAct/" + str(i) + "/"
 #    pathFolder.createFolder(prQSARClass)
 #    if len(listdir(prQSARClass)) == 0:
-#        cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, chepg2.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
+#        cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, pAC50All, typeQSAR, corval, maxQuantile, splitratio, nbCV, ratioAct, nbNA,chepg2.proutSP.split("-")[-2], ltypeCellChannel, prQSARClass)
 #        cModelHEPG2.prepData()
 #        cModelHEPG2.buildQSARClass()
 
@@ -530,6 +543,9 @@ typeData = "crosscolor"
 # --> merge
 #prQSARAV = pathFolder.createFolder(chek293.proutSP + "QSARclass/Average/")
 #QSARModel.mergeResults(chek293.proutSP + "QSARclass/" , prQSARAV)
+
+
+
 
 
 ##### Regression  #####
@@ -557,7 +573,7 @@ prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
 typeQSAR = "Reg"
 prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
 
-#cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, prQSARClass)
+#cModelHEPG2 = QSARModel.Model(cDesc.pdesc1D2D, chepg2.pAC50, typeQSAR, corval, maxQuantile, splitratio, nbCV, nbNA,prQSARClass)
 #cModelHEPG2.prepData()
 #cModelHEPG2.buildQSARClass()
 
@@ -575,7 +591,7 @@ prQSARReg = pathFolder.createFolder(chepg2.proutSP + "QSARreg/")
 # Venn diagram by color  #
 ##########################
 prCrossVenn = pathFolder.createFolder(prresults + "CrossVenn/")
-#analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)
+analyseDB.VennCross(cluc, chepg2, chek293, prPNG, prCrossVenn)
 
 
 #################

@@ -16,10 +16,11 @@ def runRCMD(cmd, out = 0):
     chdir("./../fluo/")
     return output
 
+
 def runRQSARModeling(cmd):
 
     workdir = getcwd()
-    chdir("/home/borrela2/QSARPR/source/")
+    chdir("/home/borrela2/development/QSARPR/source/")
     print(cmd)
     system(cmd)
     chdir(workdir)
@@ -122,9 +123,9 @@ def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
     return 1
 
 
-def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, logAff = "1", typeAff="All"):
+def prepDataQSAR(pdesc, pAC50, prout, valcor, maxquantile, splitratio, nbNA, logAff = "0", typeAff="All"):
 
-    cmd = "./QSARsPrep.R " + pdesc + " " + pAC50 + " " + prout + " " + str(valcor) + " " + str(maxquantile) + " " + str(splitratio) + " " + str(logAff) + " " + typeAff
+    cmd = "./QSARsPrep.R " + pdesc + " " + pAC50 + " " + prout + " " + str(valcor) + " " + str(maxquantile) + " " + str(splitratio) + " " + str(logAff) + " " + typeAff + " " + str(nbNA)
     runRQSARModeling(cmd)
 
 

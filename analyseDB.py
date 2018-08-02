@@ -5,10 +5,27 @@ from scipy import stats
 from shutil import copyfile
 from copy import deepcopy
 
-#import chemical
+import chemical
 import runExternalSoft
 import toolbox
 from re import search
+
+
+
+def loadAllOperaDesc(pOperaDesc):
+    dDTX = toolbox.loadMatrix(pOperaDesc, ',')
+    dCAS = {}
+    for DTXID in dDTX.keys():
+        CASID = dDTX[DTXID]["CASRN"]
+        dCAS[CASID] = {}
+        for desc in chemical.LOPERA:
+            if dDTX[DTXID][desc] == "NaN":
+                dDTX[DTXID][desc] = "NA"
+            dCAS[CASID][desc] = dDTX[DTXID][desc]
+    return dCAS
+
+
+
 
 class Descriptors:
 
@@ -73,7 +90,10 @@ class Descriptors:
                 print nbNA, len(dAC50All[casID].keys())
                 if nbNA == (len(dAC50All[casID].keys()) -2):
                     del dAC50All[casID]
-                    del ddesc[casID]
+                    try:
+                        del ddesc[casID]
+                    except:
+                        pass
                     imax = imax -1
                 else:
                     i += 1
@@ -131,17 +151,16 @@ class Descriptors:
         import clusteringDB
 
         # create model
-        prall = pathFolder.createFolder(prout + "all/")
+        prall = pathFolder.createFolder(prout + "global/")
         runExternalSoft.drawEnrichSOM(self.pdescCleanActive, self.pAC50AllActive, pmodelAll, prall)
         self.extractActivebySOM(prall)
         # to better calibrate => change the max in the R script
 
         pModel = prout + "SOMmodel.Rdata"
         if not path.exists(pModel):
-            runExternalSoft.generateMainSOM(self.pdescCleanActive, prout, sizeMap, "0")
+            runExternalSoft.drawEnrichSOM(self.pdescCleanActive, self.pAC50AllActive, "0", prout)
         else:
-            runExternalSoft.generateMainSOM(self.pdescCleanActive, prout, sizeMap, pModel)
-        clusteringDB.createSOM(self.pdescCleanActive, self.pAC50AllActive, self.corval, self.maxQuantile, pModel, prout)
+            runExternalSoft.drawEnrichSOM(self.pdescCleanActive, self.pAC50AllActive, pModel, prout)
 
         self.prSOMactive = prout
 
@@ -195,12 +214,17 @@ class Descriptors:
 
 
 
-
-
-    def computeDesc(self):
+    def computeDesc(self, opera=0, pOperaDesc=""):
 
         pdesc1D2D = self.prDesc + "tableDesc1D2D"
         self.pdesc1D2D = pdesc1D2D
+
+        if opera == 1:
+            pdesc1D2D = self.prDesc + "tableDesc1D2DOpera"
+            self.pdesc1D2D = pdesc1D2D
+
+            plog = self.prDesc + "opera.log"
+            flog = open(plog, "w")
 
         prSMIclean = self.prDesc + "SMIclean/"
         pathFolder.createFolder(prSMIclean)
@@ -215,11 +239,16 @@ class Descriptors:
             return pdesc1D2D
         else:
             print pdesc1D2D, "No found"
-            ddd
             fdesc1D2D = open(pdesc1D2D, "w")
-            ldesc = chemical.getLdesc("1D2D")
-            fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
-
+            if opera == 0:
+                ldesc = chemical.getLdesc("1D2D")
+                fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
+            else:
+                ldesc = chemical.getLdesc("1D2D")
+                ldesc = ldesc + chemical.getLdesc("Opera")
+                doperaDesc = loadAllOperaDesc(pOperaDesc)
+                fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
+                print ldesc
 
 
         for pSMI in listdir(self.prSMI):
@@ -237,11 +266,14 @@ class Descriptors:
                 chem = chemical.chemical(cas, smiles)
                 chem.prepareChem(prSMIclean)
                 chem.compute1D2DDesc(prDescbyCAS)
+                if opera == 1:
+                    chem.loadOperaDesc(doperaDesc, flog)
                 err = chem.writeTablesDesc(prDescbyCAS)#
                 if err == 1: chem.writelog(self.prlog)
                 #Write in the table
                 chem.writeDesc(ldesc, fdesc1D2D)
         fdesc1D2D.close()
+        flog.close()
 
 
 
@@ -568,22 +600,21 @@ class Descriptors:
 def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
 
 
-    if not "dresponse" in chepg2.__dict__:
-        chepg2.responseCurves(drawn=0)
+    lsample = chepg2.dAC50[chepg2.dAC50.keys()[0]].keys()
 
-    if not "dresponse" in chek293.__dict__:
-        chek293.responseCurves(drawn=0)
+    if "CAS" in lsample:
+        del lsample[lsample.index("CAS")]
+    elif "CASID" in lsample:
+        del lsample[lsample.index("CASID")]
 
-    lsample = chepg2.dresponse[chepg2.dresponse.keys()[0]].keys()
+
     lcolor = ["blue_n", "red_n", "green_n"]
 
     for sample in lsample:
         prsub = pathFolder.createFolder(prout + str(sample) + "/")
 
-        for CASID in chepg2.dresponse.keys():
-            if chepg2.dresponse[CASID][sample]["AC50"] == "NA" or chek293.dresponse[CASID][sample]["AC50"] == "NA":
-                continue
-            if float(chepg2.dresponse[CASID][sample]["CURVE_CLASS2"]) >= 4 or float(chek293.dresponse[CASID][sample]["CURVE_CLASS2"]) >= 4:
+        for CASID in chepg2.dAC50.keys():
+            if chepg2.dAC50[CASID][sample] == "NA" or chek293.dAC50[CASID][sample] == "NA": # have to look if open good
                 continue
 
             if path.exists(prPNG + CASID + ".png"):
@@ -593,14 +624,11 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
     for color in lcolor:
         prsub = pathFolder.createFolder(prout + str(color) + "/")
 
-        if verbose == 1: print len(chepg2.dresponse.keys())
+        if verbose == 1: print len(chepg2.dAC50.keys())
 
-        for CASID in chepg2.dresponse.keys():
-            if chepg2.dresponse[CASID]["cell_" + color]["AC50"] == "NA" or chek293.dresponse[CASID]["cell_" + color]["AC50"] == "NA"\
-                    or chepg2.dresponse[CASID]["med_" + color]["AC50"] == "NA" or chek293.dresponse[CASID]["med_" + color]["AC50"] == "NA":
-                continue
-            if float(chepg2.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) >= 4 or float(chek293.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) >= 4 \
-                    or float(chepg2.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) >= 4 or float(chek293.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) >= 4:
+        for CASID in chepg2.dAC50.keys():
+            if chepg2.dAC50[CASID]["cell_" + color] == "NA" or chek293.dAC50[CASID]["cell_" + color] == "NA"\
+                    or chepg2.dAC50[CASID]["med_" + color] == "NA" or chek293.dAC50[CASID]["med_" + color] == "NA":
                 continue
 
             if path.exists(prPNG + CASID + ".png"):
@@ -611,19 +639,19 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
     # all active
     prsub = pathFolder.createFolder(prout + "all/")
 
-    for CASID in chepg2.dresponse.keys():
+    for CASID in chepg2.dAC50.keys():
         flag = 1
         for color in lcolor:
-            if chepg2.dresponse[CASID]["med_" + color]["AC50"] != "NA" and float(chepg2.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) < 4:
+            if chepg2.dAC50[CASID]["med_" + color] != "NA":
                 continue
 
-            if chek293.dresponse[CASID]["med_" + color]["AC50"] != "NA" and float(chek293.dresponse[CASID]["med_" + color]["CURVE_CLASS2"]) < 4:
+            if chek293.dAC50[CASID]["med_" + color] != "NA":
                 continue
 
-            if chepg2.dresponse[CASID]["cell_" + color]["AC50"] != "NA" and float(chepg2.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) < 4:
+            if chepg2.dAC50[CASID]["cell_" + color] != "NA":
                 continue
 
-            if chek293.dresponse[CASID]["cell_" + color]["AC50"] != "NA" and float(chek293.dresponse[CASID]["cell_" + color]["CURVE_CLASS2"]) < 4:
+            if chek293.dAC50[CASID]["cell_" + color] != "NA":
                 continue
 
             flag = 0
