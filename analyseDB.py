@@ -56,7 +56,7 @@ class Descriptors:
             self.reduceMatrixFP(self.dFP, lCASID)
 
 
-    def prepareActiveMatrix(self, corval, maxQuantile, pAC50All, prout, luciferase=0):
+    def prepareActiveMatrix(self, corval, maxQuantile, NBNA, pAC50All, prout, luciferase=0):
 
         self.corval = corval
         self.maxQuantile = maxQuantile
@@ -65,7 +65,7 @@ class Descriptors:
         pAC50Act = prout + "AC50Active"
 
         if path.exists(pdescAct) and path.getsize(pdescAct) > 10 and path.exists(pAC50Act) and path.getsize(pAC50Act) > 10:
-            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, NBNA, prout)
             self.pdescCleanActive = lpdescActClean[0]
             self.pAC50AllActive = lpdescActClean[1]
             return [self.pdescCleanActive, self.pAC50AllActive]
@@ -87,7 +87,7 @@ class Descriptors:
                     else:
                         if dAC50All[casID][kAC50] == "NA":
                             nbNA += 1
-                print nbNA, len(dAC50All[casID].keys())
+                #print nbNA, len(dAC50All[casID].keys())
                 if nbNA == (len(dAC50All[casID].keys()) -2):
                     del dAC50All[casID]
                     try:
@@ -101,7 +101,7 @@ class Descriptors:
             toolbox.writeMatrix(ddesc, pdescAct)
             toolbox.writeMatrix(dAC50All, pAC50Act)
 
-            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, NBNA, prout)
 
             self.pdescCleanActive = lpdescActClean[0]
             self.pAC50AllActive = lpdescActClean[1]
@@ -136,7 +136,7 @@ class Descriptors:
             toolbox.writeMatrix(ddesc, pdescAct)
             toolbox.writeMatrix(dAC50All, pAC50Act)
 
-            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, prout)
+            lpdescActClean = runExternalSoft.dataManager(pdescAct, pAC50Act, corval, maxQuantile, NBNA, prout)
 
             self.pdescCleanActive = lpdescActClean[0]
             self.pAC50AllActive = lpdescActClean[1]
@@ -186,15 +186,23 @@ class Descriptors:
                 lchemClust = lineChem.strip().replace("\"", "").split(",")
                 CAS = lchemClust[0]
                 clust = lchemClust[-1]
+                if CAS == "NA":
+                    continue
+                #print CAS, clust
 
                 if assay in dAC50all[CAS].keys():
                     if dAC50all[CAS][assay] != "NA":
                         pclust = pathFolder.createFolder(prin + assay + "/" + str(clust) + "/")
                         copyfile(self.prPNG + CAS + ".png", pclust + CAS + ".png")
                     continue
-                elif assay == "red" or assay == "green" or assay == "blue":
+                elif assay == "red" or assay == "green" or assay == "blue" or assay == "allcolors":
                     lassays = ["hepg2_cell_X_n", "hepg2_med_X_n", "hek293_med_X_n", "hek293_cell_X_n"]
-                    lassays = [i.replace("X", assay) for i in lassays]
+                    if assay == "allcolors":
+                        lassayout = []
+                        lassayout = lassayout + [i.replace("X", "blue") for i in lassays] + [i.replace("X", "green") for i in lassays] + [i.replace("X", "red") for i in lassays]
+                        lassays = lassayout
+                    else:
+                        lassays = [i.replace("X", assay) for i in lassays]
                     for ass in lassays:
                         if dAC50all[CAS][ass] != "NA":
                             pclust = pathFolder.createFolder(prin + assay + "/" + str(clust) + "/")
@@ -214,17 +222,19 @@ class Descriptors:
 
 
 
-    def computeDesc(self, opera=0, pOperaDesc=""):
+    def computeDesc(self, opera=0, RDkitPhysico=1, pOperaDesc=""):
 
         pdesc1D2D = self.prDesc + "tableDesc1D2D"
         self.pdesc1D2D = pdesc1D2D
 
         if opera == 1:
-            pdesc1D2D = self.prDesc + "tableDesc1D2DOpera"
+            pdesc1D2D = pdesc1D2D + "Opera"
             self.pdesc1D2D = pdesc1D2D
 
-            plog = self.prDesc + "opera.log"
-            flog = open(plog, "w")
+        if RDkitPhysico == 0:
+            pdesc1D2D = pdesc1D2D + "NoRDKITPhyChem"
+            self.pdesc1D2D = pdesc1D2D
+
 
         prSMIclean = self.prDesc + "SMIclean/"
         pathFolder.createFolder(prSMIclean)
@@ -238,17 +248,19 @@ class Descriptors:
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
             return pdesc1D2D
         else:
+            plog = self.prDesc + "log.log"
+            flog = open(plog, "w")
             print pdesc1D2D, "No found"
             fdesc1D2D = open(pdesc1D2D, "w")
             if opera == 0:
-                ldesc = chemical.getLdesc("1D2D")
+                ldesc = chemical.getLdesc("1D2D", RDkitPhysico)
                 fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
             else:
-                ldesc = chemical.getLdesc("1D2D")
-                ldesc = ldesc + chemical.getLdesc("Opera")
+                ldesc = chemical.getLdesc("1D2D", RDkitPhysico)
+                ldesc = ldesc + chemical.getLdesc("Opera", RDkitPhysico)
                 doperaDesc = loadAllOperaDesc(pOperaDesc)
                 fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
-                print ldesc
+                #print ldesc
 
 
         for pSMI in listdir(self.prSMI):
@@ -424,7 +436,7 @@ class Descriptors:
 
 
 
-    def setConstantPreproc(self, pAC50, corval, maxQuantile, prAnalysis):
+    def setConstantPreproc(self, pAC50, corval, maxQuantile, nbNA, prAnalysis):
 
         self.corval = corval
         self.maxQauntile = maxQuantile
@@ -438,22 +450,19 @@ class Descriptors:
 
         if path.exists(paffclean):
             self.pAC50clean = paffclean
-        if path.exists(pdesc1D2Dclean) and pAC50 == "0":
+        if path.exists(pdesc1D2Dclean):
             self.pdesc1D2Dclean = pdesc1D2Dclean
             return 0
 
         elif path.exists(self.pdesc1D2D) and path.getsize(self.pdesc1D2D) > 10:
             # preproc
-            runExternalSoft.dataManager(self.pdesc1D2D, self.pAC50, self.corval, self.maxQauntile, self.prAnalysis)
+            runExternalSoft.dataManager(self.pdesc1D2D, self.pAC50, self.corval, self.maxQauntile, nbNA, self.prAnalysis)
 
-            if path.exists(paffclean) and path.exists(pdesc1D2Dclean):
+            if path.exists(paffclean):
                 self.pAC50clean = paffclean
+            if path.exists(pdesc1D2Dclean):
                 self.pdesc1D2Dclean = pdesc1D2Dclean
-                return 0
-            else:
-                return 1
-        else:
-            return 1
+        return 0
 
 
 
@@ -535,7 +544,7 @@ class Descriptors:
         if path.exists(pModel):
             return pModel
         else:
-            runExternalSoft.generateMainSOM(self.pdesc1D2Dclean, self.prAnalysis, sizeMap, pModel)
+            runExternalSoft.generateMainSOM(self.pdesc1D2Dclean, self.prAnalysis, sizeMap, "0")
             if path.exists(pModel):
                 return pModel
         return "0"
@@ -594,6 +603,23 @@ class Descriptors:
                     j += 1
                 frank.write("\n")
             frank.close()
+
+
+
+    def Ttest(self, pAC50All, presult):
+
+        dAC50 = toolbox.loadMatrix(pAC50All, sep="\t")
+        ddesc = toolbox.loadMatrix(self.pdesc1D2Dclean, sep=",")
+
+        print ddesc.keys()[:20]
+        print dAC50.keys()[:20]
+
+        runExternalSoft.TtestDesc(self.pdesc1D2Dclean, pAC50All, presult)
+
+        sss
+
+
+        return
 
 
 
@@ -666,7 +692,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
 
 
 
-def PCACross(pdesc, pAC50_hepg2, pAC50_hek293, corval, maxQuantile, prCrossPCA):
+def PCACross(pdesc, pAC50_hepg2, pAC50_hek293, nbNA, corval, maxQuantile, prCrossPCA):
 
 
     # output
@@ -676,7 +702,7 @@ def PCACross(pdesc, pAC50_hepg2, pAC50_hek293, corval, maxQuantile, prCrossPCA):
 
         if path.exists(pdesc) and path.getsize(pdesc) > 10:
             # preproc
-            runExternalSoft.dataManager(pdesc, 0, corval, maxQuantile, prCrossPCA)
+            runExternalSoft.dataManager(pdesc, 0, corval, maxQuantile, nbNA, prCrossPCA)
         else:
             print "Error ->", pdesc
 

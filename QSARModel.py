@@ -431,8 +431,6 @@ def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV,
         #rmtree(prQSAR)############################################################################### to remove
         pathFolder.createFolder(prQSAR)
 
-        if nameCell == "Luc":
-            cAssay.combineAC50()
         cModel = Model(cDesc.pdesc1D2D, cAssay.pAC50, pAC50All, "class", corval, maxQuantile, splitratio,
                                         nbCV, ratioAct, nbNA, nameCell, lchannels, prQSAR)
         if typeData == "color":
@@ -445,6 +443,56 @@ def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV,
 
     prQSARAV = pathFolder.createFolder(prout + "Average/")
     mergeResults(prout, prQSARAV)
+    prDescAV = pathFolder.createFolder(prout + "descImportance/")
+    mergeDescInvolve(prout, "LDA", 10, prDescAV)
+    mergeDescInvolve(prout, "RF", 10,  prDescAV)
+
+def mergeDescInvolve(prin, ML, nbdesc, prout):
+
+    dimportance = {}
+
+    lprrun = listdir(prin)
+    for prrun in lprrun:
+        if prrun == "Average" or prrun == "descImportance":
+            continue
+
+        lprcell = listdir(prin + "/" + prrun + "/")
+        for prcell in lprcell:
+            if not prcell in dimportance.keys():
+                dimportance[prcell] = {}
+            dimportance[prcell][prrun] = {}
+            pimportance = prin + prrun + "/" + prcell + "/" + str(ML) + "class/ImportanceDesc"
+
+            if path.exists(pimportance):
+                ddescimportance = toolbox.loadMatrix(pimportance , sep="\t")
+                dimportance[prcell][prrun] = ddescimportance
+            else:
+                pmodel = prin + prrun + "/" + prcell + "/" + str(ML) + "class/model.RData"
+                ptrain = prin + prrun + "/" + prcell + "/trainSet.csv"
+                if path.exists(pmodel):
+                    runExternalSoft.createImportanceTable(pmodel, ML, ptrain, prin + prrun + "/" + prcell + "/" + str(ML) + "class/")
+                    ddescimportance = toolbox.loadMatrix(pimportance, sep="\t")
+                    dimportance[prcell][prrun] = ddescimportance
+
+
+    # write global table
+    for typeAssay in dimportance.keys():
+        pdesc = prout + "Importance" + str(ML) + "_" + typeAssay
+        fdesc = open(pdesc, "w")
+        lrun = dimportance[typeAssay].keys()
+
+        ldesc = dimportance[typeAssay][lrun[0]].keys()
+        fdesc.write("Desc\tRun\tval\n")
+        for desc in ldesc:
+            for run in lrun:
+                fdesc.write(desc + "\t" + str(run) + "\t" + str(dimportance[typeAssay][run][desc]["val"]) + "\n")
+        fdesc.close()
+
+        runExternalSoft.runImportanceDesc(pdesc, nbdesc)
+
+    return 0
+
+
 
 
 def mergeResults(prin, prout):
@@ -458,7 +506,7 @@ def mergeResults(prin, prout):
 
     lprrun = listdir(prin)
     for prrun in lprrun:
-        if prrun == "Average":
+        if prrun == "Average" or prrun == "descImportance":
             continue
         lprcell = listdir(prin + "/" + prrun + "/")
         for prcell in lprcell:
@@ -508,15 +556,16 @@ def mergeResults(prin, prout):
 
 
     # write result
+    lperfcriteria = ["Acc", "Sp", "Se", "MCC"]
     for celltype in dout.keys():
         pfilout = prout + celltype + ".csv"
         filout = open(pfilout, "w")
         for set in dout[celltype].keys():
             filout.write(str(set) + "\n")
-            filout.write("\t" + "\t".join(["M-" + str(c) + "\t" + "SD-" + str(c) for c in dperf.keys()]) + "\n")
+            filout.write("\t" + "\t".join(["M-" + str(c) + "\t" + "SD-" + str(c) for c in lperfcriteria]) + "\n")
             for ML in dout[celltype][set].keys():
                 filout.write(ML)
-                for criteria in dout[celltype][set][ML].keys():
+                for criteria in lperfcriteria:
                     filout.write("\t" + str(dout[celltype][set][ML][criteria][0]) + "\t" + str(dout[celltype][set][ML][criteria][1]))
                 filout.write("\n")
         filout.close()

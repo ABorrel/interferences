@@ -3,6 +3,7 @@ from re import search
 from time import sleep
 
 
+
 def runRCMD(cmd, out = 0):
 
     chdir("./../Rscripts/")
@@ -107,7 +108,7 @@ def crossResponseCurve(prresponse1, prresponse2, pAC501, pAC502, prout):
     runRCMD(cmd)
 
 
-def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
+def dataManager(pdesc, pAC50, corval, maxQauntile, nbNA, prout):
 
 
     pfiloutDesc = prout + "descClean.csv"
@@ -115,7 +116,7 @@ def dataManager(pdesc, pAC50, corval, maxQauntile, prout):
     if path.exists(pfiloutDesc): # control only desc because AC50 can be 0
         return [pfiloutDesc, pfiloutAff]
     else:
-        cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 0 " + str(prout)
+        cmd = "./preprocData.R " + str(pdesc) + " " + str(pAC50) + " " + str(corval) + " " + str(maxQauntile) + " 0 " + str(prout) + " " + str(nbNA)
         runRCMD(cmd)
         if path.exists(pfiloutDesc):
             return [pfiloutDesc, pfiloutAff]
@@ -187,6 +188,13 @@ def drawEnrichSOM(pdesc1D2Dclean, pAC50, pmodel, prSOM):
 
     return
 
+
+def TtestDesc(pdesc1D2Dclean, pAC50All, presult):
+
+    cmd = "./comparisonActInact.R " + str(pdesc1D2Dclean) + " " + str(pAC50All) + " " + presult
+    print cmd
+    ddd
+    runRCMD(cmd)
 
 
 def CrossClusterIC50(pdesc, pAC50, pclust, prout):
@@ -313,3 +321,21 @@ def visualizeActive(pdesc, pAC50, distmeth, aggType, prout):
 
     cmd = "./visuActive.R " + str(pdesc) + " " + str(pAC50) + " " + str(distmeth) + " " + str(aggType) + " " + str(prout)
     runRCMD(cmd)
+
+
+def createImportanceTable(pmodel, ML, ptrain, prout):
+
+    cmd = "./createImportanceTable.R " + str(pmodel) + " " + str(ML) + " " + ptrain + " " + prout
+    runRQSARModeling(cmd)
+
+    pimportance = prout + "ImportanceDesc"
+    if path.exists(pimportance):
+        return pimportance
+    else:
+        return 1
+
+
+def runImportanceDesc(pimportance, nb):
+
+    cmd = "./importancePlot.R " + str(pimportance) + " " + str(nb)
+    runRQSARModeling(cmd)

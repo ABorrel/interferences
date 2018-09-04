@@ -11,7 +11,7 @@ import pathFolder
 
 class clustering:
 
-    def __init__(self, cdesc, prout, corval, maxQuantile, distmeth = "euc", aggregtype = "ward.D2", clusterType = "hclust", optimalCluster = "gap_stat"):
+    def __init__(self, cdesc, prout, corval, maxQuantile, nbNA, distmeth = "euc", aggregtype = "ward.D2", clusterType = "hclust", optimalCluster = "gap_stat"):
 
         # set global parameters
         self.prout = prout
@@ -24,18 +24,17 @@ class clustering:
         self.aggType = aggregtype
         self.clusterMeth = clusterType
         self.optimalNBclustMeth = optimalCluster
-
-
+        self.nbNA = nbNA
 
 
     def clusterActive(self, pAC50All):
 
-        lfileAct = self.cdesc.prepareActiveMatrix(self.corval, self.maxquantile, pAC50All, self.prout)
+        lfileAct = self.cdesc.prepareActiveMatrix(self.corval, self.maxquantile, self.nbNA, pAC50All, self.prout)
         runExternalSoft.visualizeActive(lfileAct[0], lfileAct[1], self.distmeth, self.aggType, self.prout)
 
         #for luc
         prout = pathFolder.createFolder(self.prout + "luc/")
-        lfileAct = self.cdesc.prepareActiveMatrix(self.corval, self.maxquantile, pAC50All, prout, luciferase=1)
+        lfileAct = self.cdesc.prepareActiveMatrix(self.corval, self.maxquantile, self.nbNA, pAC50All, prout, luciferase=1)
         runExternalSoft.visualizeActive(lfileAct[0], lfileAct[1], self.distmeth, self.aggType, prout)
 
 

@@ -127,7 +127,13 @@ def loadMatrix(pmatrixIn, sep = "\t"):
 
     dout = {}
     line0 = formatLine(llinesMat[0])
+    line1 = formatLine(llinesMat[1])
     lheaders = line0.split(sep)
+    lval1 = line1.split(sep)
+
+    # case where R written
+    if len(lheaders) == (len(lval1) -1):
+        lheaders.append("val")
 
     i = 1
     imax = len(llinesMat)

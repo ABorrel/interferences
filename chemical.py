@@ -80,12 +80,11 @@ LMOE = ['EstateVSA8', 'EstateVSA9', 'EstateVSA4', 'EstateVSA5', 'EstateVSA6', 'E
 
 LOPERA = ["MolWeight", "nbAtoms", "nbHeavyAtoms", "nbC", "nbO", "nbH", "nbAromAtom", "nbRing", "nbHeteroRing",
           "Sp3Sp2HybRatio", "nbRotBd", "nbHBdAcc", "ndHBdDon", "nbLipinskiFailures", "TopoPolSurfAir", "MolarRefract",
-          "CombDipolPolariz", "LogBCF_pred", "Sim_index_BCF", "BP_pred", "Sim_index_BP", "LogP_pred", "Sim_index_LogP",
-          "MP_pred", "Sim_index_MP", "LogVP_pred", "Sim_index_VP", "LogWS_pred", "Sim_index_WS", "LogOH_pred",
-          "Sim_index_AOH", "BioDeg_LogHalfLife_pred", "Sim_index_BioDeg", "Sim_index_ReadyBiodeg", "LogHL_pred",
-          "Sim_index_HL", "LogKM_pred", "Sim_index_KM", "LogKOA_pred", "Sim_index_KOA", "LogKoc_pred",
-          "Sim_index_LogKoc", "RT_pred", "Sim_index_RT", "pka_acid", "pka_basic"]
+          "CombDipolPolariz", "LogBCF_pred", "BP_pred", "LogP_pred", "MP_pred", "LogVP_pred", "LogWS_pred", "LogOH_pred",
+          "BioDeg_LogHalfLife_pred", "LogHL_pred", "LogKM_pred", "LogKOA_pred", "LogKoc_pred", "RT_pred", "pka_acid", "pka_basic"]
 
+LMOLPROP = ['LogP', 'LogP2', 'MR', 'TPSA', 'Hy', 'UI']
+LMOLPROP = ['LogP2', 'TPSA', 'Hy', 'UI']# remove duplicate from opera
 
 loader = pydrug.PyDrug()
 
@@ -100,12 +99,21 @@ def normalize(mol, lout):
 
 
 
-def getLdesc (typeDesc):
+def getLdesc (typeDesc, RKitPhyco=1):
 
     lout = []
-    if typeDesc == "1D2D":
+    if typeDesc == "1D2D" and RKitPhyco == 1:
         # listdesc
-        lout = lout + constitution._constitutional.keys() + ["nheavy"] + molproperty.MolecularProperty.keys() + topology._Topology.keys() +connectivity._connectivity.keys() + LKAPA + LBUCUT + basak._basak.keys() + LESTATE + LMOREAUBROTO + LMORAN + LGEARY + charge._Charge.keys() + LMOE
+        lout = lout + constitution._constitutional.keys() + ["nheavy"] + LMOLPROP + topology._Topology.keys() + \
+               connectivity._connectivity.keys() + LKAPA + LBUCUT + basak._basak.keys() + LESTATE + LMOREAUBROTO + \
+               LMORAN + LGEARY + charge._Charge.keys() + LMOE
+
+    elif typeDesc == "1D2D" and RKitPhyco == 0:
+        # listdesc
+        lout = lout + constitution._constitutional.keys() + ["nheavy"] + topology._Topology.keys() + \
+               connectivity._connectivity.keys() + LKAPA + LBUCUT + basak._basak.keys() + LESTATE + LMOREAUBROTO + \
+               LMORAN + LGEARY + charge._Charge.keys() + LMOE
+
     if typeDesc == "Opera":
         lout = LOPERA
 

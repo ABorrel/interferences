@@ -29,7 +29,6 @@ def parsepdf(prcytox, prresult):
 
     i = 0
     while i < nbpage:
-        print i
         pageObj = pdfReader.getPage(i)
         pageText = pageObj.extractText()
         llines = pageText.split("\n")

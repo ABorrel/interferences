@@ -2,6 +2,7 @@ import pathFolder
 import runExternalSoft
 import loadDB
 import toolbox
+import cytox
 
 from os import path
 from numpy import mean, std
@@ -14,8 +15,9 @@ font = ImageFont.truetype("OpenSans-Regular.ttf", size=30)
 
 
 class assays:
-    def __init__(self, pfilin, prout, prlog):
+    def __init__(self, pfilin, curvecutoff, effcutoff, curvePositive, curveNegative, prcytox, prout, prlog):
         self.pfilin = pfilin
+        self.prcytox = prcytox
         self.name = pfilin.split("/")[-1].split(".")[0]
         self.loadAssay()
         proutSP = prout + pfilin.split("/")[-1].split(".")[0] + "/"
@@ -25,6 +27,11 @@ class assays:
         self.prout = prout
         self.prlog = prlog
 
+        self.curveCutoff = curvecutoff
+        self.curvePositive = curvePositive
+        self.curveNegative = curveNegative
+
+        self.effcutoff = effcutoff
 
     def loadAssay(self):
 
@@ -68,53 +75,72 @@ class assays:
         filout.close()
 
 
-    def writeAC50(self, filtercurvefit = 1, filterburst = 1):
+    def writeAC50(self, filtercurvefit = 1, filterefficacy = 1, filterburst = 1, combine = 0):
 
         dAC50 = {}
         lsample = []
 
-        if filtercurvefit == 1 and filterburst == 1:
-            pfilout = self.proutSP + "AC50_sample_curve_burst"
-        elif filtercurvefit == 1 and filterburst == 0:
-            pfilout = self.proutSP + "AC50_sample_curve"
-        else:
-            pfilout = self.proutSP + "AC50_sample"
+        pfilout = self.proutSP + "AC50_sample"
+        if filtercurvefit == 1:
+            pfilout = pfilout + "_curve"
+        if filterefficacy == 1:
+            pfilout = pfilout + "_eff"
+        if filterburst == 1:
+            pfilout = pfilout + "_burst"
+        if combine == 1:
+            pfilout = pfilout + "_combine"
+
 
         if path.exists(pfilout):
             self.pAC50 = pfilout
-            if not "dAC50" in self.__dict__:
-                self.loadAC50()
+            self.loadAC50()
             return pfilout
 
         if filtercurvefit == 1:
             if not "dresponse" in self.__dict__:
                 self.responseCurves(drawn=0)
 
+        if filterburst == 1:
+            dcytox = cytox.parsepdf(self.prcytox, self.prout)
+
         for chem in self.lchem:
             if chem["AC50"] == "":
                 chem["AC50"] = "NA"
             CAS = chem["CAS"]
-
             if filtercurvefit == 1:
-                #print CAS, "CAS"
-                #print self.dresponse[CAS]
-                #print chem["SAMPLE_DATA_TYPE"]
-                #print self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]
-                if float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["CURVE_CLASS2"]) >= 4:
+                if abs(float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["CURVE_CLASS2"])) >= self.curveCutoff:
                     chem["AC50"] = "NA"
+                if self.curveNegative == 0 and float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["CURVE_CLASS2"]) < 0.0:
+                    chem["AC50"] = "NA"
+                if self.curvePositive == 0 and float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["CURVE_CLASS2"]) > 0.0:
+                    chem["AC50"] = "NA"
+
+            if filterefficacy == 1:
+                if abs(float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["EFFICACY"])) < self.effcutoff:
+                    chem["AC50"] = "NA"
+
             if not CAS in dAC50.keys():
                 dAC50[CAS] = {}
             dAC50[CAS][chem["SAMPLE_DATA_TYPE"]] = chem["AC50"]
             if not chem["SAMPLE_DATA_TYPE"] in lsample:
                 lsample.append(chem["SAMPLE_DATA_TYPE"])
 
+        if combine == 1:
+            dAC50 = self.combineIC50(dAC50)
+
+
+        if filterburst == 1:
+            self.filterCytox(dcytox, dAC50)
+
+
+        lsamples = dAC50[dAC50.keys()[0]].keys()
         filout = open(pfilout, "w")
-        filout.write("CAS\t" + "\t".join(lsample) + "\n")
+        filout.write("CAS\t" + "\t".join(lsamples) + "\n")
         for casID in dAC50.keys():
             if casID == "":
                 continue
             lw = []
-            for sample in lsample:
+            for sample in lsamples:
                 if sample in dAC50[casID].keys():
                     lw.append(str(dAC50[casID][sample]))
                 else:
@@ -128,9 +154,6 @@ class assays:
 
 
     def loadAC50(self):
-
-        if not "pAC50" in self.__dict__:
-            self.writeAC50()
 
         self.dAC50 = {}
         filin = open(self.pAC50, "r")
@@ -149,49 +172,32 @@ class assays:
                 i += 1
 
 
-    def combineAC50(self):
+    def combineIC50(self, dAC50):
 
         dAC50out = {}
 
-        pfilout = self.proutSP + "AC50_combine"
-        if path.exists(pfilout) and path.getsize(pfilout) > 50:
-            self.pAC50 = pfilout
-            self.loadAC50()
-            return pfilout
+        lsample = dAC50[dAC50.keys()[0]].keys()
 
-
-        if not "dAC50" in self.__dict__:
-                self.writeAC50()
-
-        lsample = self.dAC50[self.dAC50.keys()[0]].keys()
-
-        filout = open(pfilout, "w")
-        filout.write("CAS\tIC50\n")
-        for casID in self.dAC50.keys():
+        for casID in dAC50.keys():
             if casID == "":
                 continue
             lM = []
             for sample in lsample:
-                if sample in self.dAC50[casID].keys():
-                    if self.dAC50[casID][sample] != "NA":
-                        lM.append(float(self.dAC50[casID][sample]))
+                if sample in dAC50[casID].keys():
+                    if dAC50[casID][sample] != "NA":
+                        lM.append(float(dAC50[casID][sample]))
             if lM == []:
                 M = "NA"
             else:
                 M = mean(lM)
             dAC50out[casID] = {}
-            dAC50out[casID]["set1"] = M
-            filout.write(str(casID) + "\t" + str(M) + "\n")
-        filout.close()
-        self.pAC50 = pfilout
-        self.dAC50 = dAC50out
+            dAC50out[casID]["IC50"] = M
+
+        return dAC50out
 
 
 
     def corAC50(self):
-
-        if not "pAC50" in self.__dict__:
-            self.writeAC50()
 
         pcor = self.proutSP + "corAC50/"
         pathFolder.createFolder(pcor)
@@ -291,14 +297,11 @@ class assays:
 
     def AC50Distribution(self):
 
-        prIC50 = self.proutSP + "histIC50/"
-        pathFolder.createFolder(prIC50)
-
-        # load table
-        pAC50 = self.writeAC50()
+        prAC50 = self.proutSP + "histAC50/"
+        pathFolder.createFolder(prAC50)
 
         # run hist plot
-        runExternalSoft.plotAC50(pAC50, prIC50, self.name.split("-")[1])
+        runExternalSoft.plotAC50(self.pAC50, prAC50, self.name.split("-")[1])
 
 
 
@@ -326,6 +329,11 @@ class assays:
                 dresponse[casID][typein]["AC50"] = chem["AC50"]
             else:
                 dresponse[casID][typein]["AC50"] = "NA"
+
+            if chem["EFFICACY"] != "":
+                dresponse[casID][typein]["EFFICACY"] = chem["EFFICACY"]
+            else:
+                dresponse[casID][typein]["EFFICACY"] = 0.0
 
             if chem["CURVE_CLASS2"] != "":
                 dresponse[casID][typein]["CURVE_CLASS2"] = chem["CURVE_CLASS2"]
@@ -366,12 +374,12 @@ class assays:
                 i += 1
             filout.close()
 
+        # compute response curve
+        self.dresponse = dresponse
         # draw plot
         if drawn == 1:
-            pAC50 = self.writeAC50(filtercurvefit=0)
-            runExternalSoft.plotResponsiveCurve(prresponse, pAC50, self.proutSP)
+            runExternalSoft.plotResponsiveCurve(prresponse, self.pAC50, self.proutSP)
 
-        self.dresponse = dresponse
 
 
 
@@ -380,13 +388,14 @@ class assays:
         self.responseCurves(drawn=0)
         cAssays.responseCurves(drawn=0)
 
-        self.writeAC50(filtercurvefit=0)
-        cAssays.writeAC50(filtercurvefit=0)
-
+        self.writeAC50(filtercurvefit=0, filterburst=0)
+        cAssays.writeAC50(filtercurvefit=0, filterburst=0)
 
         runExternalSoft.crossResponseCurve(self.prresponse, cAssays.prresponse, self.pAC50, cAssays.pAC50, prout)
 
-        return
+        # reimplement with filters
+        self.writeAC50()
+        cAssays.writeAC50()
 
 
     def barplotCurveClass(self, prout):
@@ -403,16 +412,23 @@ class assays:
                     dfile[sample] = open(prout + str(sample), "w")
                     dfile[sample].write("CASID\tCurves\tAff\n")
 
-                if self.dresponse[CASID][sample]["AC50"] != "NA" and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
-                    dfile[sample].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
+                if self.dresponse[CASID][sample]["AC50"] == "NA":
+                    continue
+                if abs(float(self.dresponse[CASID][sample]["CURVE_CLASS2"])) >= self.curveCutoff:
+                    continue
+                if self.curveNegative == 0 and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 0.0:
+                    continue
+                if self.curvePositive == 0 and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) > 0.0:
+                    continue
+
+                dfile[sample].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
 
                 # case all color
-                if self.dresponse[CASID][sample]["AC50"] != "NA" and search("_n", sample) and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
+                if search("_n", sample):
                     dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
 
                 #case all set
-                if self.dresponse[CASID][sample]["AC50"] != "NA" and search("set", sample) and float(self.dresponse[CASID][sample]["CURVE_CLASS2"]) < 4 :
-                    dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
+                dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
 
 
         for sample in dfile.keys():
@@ -488,8 +504,6 @@ class assays:
 
         if not "dresponse" in self.__dict__:
             self.responseCurves(drawn=0)
-        if not "dAC50" in self.__dict__:
-            self.writeAC50()
 
         dval = {}
         for CASID in self.dAC50.keys():
@@ -521,46 +535,47 @@ class assays:
                         else:
                             curve = self.dresponse[cas][sample]["CURVE_CLASS2"]
 
-                        if delcurveinact == 1 and float(curve) >= 4:
-                            continue
-                        pimageout = prsample + str(rank) + "_" + str(cas) + ".png"
-                        pcaspng = prpng + cas + ".png"
-                        if not path.exists(pcaspng) or path.getsize(pcaspng) < 10:
-                            print "not found", pcaspng
+                        if delcurveinact == 1:
+                            if abs(float(curve)) >= self.curveCutoff:
+                                continue
+                            if self.curvePositive == 0 and float(curve) > 0:
+                                continue
+                            if self.curveNegative == 0 and float(curve) < 0:
+                                continue
+
+                        pcaspng = prpng + str(cas) + ".png"
+                        if not path.exists(pcaspng):
                             continue
                         else:
-                            writeLine = "CAS: " + str(cas) + "\nRANK: " + str(rank) + "\nAC50: " + str(val) + "\nCurve: " + str(curve)
+                            pimageout = prresult + str(cas) + ".png"
+                        writeLine = "CAS: " + str(cas) + "\nRANK: " + str(rank) + "\nAC50: " + str(
+                            val) + "\nCurve: " + str(curve)
 
-                            img = Image.open(pcaspng)
-                            imgnew = Image.new("RGBA", (580, 775), (250, 250, 250))
-                            imgnew.paste(img, (0,0))
-                            draw = ImageDraw.Draw(imgnew)
-                            draw.text((10, 600), str(writeLine.split("\n")[0]), (0, 0, 0), font=font)
-                            draw.text((10, 625), str(writeLine.split("\n")[1]), (0, 0, 0), font=font)
-                            draw.text((10, 650), str(writeLine.split("\n")[2]), (0, 0, 0), font=font)
-                            draw.text((10, 675), str(writeLine.split("\n")[3]), (0, 0, 0), font=font)
-                            imgnew.save(pimageout)
+                        img = Image.open(pcaspng)
+                        imgnew = Image.new("RGBA", (580, 775), (250, 250, 250))
+                        imgnew.paste(img, (0, 0))
+                        draw = ImageDraw.Draw(imgnew)
+                        draw.text((10, 600), str(writeLine.split("\n")[0]), (0, 0, 0), font=font)
+                        draw.text((10, 625), str(writeLine.split("\n")[1]), (0, 0, 0), font=font)
+                        draw.text((10, 650), str(writeLine.split("\n")[2]), (0, 0, 0), font=font)
+                        draw.text((10, 675), str(writeLine.split("\n")[3]), (0, 0, 0), font=font)
+                        imgnew.save(pimageout)
 
-                        rank = rank + 1
-                        lcasflag.append(cas)
+                    rank = rank + 1
+                    lcasflag.append(cas)
 
                 if rank > nrank:
                     break
 
 
 
-    def summarize(self, prout, namefile):
-
-        # table nbChem/active/inactive/M and SD AC50 + M and SD log10
-        if not "dAC50" in self.__dict__:
-            self.writeAC50()
+    def summarize(self, prout):
 
         dsum = {}
         lsample = self.dAC50[self.dAC50.keys()[0]].keys()
         if "CASID" in lsample:
             del lsample[lsample.index("CASID")]
         for sample in lsample:
-            print sample
             if sample == "CASID":
                 continue
             dsum[sample] = {}
@@ -575,16 +590,16 @@ class assays:
                     dsum[sample]["act"].append(float(self.dAC50[CASID][sample]))
 
 
-        pfilout = prout + "summarize_" + str(namefile)
+        pfilout = prout + "summarize_" + str(self.pAC50.split("/")[-1])
+
         filout = open(pfilout, "w")
         filout.write("Raw\tNb Chemical\tNb active\tNb inactive\tMean(AC50)\tSD(AC50)\tMean(-(logAC50))\tSD(-log(AC50))\n")
         for sample in dsum.keys():
-            filout.write(str(sample) + "\t" + str(len(dsum[sample]["act"])+len(dsum[sample]["inact"])) + "\t" +
-                         str(len(dsum[sample]["act"])) + "\t" +
-                         str(len(dsum[sample]["inact"])) + "\t" + str(mean(dsum[sample]["act"])) + "\t" +
-                         str(std(dsum[sample]["act"])) + "\t" +
-                         str(mean([-log10(x) for x in dsum[sample]["act"]])) + "\t" +
-                         str(std([-log10(x) for x in dsum[sample]["act"]])) + "\n")
+            filout.write("%s\t%d\t%d\t%d\t%.2f\t%.2f\t%.2f\t%.2f\n"% (sample,
+                         len(dsum[sample]["act"])+len(dsum[sample]["inact"]),
+                             len(dsum[sample]["act"]), len(dsum[sample]["inact"]), mean(dsum[sample]["act"]),
+                             std(dsum[sample]["act"]), mean([-log10(x) for x in dsum[sample]["act"]]),
+                             std([-log10(x) for x in dsum[sample]["act"]])))
         filout.close()
 
 
@@ -606,9 +621,13 @@ class assays:
 
                 prsubpng = pathFolder.createFolder(pranalysis + str(sample1) + "-" + str(sample2) + "/")
                 for CASID in self.dresponse.keys():
-                    if self.dresponse[CASID][sample1]["AC50"] == "NA" or self.dresponse[CASID][sample2]["AC50"] == "NA":
+                    if self.dresponse[CASID][sample1]["AC50"] == "NA":
                         continue
-                    if float(self.dresponse[CASID][sample1]["CURVE_CLASS2"]) >= 4 or float(self.dresponse[CASID][sample2]["CURVE_CLASS2"]) >= 4:
+                    if abs(float(self.dresponse[CASID][sample1]["CURVE_CLASS2"])) >= self.curveCutoff:
+                        continue
+                    if self.curveNegative == 0 and float(self.dresponse[CASID][sample2]["CURVE_CLASS2"]) < 0:
+                        continue
+                    if self.curvePositive == 0 and float(self.dresponse[CASID][sample2]["CURVE_CLASS2"]) > 0:
                         continue
 
                     if path.exists(prPNG + CASID + ".png"):
@@ -618,7 +637,7 @@ class assays:
         runExternalSoft.vennPlot(self.pAC50, pranalysis)
 
 
-    def createPCA(self, pdesc1D2D, pAC50, corval, maxQuantile, prPCA):
+    def createPCA(self, pdesc1D2D, pAC50, corval, maxQuantile, nbNA, prPCA):
 
         # output
         pdesc1D2Dclean = prPCA + "descClean.csv"
@@ -627,7 +646,7 @@ class assays:
 
             if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 10:
                 # preproc
-                runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, prPCA)
+                runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, nbNA, prPCA)
             else:
                 print "Error ->", pdesc1D2D
 
@@ -651,32 +670,17 @@ class assays:
         runExternalSoft.drawMDS(pdesc1D2Dclean, pAC50, prMDS)
 
 
-    def filterCytox(self, dcytox):
+    def filterCytox(self, dcytox, dAC50):
 
-        if not "pAC50" in self.__dict__:
-            self.writeAC50()
 
-        #print dcytox.keys()
-        #print self.dAC50.keys()
-        #print list(set(dcytox.keys()) & set(self.dAC50.keys()))
-        linter = list(set(dcytox.keys()) & set(self.dAC50.keys()))
+        linter = list(set(dcytox.keys()) & set(dAC50.keys()))
         print len(linter), "-> l662"
 
-        pfilout = self.pAC50 + "_burst"
-        if path.exists(pfilout):
-            self.pAC50 = pfilout
-        else:
-            for CASinter in linter:
-                print CASinter
-                for channel in self.dAC50[CASinter].keys():
-                    print self.dAC50[CASinter][channel]
-                    if self.dAC50[CASinter][channel] != "NA":
-                        print "INNN"
-                        if float(self.dAC50[CASinter][channel]) > float(dcytox[CASinter]["CytoxMin"]):
-                            self.dAC50[CASinter][channel] = "NA"
-
-        toolbox.writeMatrix(self.dAC50, pfilout)
-        self.pAC50 = pfilout
+        for CASinter in linter:
+            for channel in dAC50[CASinter].keys():
+                if dAC50[CASinter][channel] != "NA":
+                    if float(dAC50[CASinter][channel]) > float(dcytox[CASinter]["CytoxMin"]):
+                        dAC50[CASinter][channel] = "NA"
 
 
 
@@ -692,6 +696,8 @@ def histogramAC50(pAC50All, prhist):
 def mergeAssays(cluc, chepg2, chek293):
 
     pfilout = cluc.prout + "AC50_all"
+    if path.exists(pfilout):
+        return pfilout
     filout = open(pfilout, "w")
     lheader = ["CASID", "Luc_IC50", "hepg2_med_blue", "hepg2_med_green", "hepg2_med_red", "hepg2_med_blue_n",
                "hepg2_med_green_n", "hepg2_med_red_n", "hek293_med_blue", "hek293_med_green", "hek293_med_red",
@@ -751,3 +757,37 @@ def mergeAssays(cluc, chepg2, chek293):
     filout.close()
 
     return pfilout
+
+
+
+
+def ChemByCurve(cassay, ppng, prout):
+
+
+    if not "dresponse" in dir(cassay):
+        cassay.responseCurves(drawn=0)
+
+    for CASID in cassay.dresponse.keys():
+        for condition in cassay.dresponse[CASID].keys():
+            curveclass = cassay.dresponse[CASID][condition]['CURVE_CLASS2']
+            AC50 = cassay.dresponse[CASID][condition]['AC50']
+            prcurve = prout + condition + "/" + curveclass + "/"
+            if not path.exists(prcurve):
+                pathFolder.createFolder(prcurve)
+
+            writeLine = ["CAS: " + str(CASID), "AC50: " + str(AC50), "Curve: " + str(curveclass)]
+            pcaspng = ppng + CASID + ".png"
+            if not path.exists(pcaspng):
+                continue
+
+            pimageout = prcurve + CASID + ".png"
+            try:img = Image.open(pcaspng)
+            except: continue
+            imgnew = Image.new("RGBA", (580, 775), (250, 250, 250))
+            imgnew.paste(img, (0, 0))
+            draw = ImageDraw.Draw(imgnew)
+            draw.text((10, 600), str(writeLine[0]), (0, 0, 0), font=font)
+            draw.text((10, 625), str(writeLine[1]), (0, 0, 0), font=font)
+            draw.text((10, 650), str(writeLine[2]), (0, 0, 0), font=font)
+            imgnew.save(pimageout)
+
