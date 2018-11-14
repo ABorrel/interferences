@@ -131,7 +131,7 @@ class predictor:
         chem = chemical.chemical(nameChemical, smiles)
         chem.prepareChem(prresult)
         chem.compute1D2DDesc(prresult)
-        chem.writeTablesDesc(prresult)
+        chem.writeTablesDescCAS(prresult)
         chem.computeFP(typeFP="All")
 
         for channel in self.dcluster:

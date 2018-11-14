@@ -1,7 +1,11 @@
-from os import system, path, remove, chdir, getcwd
+from os import system, path, remove, chdir, getcwd, listdir
 from re import search
 from time import sleep
 
+OPERA = "/home/borrela2/softwares/OPERA/OPERA_CLi_Linux/run_OPERA.sh"
+MATLAB = "/usr/local/MATLAB/MATLAB_Runtime/v91"
+PRSOURCE = "/home/borrela2/interference/sources/fluo/"
+PADEL = "/home/borrela2/softwares/padel/PaDEL-Descriptor.jar"
 
 
 def runRCMD(cmd, out = 0):
@@ -26,15 +30,19 @@ def runRQSARModeling(cmd):
     system(cmd)
     chdir(workdir)
 
-def babelConvertSDFtoSMILE(sdfread, clean_smi=0, rm_smi=1):
+def babelConvertSDFtoSMILE(sdfread, clean_smi=1, rm_smi=1):
 
-    tempsdf = open("tempsdf.sdf", "w")
-    tempsdf.write(sdfread)
-    tempsdf.close()
+    if path.exists(sdfread):
+        psmile = sdfread[:-3] + "smi"
+        tempsdf = sdfread
 
-    psmile = "tempsmile.smi"
+    else:
+        tempsdf = open("tempsdf.sdf", "w")
+        tempsdf.write(sdfread)
+        tempsdf.close()
+        psmile = "tempsmile.smi"
 
-    cmd_convert = "babel tempsdf.sdf " + psmile + " 2>/dev/null"
+    cmd_convert = "babel " + tempsdf + " " + psmile + " 2>/dev/null"
     system(cmd_convert)
 
     try : filin = open (psmile, "r")
@@ -339,3 +347,51 @@ def runImportanceDesc(pimportance, nb):
 
     cmd = "./importancePlot.R " + str(pimportance) + " " + str(nb)
     runRQSARModeling(cmd)
+
+
+
+
+
+def runPadel(prin=""):
+    """Input include a folder of sdf file"""
+    pfilout = prin + "tem.csv"
+    if path.exists(pfilout) and path.getsize(pfilout) > 50:
+        return pfilout
+
+    if prin == "":
+        return "ERROR - Padel Input"
+    else:
+        cmd = "java -jar " + PADEL + " -maxruntime 10000 -2d -dir " + str(prin) + " -file " + pfilout
+        print cmd
+        system(cmd)
+
+    return pfilout
+
+
+
+
+def runOPERA(psdf, p2Ddesc, prtemp):
+
+    lfstart = [path.basename(psdf), "tem.csv"]
+
+    if len (listdir(prtemp)) == 2:
+        ppred = prtemp + path.basename(psdf)[:-3] + "csv"
+        cmd = "%s %s -d %s -o %s -e BCF logBCF BP logP MP VP logVP WS AOH BioDeg RB ReadyBiodeg HL logHL KM logKM KOA Koc logKoc -x" % (OPERA, MATLAB, p2Ddesc, ppred)
+        chdir(prtemp)
+        system(cmd)
+        chdir(PRSOURCE)
+
+    lfilout = []
+
+    lfile = listdir(prtemp)
+    for filpred in lfile:
+        if not filpred in lfstart and not search("^\.", filpred):
+            lfilout.append(prtemp + filpred)
+
+    return lfilout
+
+
+
+
+
+

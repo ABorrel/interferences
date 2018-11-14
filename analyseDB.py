@@ -280,7 +280,7 @@ class Descriptors:
                 chem.compute1D2DDesc(prDescbyCAS)
                 if opera == 1:
                     chem.loadOperaDesc(doperaDesc, flog)
-                err = chem.writeTablesDesc(prDescbyCAS)#
+                err = chem.writeTablesDescCAS(prDescbyCAS)#
                 if err == 1: chem.writelog(self.prlog)
                 #Write in the table
                 chem.writeDesc(ldesc, fdesc1D2D)

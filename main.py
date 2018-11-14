@@ -49,61 +49,60 @@ pathFolder.createFolder(prPNG)
 # for luc
 #=> no filter
 cluc.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> combine
 #cluc.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=1)
 #cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> curve filter
 cluc.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> efficacy filter
 cluc.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> combining
 cluc.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=1)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> curve filter and burst
 cluc.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=1)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
-
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 
 
 # for hepg2
 #=> no filter
 chepg2.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> curve filter
 chepg2.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> efficacy
 chepg2.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> curve filter and burst
 chepg2.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 
 
 # for hek293
 #=> no filter
 chek293.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> curve filter
 chek293.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> efficacy
 chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> curve filter and burst
 chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
-
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 
 # merge AC50/IC50 from different assays #
 #########################################
 
-pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
+#pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
 #prhist = pathFolder.createFolder(prresults + "hist/")
 #assayResults.histogramAC50(pAC50All, prhist)
+
 
 # plot correlation #
 ####################
@@ -143,8 +142,9 @@ pathFolder.createFolder(prChemCurve)
 #cluc.barplotCurveClass(prbarplot)
 
 #prbarplot = chek293.proutSP + "curveType/"
-#athFolder.createFolder(prbarplot)
+#pathFolder.createFolder(prbarplot)
 #chek293.barplotCurveClass(prbarplot)
+
 
 # IC50 hist -> by cell #
 ########################

@@ -2,7 +2,7 @@ from os import listdir
 from re import search
 
 import analyseDB
-import predictInterference
+import predictClusterInterference
 
 
 prMain = "/home/borrela2/interference/"
@@ -26,7 +26,7 @@ cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
 cDesc.loadClassForPred(corval, maxquantile)
 
 lcasID = []
-predictor = predictInterference.predictor(cDesc, prclusters, lcasID, prpredict, distMeth, distAgg)
+predictor = predictClusterInterference.predictor(cDesc, prclusters, lcasID, prpredict, distMeth, distAgg)
 #predictor.summarizePredictor()
 
 ltypeCellChannel = ["hepg2_cell_blue_n", "hepg2_cell_green_n", "hepg2_cell_red_n", "IC50", "hepg2_med_blue_n", "hepg2_med_green_n", "hepg2_med_red_n", "hek293_cell_blue_n", "hek293_cell_green_n", "hek293_cell_red_n", "hek293_med_blue_n", "hek293_med_green_n", "hek293_med_red_n"]

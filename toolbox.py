@@ -148,7 +148,8 @@ def loadMatrix(pmatrixIn, sep = "\t"):
             print lheaders
         jmax = len(lheaders)
         while j < jmax:
-            dout[kin][lheaders[j]] = lvalues[j]
+            try:dout[kin][lheaders[j]] = lvalues[j]
+            except:pass
             j += 1
         i += 1
 

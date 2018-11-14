@@ -679,7 +679,7 @@ class assays:
         for CASinter in linter:
             for channel in dAC50[CASinter].keys():
                 if dAC50[CASinter][channel] != "NA":
-                    if float(dAC50[CASinter][channel]) > float(dcytox[CASinter]["CytoxMin"]):
+                    if float(dAC50[CASinter][channel]) > float(dcytox[CASinter]["CytoxMin"]): # or cytoxMin
                         dAC50[CASinter][channel] = "NA"
 
 

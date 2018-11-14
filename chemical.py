@@ -83,6 +83,114 @@ LOPERA = ["MolWeight", "nbAtoms", "nbHeavyAtoms", "nbC", "nbO", "nbH", "nbAromAt
           "CombDipolPolariz", "LogBCF_pred", "BP_pred", "LogP_pred", "MP_pred", "LogVP_pred", "LogWS_pred", "LogOH_pred",
           "BioDeg_LogHalfLife_pred", "LogHL_pred", "LogKM_pred", "LogKOA_pred", "LogKoc_pred", "RT_pred", "pka_acid", "pka_basic"]
 
+def transformOPERAList(ddesc):
+
+    ldel = []
+    for chem in ddesc.keys():
+        ldel = []
+        for desc in ddesc[chem].keys():
+            if desc == "MW":
+                new = "MolWeight"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "nAtom":
+                new = "nbAtoms"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+            if desc == "nHeavyAtom":
+                new = "nbHeavyAtoms"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "nC":
+                new = "nbC"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+            if desc == "nO":
+                new = "nbO"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "nH":
+                new = "nbH"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+            if desc == "naAromAtom":
+                new = "nbAromAtom"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "nRing":
+                new = "nbRing"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+            if desc == "nHeteroRing":
+                new = "nbHeteroRing"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "HybRatio":
+                new = "Sp3Sp2HybRatio"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+            if desc == "nRotB":
+                new = "nbRotBd"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "nHBAcc":
+                new = "nbHBdAcc"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+            if desc == "nHBDon":
+                new = "ndHBdDon"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "LipinskiFailures":
+                new = "nbLipinskiFailures"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+            if desc == "TopoPSA":
+                new = "TopoPolSurfAir"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "AMR":
+                new = "MolarRefract"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+            elif desc == "MLFER_S":
+                new = "CombDipolPolariz"
+                ddesc[chem][new] = ddesc[chem][desc]
+                ldel.append(desc)
+
+
+
+        for deldesc in ldel:
+            del ddesc[chem][deldesc]
+
+
+
+
 LMOLPROP = ['LogP', 'LogP2', 'MR', 'TPSA', 'Hy', 'UI']
 LMOLPROP = ['LogP2', 'TPSA', 'Hy', 'UI']# remove duplicate from opera
 
@@ -331,6 +439,42 @@ class chemical:
 
 
 
+    def computeOpera(self):
+
+        if "opera" in self.__dict__:
+            return 1
+        else:
+            dopera = {}
+
+            prOPERA = pathFolder.createFolder(self.prDesc + "OPERA/" + self.name + "/")
+            molH = Chem.AddHs(self.mol)
+
+            psdf = prOPERA + str(self.name) + ".sdf"
+            filsdf = open(psdf, "w")
+            filsdf.write(Chem.MolToMolBlock(molH))
+            filsdf.close()
+
+            pdesc2D = runExternalSoft.runPadel(prOPERA)
+
+            ddesc2D = toolbox.loadMatrix(pdesc2D, sep = ",")
+            transformOPERAList(ddesc2D)
+            for desc2D in ddesc2D[ddesc2D.keys()[0]].keys():
+                if desc2D in LOPERA:
+                    dopera[desc2D] = ddesc2D[ddesc2D.keys()[0]][desc2D]
+
+            lpdesc = runExternalSoft.runOPERA(psdf, pdesc2D, prOPERA)
+
+            for pdesc in lpdesc:
+                ddesc = toolbox.loadMatrix(pdesc, ",")
+                for desc in ddesc[ddesc.keys()[0]].keys():
+                    if desc in LOPERA:
+                        dopera[desc] = ddesc[ddesc.keys()[0]][desc]
+
+            self.opera = transformOPERAList(dopera)
+            self.allDesc.update(deepcopy(self.opera))
+
+
+
 
     def loadOperaDesc(self, dOperaAll,flog):
 
@@ -400,7 +544,7 @@ class chemical:
 
 
 
-    def writeTablesDesc(self, prDescbyCAS):
+    def writeTablesDescCAS(self, prDescbyCAS):
 
         if "allDesc" in self.__dict__ and self.allDesc != {}:
 
@@ -418,3 +562,21 @@ class chemical:
             self.log = self.log + "No descriptors computed for table\n"
             return 1
 
+
+    def writeTablesDesc(self, prDescbyCAS):
+
+        if "allDesc" in self.__dict__ and self.allDesc != {}:
+
+            ptable = prDescbyCAS + self.name + ".txt"
+            ftable = open(ptable, "w")
+            ftable.write("ID\t" + "\t".join(self.allDesc.keys()) + "\n")
+            ftable.write(self.name)
+            for desc in self.allDesc.keys():
+                ftable.write("\t" + str(self.allDesc[desc]))
+            ftable.write("\n")
+            ftable.close()
+            self.pdesc = ptable
+            return 0
+        else:
+            self.log = self.log + "No descriptors computed for table\n"
+            return 1

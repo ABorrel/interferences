@@ -4,6 +4,8 @@ from os import path
 
 import toolbox
 
+
+
 def parsepdf(prcytox, prresult):
 
     ppdf = prcytox + "toxsci-15-0719-File012.pdf"
@@ -43,13 +45,21 @@ def parsepdf(prcytox, prresult):
                 cytoxmin = findall(r"[-+]?\d*\.\d+|\d+", line)
                 #print cytoxmin
                 dout[CAStemp]["CytoxMin"] = cytoxmin[0]
+
+            if search("cytotox median=", line):
+                #print line
+                cytoxMed = findall(r"[-+]?\d*\.\d+|\d+", line)
+                #print cytoxMed
+                dout[CAStemp]["CytoxMedian"] = cytoxMed[3]
         i += 1
 
     filout = open(pfilout, "w")
-    filout.write("CAS\tCytoxMin\n")
+    filout.write("CAS\tCytoxMin\tCytoxMedian\n")
     for CASID in dout.keys():
-        filout.write(str(CASID) + "\t" + str(dout[CASID]["CytoxMin"]) + "\n")
+        filout.write(str(CASID) + "\t" + str(dout[CASID]["CytoxMin"]) + "\t"  + str(dout[CASID]["CytoxMedian"])  + "\n")
     filout.close()
 
     return dout
 
+
+#parsepdf("/home/borrela2/interference/data/Judson_2016-cytotox/", "/home/borrela2/interference/spDataAnalysis/")
