@@ -1,6 +1,9 @@
+from __builtin__ import type
+
 import runExternalSoft
 import pathFolder
 import toolbox
+import pubmed
 
 from os import path, listdir
 from shutil import rmtree
@@ -396,10 +399,13 @@ class Model:
                 nbact = 0
                 for lineChem in llines:
                     AC50 = lineChem.strip().split("\t")[-1]
-                    if AC50 != "NA":
+                    if AC50 != "NA" and AC50 != "0":
                         nbact = nbact + 1
 
-                nbinact = int(100*nbact/(100*self.ratioAct)) - nbact
+                if self.ratioAct == 1:
+                    nbinact = len(llines) - nbact
+                else:
+                    nbinact = int(100*nbact/(100*self.ratioAct)) - nbact
 
                 nwinact = 0
                 flaginact = 0
@@ -408,19 +414,37 @@ class Model:
                     lAC50 = lineChem.strip().split("\t")
                     lnew = [lAC50[0]]
                     for AC50 in lAC50[1:]:
-                        if AC50 == "NA":
+                        if AC50 == "NA" or AC50 == "0":
                             lnew.append("0")
                             nwinact += 1
                             flaginact = 1
                         else:
                             lnew.append("1")
                             flaginact = 0
+
                     if flaginact == 1 and nwinact <= nbinact:
                         filout.write("\t".join(lnew) + "\n")
                     elif flaginact == 0:
                         filout.write("\t".join(lnew) + "\n")
                 filout.close()
                 self.dpAC50[typeAC50] = pclass
+
+
+def runQSARClassForPubChem(passay, PRPUBCHEM, PRDESC, PRSMI, corval, maxQuantile, splitratio, nbCV, ratioAct, nbNA, nameCell, lchannels, typeData,  prout):
+
+
+    passay = pubmed.formatPubChemTable(passay, PRPUBCHEM, prout)
+    print passay
+
+    lpdesc = pubmed.computeDesc(passay, PRDESC, PRSMI, prout, nbfile=2, update=0)
+
+    prQSAR = pathFolder.createFolder(prout + "QSAR/")
+    cModel = Model(lpdesc[0], lpdesc[1], "", "class", corval, maxQuantile, splitratio,
+                   nbCV, ratioAct, nbNA, nameCell, lchannels, prQSAR)
+    cModel.prepData(typeData = typeData)
+    cModel.buildQSARClass()
+
+
 
 
 
@@ -441,7 +465,10 @@ def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV,
             cModel.prepData(typeData)
         cModel.buildQSARClass()
 
+
     prQSARAV = pathFolder.createFolder(prout + "Average/")
+    prQSARProb = pathFolder.createFolder(prout + "Prob/")
+    mergeProba(prout, "RF", prQSARProb)
     mergeResults(prout, prQSARAV)
     prDescAV = pathFolder.createFolder(prout + "descImportance/")
     mergeDescInvolve(prout, "LDA", 10, prDescAV)
@@ -453,7 +480,7 @@ def mergeDescInvolve(prin, ML, nbdesc, prout):
 
     lprrun = listdir(prin)
     for prrun in lprrun:
-        if prrun == "Average" or prrun == "descImportance":
+        if prrun == "Average" or prrun == "descImportance" or prrun == "Prob":
             continue
 
         lprcell = listdir(prin + "/" + prrun + "/")
@@ -485,10 +512,110 @@ def mergeDescInvolve(prin, ML, nbdesc, prout):
         fdesc.write("Desc\tRun\tval\n")
         for desc in ldesc:
             for run in lrun:
-                fdesc.write(desc + "\t" + str(run) + "\t" + str(dimportance[typeAssay][run][desc]["val"]) + "\n")
+                fdesc.write(desc + "\t" + str(run) + "\t" + str(dimportance[typeAssay][run][desc]["x"]) + "\n")
         fdesc.close()
 
         runExternalSoft.runImportanceDesc(pdesc, nbdesc)
+
+    return 0
+
+
+
+def mergeProba(prin, ML, prout):
+
+
+    dprob = {}
+    dreal = {}
+
+    lprrun = listdir(prin)
+    for prrun in lprrun:
+        if prrun == "Average" or prrun == "descImportance" or prrun == "Prob":
+            continue
+
+        lprcell = listdir(prin + "/" + prrun + "/")
+        for prcell in lprcell:
+            if not prcell in dreal.keys():
+                paff = prin + prrun + "/" + prcell + "/AC50_" + prcell
+                daff = toolbox.loadMatrix(paff, sep ="\t")
+                dreal[prcell] = daff
+
+            if not prcell in dprob.keys():
+                dprob[prcell] = {}
+            dprob[prcell][prrun] = {}
+            pCV = prin + prrun + "/" + prcell + "/" + str(ML) + "class/PerfRFClassCV10.txt"
+            dCV = toolbox.loadMatrix(pCV)
+            dprob[prcell][prrun]["CV"] = dCV
+
+            ptrain = prin + prrun + "/" + prcell + "/" + str(ML) + "class/classTrain.csv"
+            dtrain = toolbox.loadMatrix(ptrain, sep = ",")
+            dprob[prcell][prrun]["train"] = dtrain
+
+            ptest = prin + prrun + "/" + prcell + "/" + str(ML) + "class/classTest.csv"
+            dtest = toolbox.loadMatrix(ptest, sep = ",")
+            dprob[prcell][prrun]["test"] = dtest
+
+
+
+    # write table for probability
+    dw = {}
+    for prcell in dprob.keys():
+        dw[prcell] = {}
+        dw[prcell] = {}
+        dw[prcell]["train"] = {}
+        dw[prcell]["test"] = {}
+        dw[prcell]["CV"] = {}
+
+        for run in dprob[prcell].keys():
+            for IDtrain in dprob[prcell][run]["train"].keys():
+                if not IDtrain in dw[prcell]["train"].keys():
+                    dw[prcell]["train"][IDtrain] = []
+                dw[prcell]["train"][IDtrain].append(float(dprob[prcell][run]["train"][IDtrain]["x"]))
+
+
+            for IDtest in dprob[prcell][run]["test"]:
+                if not IDtest in dw[prcell]["test"].keys():
+                    dw[prcell]["test"][IDtest] = []
+                dw[prcell]["test"][IDtest].append(float(dprob[prcell][run]["test"][IDtest]["x"]))
+
+            for IDCV in dprob[prcell][run]["CV"]:
+                if not IDCV in dw[prcell]["CV"].keys():
+                    dw[prcell]["CV"][IDCV] = []
+                dw[prcell]["CV"][IDCV].append(float(dprob[prcell][run]["CV"][IDCV]["Predict"]))
+
+
+    for prcell in dw.keys():
+
+        # train
+        pfiloutTrain = prout + prcell + "_train"
+        filoutTrain = open(pfiloutTrain, "w")
+        filoutTrain.write("ID\tMpred\tSDpred\tReal\n")
+        for IDtrain in dw[prcell]["train"].keys():
+            print dreal[prcell][IDtrain].keys()
+            filoutTrain.write("%s\t%.3f\t%.3f\t%s\n"%(IDtrain, mean(dw[prcell]["train"][IDtrain]), std(dw[prcell]["train"][IDtrain]), dreal[prcell][IDtrain]["Aff"]))
+        filoutTrain.close()
+
+        runExternalSoft.plotAC50VSProb(pfiloutTrain, prout)
+
+        #test
+        pfiloutTest = prout + prcell + "_test"
+        filoutTest = open(pfiloutTest, "w")
+        filoutTest.write("ID\tMpred\tSDpred\tReal\n")
+        for IDtest in dw[prcell]["test"].keys():
+            filoutTest.write("%s\t%.3f\t%.3f\t%s\n"%(IDtest, mean(dw[prcell]["test"][IDtest]), std(dw[prcell]["test"][IDtest]), dreal[prcell][IDtest]["Aff"]))
+        filoutTest.close()
+
+        runExternalSoft.plotAC50VSProb(pfiloutTest, prout)
+
+        #CV
+        pfiloutCV = prout + prcell + "_CV"
+        filoutCV = open(pfiloutCV, "w")
+        filoutCV.write("ID\tMpred\tSDpred\tReal\n")
+        for IDCV in dw[prcell]["CV"].keys():
+            filoutCV.write("%s\t%.3f\t%.3f\t%s\n" % (
+            IDCV, mean(dw[prcell]["CV"][IDCV]), std(dw[prcell]["CV"][IDCV]), dreal[prcell][IDCV]["Aff"]))
+        filoutCV.close()
+
+        runExternalSoft.plotAC50VSProb(pfiloutCV, prout)
 
     return 0
 

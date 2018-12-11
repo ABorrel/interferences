@@ -133,7 +133,14 @@ def loadMatrix(pmatrixIn, sep = "\t"):
 
     # case where R written
     if len(lheaders) == (len(lval1) -1):
-        lheaders.append("val")
+        lheaders = ["ID"] + lheaders
+
+
+    i = 0
+    while i < len(lheaders):
+        if lheaders[i] == "":
+            lheaders[i] = "ID"
+        i += 1
 
     i = 1
     imax = len(llinesMat)

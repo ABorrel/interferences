@@ -616,10 +616,6 @@ class Descriptors:
 
         runExternalSoft.TtestDesc(self.pdesc1D2Dclean, pAC50All, presult)
 
-        sss
-
-
-        return
 
 
 
@@ -707,5 +703,50 @@ def PCACross(pdesc, pAC50_hepg2, pAC50_hek293, nbNA, corval, maxQuantile, prCros
             print "Error ->", pdesc
 
     runExternalSoft.drawPCACross(pdesc1D2Dclean, pAC50_hepg2, pAC50_hek293, prCrossPCA)
+
+
+
+def VennTox21PubMed(pallIC50, prMain, prout):
+
+    # create matrix smiles for Tox21
+    ptox21Smiles = prout + "tox21SMI.csv"
+    if not path.exists(ptox21Smiles):
+        prSMI = prMain + "Desc/SMIclean/"
+        ftox21Smiles = open(ptox21Smiles, "w")
+        ftox21Smiles.write("CAS\tSMILES\n")
+        lCASsmi = listdir(prSMI)
+        for CASsmi in lCASsmi:
+            fSMILES = open(prSMI + CASsmi, "r")
+            linesSmiles = fSMILES.readlines()
+            SMILES = linesSmiles[0].strip()
+            fSMILES.close()
+            CAS = CASsmi.split(".")[0]
+            ftox21Smiles.write(CAS + "\t" + SMILES + "\n")
+        ftox21Smiles.close()
+
+    pPubChemSmiles = prout + "PubChemSMI.csv"
+    if not path.exists(pPubChemSmiles):
+        prSMIPubchem = prMain + "testing/SMI/"
+        fPubChemSmiles = open(pPubChemSmiles, "w")
+        fPubChemSmiles.write("ID\tSMILES\n")
+        lIDsmi = listdir(prSMIPubchem)
+        for IDsmi in lIDsmi:
+            fSMILES = open(prSMIPubchem + IDsmi, "r")
+            linesSmiles = fSMILES.readlines()
+            SMILES = linesSmiles[0].strip()
+            fSMILES.close()
+            ID = IDsmi.split(".")[0]
+            fPubChemSmiles.write(ID + "\t" + SMILES + "\n")
+        fPubChemSmiles.close()
+
+
+    for PUBMEDfold in listdir(prMain + "testing/"):
+        if not search("old", PUBMEDfold) and PUBMEDfold != "data" and PUBMEDfold != "DESC" and PUBMEDfold != "QSARmodel" and PUBMEDfold != "SMI":
+            prvenn = pathFolder.createFolder(prout + PUBMEDfold + "/")
+            pIC50PubChem = prMain + "testing/" + PUBMEDfold + "/tableSmi.csv"
+            runExternalSoft.vennPlotPubChem(ptox21Smiles, pallIC50, pPubChemSmiles, pIC50PubChem, prvenn)
+
+
+
 
 

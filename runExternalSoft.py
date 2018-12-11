@@ -3,7 +3,7 @@ from re import search
 from time import sleep
 
 OPERA = "/home/borrela2/softwares/OPERA/OPERA_CLi_Linux/run_OPERA.sh"
-MATLAB = "/usr/local/MATLAB/MATLAB_Runtime/v91"
+MATLAB = "/usr/local/MATLAB/MATLAB_Runtime/v94"
 PRSOURCE = "/home/borrela2/interference/sources/fluo/"
 PADEL = "/home/borrela2/softwares/padel/PaDEL-Descriptor.jar"
 
@@ -200,8 +200,6 @@ def drawEnrichSOM(pdesc1D2Dclean, pAC50, pmodel, prSOM):
 def TtestDesc(pdesc1D2Dclean, pAC50All, presult):
 
     cmd = "./comparisonActInact.R " + str(pdesc1D2Dclean) + " " + str(pAC50All) + " " + presult
-    print cmd
-    ddd
     runRCMD(cmd)
 
 
@@ -259,6 +257,13 @@ def drawPCACross(pdesc1D2Dclean, pAC50_hepg2, pAC50_hek293, prCrossPCA):
 
     cmd = "./PCAAnalysisCross.R " + str(pdesc1D2Dclean) + " " + str(pAC50_hepg2) + " " + str(pAC50_hek293) + " " + str(prCrossPCA)
     runRCMD(cmd)
+
+
+def drawPCACross2Set(pdesc1, paff, pdesc2, prout):
+
+    cmd = "./PCACross2Set.R " + str(pdesc1) + " " + str(paff) + " " + str(pdesc2) + " " + str(prout)
+    runRCMD(cmd)
+
 
 def drawMDS(pdesc1D2Dclean, pAC50, prMDS):
 
@@ -376,7 +381,8 @@ def runOPERA(psdf, p2Ddesc, prtemp):
 
     if len (listdir(prtemp)) == 2:
         ppred = prtemp + path.basename(psdf)[:-3] + "csv"
-        cmd = "%s %s -d %s -o %s -e BCF logBCF BP logP MP VP logVP WS AOH BioDeg RB ReadyBiodeg HL logHL KM logKM KOA Koc logKoc -x" % (OPERA, MATLAB, p2Ddesc, ppred)
+        cmd = "%s %s -d %s -o %s -a -x" % (OPERA, MATLAB, p2Ddesc, ppred)
+        print cmd
         chdir(prtemp)
         system(cmd)
         chdir(PRSOURCE)
@@ -391,7 +397,44 @@ def runOPERA(psdf, p2Ddesc, prtemp):
     return lfilout
 
 
+def plotAC50VSProb(pfilin, prout):
+
+    cmd = "./qualityPred.R " + pfilin + " " + prout
+    runRCMD(cmd)
 
 
 
+def predictModel(pdesc, pmodelR, ML, proutbyRmodel):
+
+
+    pfilout = proutbyRmodel + "perf_" + ML + "_" + pmodelR.split("/")[-1][:-6] + ".csv"
+    cmd = "./predictfromModel.R " + pdesc + " " + pmodelR + " " + ML + " " + pfilout
+    if not path.exists(pfilout):
+        runRQSARModeling(cmd)
+
+    if path.exists(pfilout):
+        return pfilout
+    else:
+        return "ERROR"
+
+
+def qualityPred(pfsum):
+
+    pfilout = pfsum + "_perf.csv"
+    if path.exists(pfilout):
+        return pfilout
+
+    cmd = "./perfProb.R " + pfsum + " " + pfilout
+    runRQSARModeling(cmd)
+
+    if path.exists(pfilout):
+        return pfilout
+    else:
+        return "ERROR"
+
+
+def vennPlotPubChem(pTox21Smiles, pTox21IC50, pPubChemSmile, pPubChemIC50, prout):
+
+    cmd = "./VennDiagramTox21PubChem.R " + pTox21Smiles + " " + pTox21IC50 + " " + pPubChemSmile + " " + pPubChemIC50 + " " + prout
+    runRCMD(cmd)
 

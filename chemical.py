@@ -81,11 +81,12 @@ LMOE = ['EstateVSA8', 'EstateVSA9', 'EstateVSA4', 'EstateVSA5', 'EstateVSA6', 'E
 LOPERA = ["MolWeight", "nbAtoms", "nbHeavyAtoms", "nbC", "nbO", "nbH", "nbAromAtom", "nbRing", "nbHeteroRing",
           "Sp3Sp2HybRatio", "nbRotBd", "nbHBdAcc", "ndHBdDon", "nbLipinskiFailures", "TopoPolSurfAir", "MolarRefract",
           "CombDipolPolariz", "LogBCF_pred", "BP_pred", "LogP_pred", "MP_pred", "LogVP_pred", "LogWS_pred", "LogOH_pred",
-          "BioDeg_LogHalfLife_pred", "LogHL_pred", "LogKM_pred", "LogKOA_pred", "LogKoc_pred", "RT_pred", "pka_acid", "pka_basic"]
+          "BioDeg_LogHalfLife_pred", "LogHL_pred", "LogKM_pred", "LogKOA_pred", "LogKoc_pred", "RT_pred",
+          "Sim_index_BP", "Sim_index_LogP", "Sim_index_VP", "Sim_index_AOH", "Sim_index_BioDeg", "Sim_index_ReadyBiodeg",
+          "Sim_index_KM", "Sim_index_KOA", "Sim_index_RT"]#, "pka_acid", "pka_basic"]
 
 def transformOPERAList(ddesc):
 
-    ldel = []
     for chem in ddesc.keys():
         ldel = []
         for desc in ddesc[chem].keys():
@@ -260,6 +261,7 @@ class chemical:
 
             smiclean = smiclean[0].strip()
             self.smiclean = smiclean
+            self.mol = Chem.MolFromSmiles(smiclean)
             self.log = self.log + "Prep SMI :" + str(self.smi) + "\n"
             self.log = self.log + "Prepared SMI :" + str(self.smiclean) + "\n"
 
@@ -313,7 +315,7 @@ class chemical:
                         smilesclean = ""
 
                 if smilesclean == "":
-                    self.log = self.log + "SMILES empty after preparation\n"
+                    self.log = self.log + "ERROR SMILES: SMILES empty after preparation\n"
 
                 else:
                     self.log = self.log + "Prepared SMI :" + str(smilesclean) + "\n"
@@ -439,11 +441,28 @@ class chemical:
 
 
 
-    def computeOpera(self):
+    def computeOpera(self, update):
 
         if "opera" in self.__dict__:
             return 1
         else:
+            # check if descriptors already computed
+            pdes = self.prDesc + self.name + ".txt"
+            if path.exists(pdes) and path.getsize(pdes) > 10 and update == 0:
+                filin = open(pdes, "r")
+                llines = filin.readlines()
+                filin.close()
+                ldesc = llines[0].strip().split("\t")[1:]
+                lval = llines[1].strip().split("\t")[1:]
+                ddes = {}
+                i = 0
+                while i < len(ldesc):
+                    ddes[ldesc[i]] = lval[i]
+                    i += 1
+                self.allDesc = ddes
+                self.log = self.log + "Desc already computed -> " + pdes + "\n"
+                return 0
+
             dopera = {}
 
             prOPERA = pathFolder.createFolder(self.prDesc + "OPERA/" + self.name + "/")
@@ -465,12 +484,15 @@ class chemical:
             lpdesc = runExternalSoft.runOPERA(psdf, pdesc2D, prOPERA)
 
             for pdesc in lpdesc:
-                ddesc = toolbox.loadMatrix(pdesc, ",")
+                try:ddesc = toolbox.loadMatrix(pdesc, ",")
+                except:
+                    print pdesc
+                    dddd
                 for desc in ddesc[ddesc.keys()[0]].keys():
                     if desc in LOPERA:
                         dopera[desc] = ddesc[ddesc.keys()[0]][desc]
 
-            self.opera = transformOPERAList(dopera)
+            self.opera = dopera
             self.allDesc.update(deepcopy(self.opera))
 
 
@@ -563,11 +585,13 @@ class chemical:
             return 1
 
 
-    def writeTablesDesc(self, prDescbyCAS):
+    def writeTablesDesc(self, prDescbyCAS, update = 0):
 
         if "allDesc" in self.__dict__ and self.allDesc != {}:
 
             ptable = prDescbyCAS + self.name + ".txt"
+            if path.exists(ptable) and update == 0:
+                return 0
             ftable = open(ptable, "w")
             ftable.write("ID\t" + "\t".join(self.allDesc.keys()) + "\n")
             ftable.write(self.name)
@@ -578,5 +602,5 @@ class chemical:
             self.pdesc = ptable
             return 0
         else:
-            self.log = self.log + "No descriptors computed for table\n"
+            self.log = self.log + "Error: No descriptor computed for table\n"
             return 1
