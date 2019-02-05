@@ -17,11 +17,11 @@ PRSMI = PRTESTING + "SMI/"
 
 
 passays = "/home/borrela2/interference/testing/data/AID_411_luc.csv"
-corval = 0.9
+corval = 0.85
 maxQuantile = 90
 splitratio = 0.15
 nbCV = 10
-nbNA = 1000
+nbNA = 10000
 ratioAct = 1
 nbrepeat = 1
 nameCell = "IC50"

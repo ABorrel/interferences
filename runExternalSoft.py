@@ -355,6 +355,11 @@ def runImportanceDesc(pimportance, nb):
 
 
 
+def plotAC50VSEff(pfilin):
+
+    cmd = "./plotEffVSAC50.R " + pfilin
+    runRCMD(cmd)
+
 
 
 def runPadel(prin=""):

@@ -81,24 +81,29 @@ class assays:
         lsample = []
 
         pfilout = self.proutSP + "AC50_sample"
+        peff = pathFolder.createFolder(self.proutSP + "efficient/") + "eff"
         if filtercurvefit == 1:
             pfilout = pfilout + "_curve"
+            peff = peff + "_curve"
         if filterefficacy == 1:
             pfilout = pfilout + "_eff"
+            peff = peff + "_eff"
         if filterburst == 1:
             pfilout = pfilout + "_burst"
+            peff = peff + "_burst"
         if combine == 1:
             pfilout = pfilout + "_combine"
+            peff = peff + "_combine"
 
 
-        if path.exists(pfilout):
+        if path.exists(pfilout) and path.exists(peff):
             self.pAC50 = pfilout
             self.loadAC50()
             return pfilout
 
-        if filtercurvefit == 1:
-            if not "dresponse" in self.__dict__:
-                self.responseCurves(drawn=0)
+        #if filtercurvefit == 1:
+        if not "dresponse" in self.__dict__:
+            self.responseCurves(drawn=0)
 
         if filterburst == 1:
             dcytox = cytox.parsepdf(self.prcytox, self.prout)
@@ -116,6 +121,8 @@ class assays:
                     chem["AC50"] = "NA"
 
             if filterefficacy == 1:
+                # for luciferase
+
                 if abs(float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["EFFICACY"])) < self.effcutoff:
                     chem["AC50"] = "NA"
 
@@ -135,18 +142,35 @@ class assays:
 
         lsamples = dAC50[dAC50.keys()[0]].keys()
         filout = open(pfilout, "w")
+        feff = open(peff, "w")
         filout.write("CAS\t" + "\t".join(lsamples) + "\n")
+        feff.write("CAS\t" + "\t".join([str(s + "\t" + s + "_eff") for s in lsamples]) + "\n")
         for casID in dAC50.keys():
             if casID == "":
                 continue
             lw = []
+            lweff = []
             for sample in lsamples:
                 if sample in dAC50[casID].keys():
                     lw.append(str(dAC50[casID][sample]))
+                    lweff.append(str(dAC50[casID][sample]))
                 else:
                     lw.append("NA")
+                    lweff.append("NA")
+                if sample == "IC50":
+                    leff = []
+                    for setIC50 in self.dresponse[casID].keys():
+                        leff.append(float(self.dresponse[casID][setIC50]["EFFICACY"]))
+                    lweff.append(str(abs(mean(leff))))
+                else:
+                    lweff.append(str(abs(float(self.dresponse[casID][sample]["EFFICACY"]))))
             filout.write(str(casID) + "\t" + "\t".join(lw) + "\n")
+            feff.write(str(casID) + "\t" + "\t".join(lweff) + "\n")
         filout.close()
+        feff.close()
+
+        runExternalSoft.plotAC50VSEff(peff)
+
         self.dAC50 = dAC50
         self.pAC50 = pfilout
 
@@ -186,7 +210,7 @@ class assays:
                 if sample in dAC50[casID].keys():
                     if dAC50[casID][sample] != "NA":
                         lM.append(float(dAC50[casID][sample]))
-            if lM == []:
+            if len(lM) < 3:
                 M = "NA"
             else:
                 M = mean(lM)

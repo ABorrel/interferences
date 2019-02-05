@@ -273,8 +273,8 @@ class Model:
     def buildQSARClass(self):
 
         for typeAC50 in self.dpAC50:
-            if not path.exists(self.dpresult[typeAC50] + "perf.txt") and not path.exists(self.dpresult[typeAC50] + "perfCV.txt"):
-                runExternalSoft.QSARClass(self.dptrain[typeAC50], self.dptest[typeAC50], self.dpresult[typeAC50], self.nbCV)
+            #if not path.exists(self.dpresult[typeAC50] + "perf.txt") and not path.exists(self.dpresult[typeAC50] + "perfCV.txt"):
+            runExternalSoft.QSARClass(self.dptrain[typeAC50], self.dptest[typeAC50], self.dpresult[typeAC50], self.nbCV)
 
 
 
@@ -512,7 +512,8 @@ def mergeDescInvolve(prin, ML, nbdesc, prout):
         fdesc.write("Desc\tRun\tval\n")
         for desc in ldesc:
             for run in lrun:
-                fdesc.write(desc + "\t" + str(run) + "\t" + str(dimportance[typeAssay][run][desc]["x"]) + "\n")
+                try: fdesc.write(desc + "\t" + str(run) + "\t" + str(dimportance[typeAssay][run][desc]["x"]) + "\n")
+                except: fdesc.write(desc + "\t" + str(run) + "\t0.0\n")
         fdesc.close()
 
         runExternalSoft.runImportanceDesc(pdesc, nbdesc)
@@ -535,9 +536,15 @@ def mergeProba(prin, ML, prout):
         lprcell = listdir(prin + "/" + prrun + "/")
         for prcell in lprcell:
             if not prcell in dreal.keys():
-                paff = prin + prrun + "/" + prcell + "/AC50_" + prcell
-                daff = toolbox.loadMatrix(paff, sep ="\t")
-                dreal[prcell] = daff
+                dreal[prcell] = {}
+            flag = 0
+            for filin in listdir(prin + prrun + "/" + prcell + "/"):
+                if search("AC50_", filin):
+                    paff = prin + prrun + "/" + prcell + "/" + filin
+                    flag = 1
+                    break
+            daff = toolbox.loadMatrix(paff, sep ="\t")
+            dreal[prcell].update(deepcopy(daff))
 
             if not prcell in dprob.keys():
                 dprob[prcell] = {}
@@ -554,7 +561,8 @@ def mergeProba(prin, ML, prout):
             dtest = toolbox.loadMatrix(ptest, sep = ",")
             dprob[prcell][prrun]["test"] = dtest
 
-
+        print dreal[prcell].keys()
+        print len(dreal[prcell].keys())
 
     # write table for probability
     dw = {}
@@ -590,8 +598,11 @@ def mergeProba(prin, ML, prout):
         filoutTrain = open(pfiloutTrain, "w")
         filoutTrain.write("ID\tMpred\tSDpred\tReal\n")
         for IDtrain in dw[prcell]["train"].keys():
-            print dreal[prcell][IDtrain].keys()
-            filoutTrain.write("%s\t%.3f\t%.3f\t%s\n"%(IDtrain, mean(dw[prcell]["train"][IDtrain]), std(dw[prcell]["train"][IDtrain]), dreal[prcell][IDtrain]["Aff"]))
+            try:filoutTrain.write("%s\t%.3f\t%.3f\t%s\n"%(IDtrain, mean(dw[prcell]["train"][IDtrain]), std(dw[prcell]["train"][IDtrain]), dreal[prcell][IDtrain]["Aff"]))
+            except:
+                print dw[prcell]["train"][IDtrain]
+                print dreal[prcell][IDtrain]["Aff"]
+                ddd
         filoutTrain.close()
 
         runExternalSoft.plotAC50VSProb(pfiloutTrain, prout)

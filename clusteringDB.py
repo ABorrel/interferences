@@ -374,7 +374,7 @@ class clustering:
 
 
 
-def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, pModel, prSOM):
+def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, pModel, nbNA, prSOM):
 
     # output
     pdesc1D2Dclean = prSOM + "descClean.csv"
@@ -383,7 +383,7 @@ def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, pModel, prSOM):
 
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 10:
             # preproc
-            runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, prSOM)
+            runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, nbNA, prSOM)
         else:
             print "Error ->", pdesc1D2D
 
