@@ -1,4 +1,4 @@
-
+from os import  path
 import toolbox
 
 
@@ -10,13 +10,11 @@ class DYE:
         self.prout = prout
         self.pDYE = pDYE
         self.lassays = lcAssays
+        self.dDye = toolbox.loadMatrix(self.pDYE, sep = ",")
 
 
     def crossDyeAssays(self):
 
-
-        dDYE = toolbox.loadMatrix(self.pDYE, sep = ",")
-        print dDYE
 
         for cassays in self.lassays:
             name = cassays.name.split("-")[2]
@@ -27,10 +25,45 @@ class DYE:
             filout = open(pfilout,'w')
             filout.write("CAS\tColor\t" + "\t".join(lsample) + "\n")
 
-            for dye in dDYE.keys():
-                print dDYE[dye]["casrn"]
-                try: filout.write("%s\t%s\t%s\n"%(dDYE[dye]["casrn"], dDYE[dye]["color"], "\t".join([str(cassays.dAC50[dDYE[dye]["casrn"]][sample]) for sample in lsample])))
+            for dye in self.dDye.keys():
+                print self.dDye[dye]["casrn"]
+                try: filout.write("%s\t%s\t%s\n"%(self.dDye[dye]["casrn"], self.dDye[dye]["color"], "\t".join([str(cassays.dAC50[self.dDye[dye]["casrn"]][sample]) for sample in lsample])))
                 except: pass
 
 
             filout.close()
+
+    def importDescriptors(self, prDesc = "/home/borrela2/interference/Desc/DESCbyCAS/"):
+
+        ddesc = {}
+        dcolor = {}
+        for chemID in self.dDye.keys():
+            chem = self.dDye[chemID]
+            CASID = chem["casrn"]
+            color = chem["color"]
+
+            pdescin = prDesc + CASID + ".txt"
+            if path.exists(prDesc + CASID + ".txt"):
+                dtemp = toolbox.loadMatrixToDict(pdescin)
+                ddesc.update(dtemp)
+                dcolor[CASID] = color
+
+        self.dcolor = dcolor
+
+        pdesc = self.prout + "descMat"
+        fildesc = open(self.prout + "descMat", "w")
+        ldesc = ddesc[ddesc.keys()[0]].keys()
+        print ldesc
+        print CASID
+        del ldesc[ldesc.index("CAS")]
+        fildesc.write("ID," + ",".join(ldesc) + ",Aff\n")
+        for CASID in ddesc.keys():
+            lw = []
+            for desc in ldesc:
+                if desc in ddesc[CASID].keys():
+                    lw.append(str(ddesc[CASID][desc]))
+                else:
+                    lw.append("NA")
+            fildesc.write("%s,%s,1\n" % (CASID, ",".join(lw)))
+        fildesc.close()
+        return pdesc

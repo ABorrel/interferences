@@ -108,6 +108,20 @@ chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
 #cDYE.crossDyeAssays()
 
 
+####################
+# analyse spectrum #
+####################
+import photoChemDB
+
+pphotochem = prMain + "data/PhotochemCAD3/PCAD3CompdDatabase2018/2018_03PCAD3.db"
+prSpectrum = pathFolder.createFolder(prMain + "SPECTRUM_analysis/")
+
+cSpectrum = photoChemDB.photoChem(pphotochem, [chepg2, chek293], prSpectrum)
+cSpectrum.crossSpectrumAssays()
+dd
+
+
+
 # merge AC50/IC50 from different assays #
 #########################################
 
@@ -534,9 +548,8 @@ typeQSAR = "class"
 #################################
 typeData = "all"
 #QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
-QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
-QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
-ddd
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
 
 # for each chanel and favorize active chemical #
 ################################################
@@ -550,8 +563,8 @@ typeData = "color"
 nbNA = 500
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-ddd
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+
 
 # for each color #
 ##################
