@@ -235,7 +235,6 @@ for assay in listdir("/home/borrela2/interference/testing/data/"):
 
     # case of PUBMED
     if search("AID_", assay):
-        continue
         dPubChemBioassays = "/home/borrela2/interference/testing/data/" + assay
         prout = pathFolder.createFolder(PRTESTING + assay[4:-4] + "/")
         passay = pubmed.formatPubChemTable(dPubChemBioassays, PRPUBCHEMSDF, prout, update=0)
@@ -255,10 +254,10 @@ for assay in listdir("/home/borrela2/interference/testing/data/"):
         pdesc = cSpectrum.importDescriptors()
 
         prPCA = pathFolder.createFolder(prout + "PCA/")
-        #computePCACross(pdesc, pdescModel, paff, prPCA)
-        #applyModel(pdesc, PRMODELS, prout)
+        computePCACross(pdesc, pdescModel, paff, prPCA)
+        applyModel(pdesc, PRMODELS, prout)
 
-        combineSpectreResult(cSpectrum.dwave, prout)
+        combineResult(cSpectrum.dwave, prout)
 
     elif search("Dye", assay):
         pBioassays = "/home/borrela2/interference/testing/data/" + assay
