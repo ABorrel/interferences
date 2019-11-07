@@ -31,8 +31,8 @@ combinered = function(d, prout){
                linetype=c("dashed", "solid", "dashed", "solid"))+
     xlim(0,120)+
     theme(text = element_text(size=19))+
-    scale_fill_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free"))+
-    scale_color_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free")) + 
+    scale_fill_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free"))+
+    scale_color_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free")) + 
     labs(title="",x="AC50 (uM)", y = "Density")
   
   ggsave(paste(prout, "red.png", sep = ""),  width = 8, height = 7, dpi = 300, bg="transparent")
@@ -45,10 +45,10 @@ combinered = function(d, prout){
     geom_density(alpha=0.3)+
     geom_vline(data=mu, aes(xintercept=grp.mean, color=Assays),
                linetype=c("dashed", "solid", "dashed", "solid"))+
-    xlim(-1.5,3)+
+    xlim(-2.5,2.5)+
     theme(text = element_text(size=19))+
-    scale_fill_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free"))+
-    scale_color_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free")) + 
+    scale_fill_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free"))+
+    scale_color_manual(values=c("#eb9999", "#290000", "#d21919", "#a40000"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free")) + 
     labs(title="",x="log(AC50) (uM)", y = "Density")
   
   ggsave(paste(prout, "logred.png", sep = ""),  width = 8, height = 7, dpi = 300, bg="transparent")
@@ -88,8 +88,8 @@ combineblue = function(d, prout){
                linetype=c("dashed", "solid", "dashed", "solid"))+
     xlim(0,120)+
     theme(text = element_text(size=19))+
-    scale_fill_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free"))+
-    scale_color_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free")) + 
+    scale_fill_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free"))+
+    scale_color_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free")) + 
     labs(title="",x="AC50 (uM)", y = "Density")
   
   ggsave(paste(prout, "blue.png", sep = ""),  width = 8, height = 7, dpi = 300, bg="transparent")
@@ -102,10 +102,10 @@ combineblue = function(d, prout){
     geom_density(alpha=0.3)+
     geom_vline(data=mu, aes(xintercept=grp.mean, color=Assays),
                linetype=c("dashed", "solid", "dashed", "solid"))+
-    xlim(-1.5,3)+
+    xlim(-2.5,2.5)+
     theme(text = element_text(size=19))+
-    scale_fill_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free"))+
-    scale_color_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free")) + 
+    scale_fill_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free"))+
+    scale_color_manual(values=c("#cde2ff", "#032c66", "#6aa8ff", "#044299"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free")) + 
     labs(title="",x="log(AC50) (uM)", y = "Density")
   
   ggsave(paste(prout, "logblue.png", sep = ""),  width = 8, height = 7, dpi = 300, bg="transparent")
@@ -142,8 +142,8 @@ combinegreen = function(d, prout){
                linetype=c("dashed", "solid", "dashed", "solid"))+
     xlim(0,120)+
     theme(text = element_text(size=19))+
-    scale_fill_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "Hepg2 cell free"))+
-    scale_color_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free")) + 
+    scale_fill_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free"))+
+    scale_color_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free")) + 
     labs(title="",x="AC50 (uM)", y = "Density")
   
   ggsave(paste(prout, "green.png", sep = ""),  width = 8, height = 7, dpi = 300, bg="transparent")
@@ -156,10 +156,10 @@ combinegreen = function(d, prout){
     geom_density(alpha=0.3)+
     geom_vline(data=mu, aes(xintercept=grp.mean, color=Assays),
                linetype=c("dashed", "solid", "dashed", "solid"))+
-    xlim(-1.5,3)+
+    xlim(-2.5,2.5)+
     theme(text = element_text(size=19))+
-    scale_fill_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free"))+
-    scale_color_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("Hek293 cell based", "Hek293 cell free", "HepG2 cell based", "HepG2 cell free")) + 
+    scale_fill_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free"))+
+    scale_color_manual(values=c("#c4f0b2", "#0b2900", "#62d732", "#298f00"), labels = c("hek293 cell based", "hek293 cell free", "hepg2 cell based", "hepg2 cell free")) + 
     labs(title="",x="log(AC50) (uM)", y = "Density")
   
   ggsave(paste(prout, "loggreen.png", sep = ""),  width = 8, height = 7, dpi = 300, bg="transparent")
@@ -172,18 +172,18 @@ combineluc = function(d, prout){
   
   # combine plot
   dluc =  cbind(d$Luc_IC50, rep("Luc_IC50", length(d$Luc_IC50)))
-  #dluc = dluc[-which(d[,1]>200),]
+  dluc = dluc[-which(d$Luc_IC50>200),]
   
   din = dluc
+  
+  print(din)
   colnames(din) = c("IC50", "Assays")
   #din[,1] = log10(as.double(din[,1]))
   din = transform(din, IC50=as.numeric(as.character(IC50)))
   din = na.omit(din)
   
-  din = data.frame(din)
+  #din = data.frame(din)
   mu <- ddply(din, "Assays", summarise, grp.mean=mean(IC50))
-  
-  print(din)
   
   ggplot(din, aes(x=IC50, color=Assays, fill=Assays)) +
     #geom_histogram(aes(y=..density..), position="identity", alpha=0.15)+
@@ -204,7 +204,7 @@ combineluc = function(d, prout){
   ggplot(din, aes(x=IC50, color=Assays, fill=Assays)) +
     #geom_histogram(aes(y=..density..), position="identity", alpha=0.15)+
     geom_density(alpha=0.3)+
-    xlim(-1.5,3)+
+    xlim(-2.5,2.5)+
     theme(text = element_text(size=19))+
     geom_vline(data=mu, aes(xintercept=grp.mean, color=Assays),
                linetype=c("dashed"))+

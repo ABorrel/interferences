@@ -20,7 +20,7 @@ PRTESTING = prMain + "testing/"
 #prMain = "c://Users/Aborrel/Desktop/NIEHS-work/interference/"
 
 pSDFToxCast = "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
-pSDFTox21 = "/home/borrela2/Tox21/TOX21SL.sdf"
+pSDFTox21 = "/home/borrela2/data/Tox21/TOX21SL.sdf"
 pOperaDesc = prMain + "data/OPERA_pred_Tox21.csv"
 prCytox = prMain + "data/Judson_2016-cytotox/"
 
@@ -116,10 +116,8 @@ import photoChemDB
 pphotochem = prMain + "data/PhotochemCAD3/PCAD3CompdDatabase2018/2018_03PCAD3.db"
 prSpectrum = pathFolder.createFolder(prMain + "SPECTRUM_analysis/")
 
-cSpectrum = photoChemDB.photoChem(pphotochem, [chepg2, chek293], prSpectrum)
-cSpectrum.crossSpectrumAssays()
-dd
-
+#cSpectrum = photoChemDB.photoChem(pphotochem, [chepg2, chek293], prSpectrum)
+#cSpectrum.crossSpectrumAssays()
 
 
 # merge AC50/IC50 from different assays #
@@ -547,13 +545,14 @@ typeQSAR = "class"
 # for each chanel and cell line #
 #################################
 typeData = "all"
-#QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
-#QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
+QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
+QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
+QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
+fff
 
 # for each chanel and favorize active chemical #
 ################################################
-typeData = "active"
+#typeData = "active"
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclassActive/")
 #QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclassActive/")
 
@@ -565,12 +564,14 @@ nbNA = 500
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
 
-
-# for each color #
+# for all color #
 ##################
-#typeData = "crosscolor"
-#nbNA = 500
+typeData = "crosscolor"
+nbNA = 500
 #QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "all", ltypeCellChannel, typeData, prresults + "QSARclassCrossColor/")
+
+
+
 # PUBCHEM classification model #
 ################################
 

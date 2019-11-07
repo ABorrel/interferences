@@ -1,5 +1,3 @@
-from __builtin__ import type
-
 import runExternalSoft
 import pathFolder
 import toolbox
@@ -10,6 +8,7 @@ from shutil import rmtree
 from numpy import mean, std
 from copy import deepcopy
 from re import search
+from random import shuffle
 
 
 class Model:
@@ -58,7 +57,7 @@ class Model:
             return 0
 
 
-        from random import shuffle
+        
 
         color = self.cell + "_n"
         dAC50 = toolbox.loadMatrix(self.pAC50All, sep = "\t")
@@ -136,8 +135,6 @@ class Model:
             self.dpresult[self.cell] = presult
 
             return 0
-
-        from random import shuffle
 
 
         lcolors = ["blue_n", "green_n", "red_n"]
@@ -341,7 +338,7 @@ class Model:
 
                 # random active
                 nbinactselected = len(llineInact)
-                print nbinact, nbinactselected
+                #print nbinact, nbinactselected
 
                 if nbinactselected >= nbinact:
                     shuffle(llineInact)
@@ -379,7 +376,7 @@ class Model:
 
         for typeAC50 in self.dpresult:
             pclass = self.dpresult[typeAC50] + "actClass.txt"
-            print pclass
+            #print pclass
 
             if path.exists(pclass) and path.getsize(pclass) > 10:
                 self.dpAC50[typeAC50] = pclass
@@ -561,8 +558,6 @@ def mergeProba(prin, ML, prout):
             dtest = toolbox.loadMatrix(ptest, sep = ",")
             dprob[prcell][prrun]["test"] = dtest
 
-        print dreal[prcell].keys()
-        print len(dreal[prcell].keys())
 
     # write table for probability
     dw = {}

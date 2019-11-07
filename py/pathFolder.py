@@ -2,9 +2,6 @@ from os import listdir, remove, makedirs, path
 from shutil import rmtree
 
 
-
-
-
 def cleanFolder(prin):
 
     lfiles = listdir(prin)

@@ -272,6 +272,7 @@ for assay in listdir("/home/borrela2/interference/testing/data/"):
         #applyModel(pdesc, PRMODELS, prout)
 
         combineResult(cDYE.dcolor, prout)
+    
 
 
 
