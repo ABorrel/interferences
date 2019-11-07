@@ -65,14 +65,14 @@ class Model:
         fclass = open(pClass, "w")
         fclass.write("CAS\tAff\n")
 
-        lCASID = dAC50.keys()[1:]# remove ""
+        lCASID = list(dAC50.keys())[1:]# remove ""
         shuffle(lCASID)
 
         lact = []
         linact = []
         for CASID in lCASID:
             flagAct = 0
-            for channel in dAC50[CASID].keys():
+            for channel in list(dAC50[CASID].keys()):
                 if search(color, channel):
                     #print dAC50[CASID][channel]
                     if dAC50[CASID][channel] != "NA":
@@ -145,7 +145,7 @@ class Model:
         fclass = open(pClass, "w")
         fclass.write("CAS\tAff\n")
 
-        lCASID = dAC50.keys()[1:]  # remove ""
+        lCASID = list(dAC50.keys())[1:]  # remove ""
         shuffle(lCASID)
 
         lact = []
@@ -158,7 +158,7 @@ class Model:
                     break
                 else:
                     flag = 0
-                for channel in dAC50[CASID].keys():
+                for channel in list(dAC50[CASID].keys()):
                     if search(color, channel):
                         #print color, channel
                         if dAC50[CASID][channel] != "NA":
@@ -218,7 +218,7 @@ class Model:
 
             i += 1
 
-        for CAS in dAC50.keys():
+        for CAS in list(dAC50.keys()):
             for channel in self.lchannel:
                 dfileAC50[channel].write(str(CAS) + "\t" + str(dAC50[CAS][channel]) + "\n")
 
@@ -232,7 +232,7 @@ class Model:
 
         dtrain = {}
         dtest = {}
-        for typeAC50 in self.dpAC50.keys():
+        for typeAC50 in list(self.dpAC50.keys()):
             if self.typeQSAR == "Reg":
                 runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile, self.splitRatio, self.nbNA)
 
@@ -245,8 +245,8 @@ class Model:
                 ptrain = self.dpresult[typeAC50] + "trainSet.csv"
                 ptest = self.dpresult[typeAC50] + "testSet.csv"
 
-                print ptrain
-                print ptest
+                print(ptrain)
+                print(ptest)
 
                 if not path.exists(ptrain) and not path.exists(ptest):
                     runExternalSoft.prepDataQSAR(self.pdesc, self.dpAC50[typeAC50], self.dpresult[typeAC50], self.corval, self.maxQauntile,
@@ -280,8 +280,8 @@ class Model:
 
         from random import shuffle
 
-        print self.dpresult
-        print self.pAC50All
+        print(self.dpresult)
+        print(self.pAC50All)
         dAC50All = toolbox.loadMatrix(self.pAC50All, sep="\t")
 
         for typeAC50 in self.dpresult:
@@ -324,11 +324,11 @@ class Model:
                 if typeAC50 != "Luc_IC50":
                 # add channel active in the set
                    llineInact = []
-                   for CASID in dAC50All.keys():
+                   for CASID in list(dAC50All.keys()):
                        if dAC50All[CASID][self.cell + "_" + typeAC50] != "NA":
                            continue
                        else:
-                           for channel in dAC50All[CASID].keys():
+                           for channel in list(dAC50All[CASID].keys()):
                                if not search("Luc_IC50", channel):
                                    if channel != "CASID":
                                        if dAC50All[CASID][channel] != "NA":
@@ -431,7 +431,7 @@ def runQSARClassForPubChem(passay, PRPUBCHEM, PRDESC, PRSMI, corval, maxQuantile
 
 
     passay = pubmed.formatPubChemTable(passay, PRPUBCHEM, prout)
-    print passay
+    print(passay)
 
     lpdesc = pubmed.computeDesc(passay, PRDESC, PRSMI, prout, nbfile=2, update=0)
 
@@ -482,7 +482,7 @@ def mergeDescInvolve(prin, ML, nbdesc, prout):
 
         lprcell = listdir(prin + "/" + prrun + "/")
         for prcell in lprcell:
-            if not prcell in dimportance.keys():
+            if not prcell in list(dimportance.keys()):
                 dimportance[prcell] = {}
             dimportance[prcell][prrun] = {}
             pimportance = prin + prrun + "/" + prcell + "/" + str(ML) + "class/ImportanceDesc"
@@ -500,12 +500,12 @@ def mergeDescInvolve(prin, ML, nbdesc, prout):
 
 
     # write global table
-    for typeAssay in dimportance.keys():
+    for typeAssay in list(dimportance.keys()):
         pdesc = prout + "Importance" + str(ML) + "_" + typeAssay
         fdesc = open(pdesc, "w")
-        lrun = dimportance[typeAssay].keys()
+        lrun = list(dimportance[typeAssay].keys())
 
-        ldesc = dimportance[typeAssay][lrun[0]].keys()
+        ldesc = list(dimportance[typeAssay][lrun[0]].keys())
         fdesc.write("Desc\tRun\tval\n")
         for desc in ldesc:
             for run in lrun:
@@ -532,7 +532,7 @@ def mergeProba(prin, ML, prout):
 
         lprcell = listdir(prin + "/" + prrun + "/")
         for prcell in lprcell:
-            if not prcell in dreal.keys():
+            if not prcell in list(dreal.keys()):
                 dreal[prcell] = {}
             flag = 0
             for filin in listdir(prin + prrun + "/" + prcell + "/"):
@@ -543,7 +543,7 @@ def mergeProba(prin, ML, prout):
             daff = toolbox.loadMatrix(paff, sep ="\t")
             dreal[prcell].update(deepcopy(daff))
 
-            if not prcell in dprob.keys():
+            if not prcell in list(dprob.keys()):
                 dprob[prcell] = {}
             dprob[prcell][prrun] = {}
             pCV = prin + prrun + "/" + prcell + "/" + str(ML) + "class/PerfRFClassCV10.txt"
@@ -561,42 +561,42 @@ def mergeProba(prin, ML, prout):
 
     # write table for probability
     dw = {}
-    for prcell in dprob.keys():
+    for prcell in list(dprob.keys()):
         dw[prcell] = {}
         dw[prcell] = {}
         dw[prcell]["train"] = {}
         dw[prcell]["test"] = {}
         dw[prcell]["CV"] = {}
 
-        for run in dprob[prcell].keys():
-            for IDtrain in dprob[prcell][run]["train"].keys():
-                if not IDtrain in dw[prcell]["train"].keys():
+        for run in list(dprob[prcell].keys()):
+            for IDtrain in list(dprob[prcell][run]["train"].keys()):
+                if not IDtrain in list(dw[prcell]["train"].keys()):
                     dw[prcell]["train"][IDtrain] = []
                 dw[prcell]["train"][IDtrain].append(float(dprob[prcell][run]["train"][IDtrain]["x"]))
 
 
             for IDtest in dprob[prcell][run]["test"]:
-                if not IDtest in dw[prcell]["test"].keys():
+                if not IDtest in list(dw[prcell]["test"].keys()):
                     dw[prcell]["test"][IDtest] = []
                 dw[prcell]["test"][IDtest].append(float(dprob[prcell][run]["test"][IDtest]["x"]))
 
             for IDCV in dprob[prcell][run]["CV"]:
-                if not IDCV in dw[prcell]["CV"].keys():
+                if not IDCV in list(dw[prcell]["CV"].keys()):
                     dw[prcell]["CV"][IDCV] = []
                 dw[prcell]["CV"][IDCV].append(float(dprob[prcell][run]["CV"][IDCV]["Predict"]))
 
 
-    for prcell in dw.keys():
+    for prcell in list(dw.keys()):
 
         # train
         pfiloutTrain = prout + prcell + "_train"
         filoutTrain = open(pfiloutTrain, "w")
         filoutTrain.write("ID\tMpred\tSDpred\tReal\n")
-        for IDtrain in dw[prcell]["train"].keys():
+        for IDtrain in list(dw[prcell]["train"].keys()):
             try:filoutTrain.write("%s\t%.3f\t%.3f\t%s\n"%(IDtrain, mean(dw[prcell]["train"][IDtrain]), std(dw[prcell]["train"][IDtrain]), dreal[prcell][IDtrain]["Aff"]))
             except:
-                print dw[prcell]["train"][IDtrain]
-                print dreal[prcell][IDtrain]["Aff"]
+                print(dw[prcell]["train"][IDtrain])
+                print(dreal[prcell][IDtrain]["Aff"])
                 ddd
         filoutTrain.close()
 
@@ -606,7 +606,7 @@ def mergeProba(prin, ML, prout):
         pfiloutTest = prout + prcell + "_test"
         filoutTest = open(pfiloutTest, "w")
         filoutTest.write("ID\tMpred\tSDpred\tReal\n")
-        for IDtest in dw[prcell]["test"].keys():
+        for IDtest in list(dw[prcell]["test"].keys()):
             filoutTest.write("%s\t%.3f\t%.3f\t%s\n"%(IDtest, mean(dw[prcell]["test"][IDtest]), std(dw[prcell]["test"][IDtest]), dreal[prcell][IDtest]["Aff"]))
         filoutTest.close()
 
@@ -616,7 +616,7 @@ def mergeProba(prin, ML, prout):
         pfiloutCV = prout + prcell + "_CV"
         filoutCV = open(pfiloutCV, "w")
         filoutCV.write("ID\tMpred\tSDpred\tReal\n")
-        for IDCV in dw[prcell]["CV"].keys():
+        for IDCV in list(dw[prcell]["CV"].keys()):
             filoutCV.write("%s\t%.3f\t%.3f\t%s\n" % (
             IDCV, mean(dw[prcell]["CV"][IDCV]), std(dw[prcell]["CV"][IDCV]), dreal[prcell][IDCV]["Aff"]))
         filoutCV.close()
@@ -655,11 +655,11 @@ def mergeResults(prin, prout):
                 continue
 
 
-            lML = MCV.keys()
-            lcriteria = dperf.keys()
+            lML = list(MCV.keys())
+            lcriteria = list(dperf.keys())
             lset = ["CV", "train", "test"]
             # create the structures
-            if not prcell in dresult.keys():
+            if not prcell in list(dresult.keys()):
                 dresult[prcell] = {}
                 dresult[prcell]["CV"] = {}
                 dresult[prcell]["train"] = {}
@@ -677,10 +677,10 @@ def mergeResults(prin, prout):
 
 
     dout = deepcopy(dresult)
-    for celltype in dresult.keys():
-        for set in dresult[celltype].keys():
-            for ML in dresult[celltype][set].keys():
-                for criteria in  dresult[celltype][set][ML].keys():
+    for celltype in list(dresult.keys()):
+        for set in list(dresult[celltype].keys()):
+            for ML in list(dresult[celltype][set].keys()):
+                for criteria in  list(dresult[celltype][set][ML].keys()):
 
                     AV = round(mean(dresult[celltype][set][ML][criteria]),3)
                     SD = round(std(dresult[celltype][set][ML][criteria]),3)
@@ -690,13 +690,13 @@ def mergeResults(prin, prout):
 
     # write result
     lperfcriteria = ["Acc", "Sp", "Se", "MCC"]
-    for celltype in dout.keys():
+    for celltype in list(dout.keys()):
         pfilout = prout + celltype + ".csv"
         filout = open(pfilout, "w")
-        for set in dout[celltype].keys():
+        for set in list(dout[celltype].keys()):
             filout.write(str(set) + "\n")
             filout.write("\t" + "\t".join(["M-" + str(c) + "\t" + "SD-" + str(c) for c in lperfcriteria]) + "\n")
-            for ML in dout[celltype][set].keys():
+            for ML in list(dout[celltype][set].keys()):
                 filout.write(ML)
                 for criteria in lperfcriteria:
                     filout.write("\t" + str(dout[celltype][set][ML][criteria][0]) + "\t" + str(dout[celltype][set][ML][criteria][1]))

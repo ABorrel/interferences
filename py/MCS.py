@@ -21,7 +21,7 @@ class MCSMatrix:
         pfiloutNBatomMax = self.prout + "maxAtom.txt"
 
         if path.exists(pfiloutTanimoto) and path.exists(pfiloutNBatomMax):
-            print "in"
+            print("in")
             #dMCSTanimoto = toolbox.loadMatrix(pfiloutTanimoto)
             #dMCSMax = toolbox.loadMatrix(pfiloutNBatomMax)
             #self.MCSTanimoto = dMCSTanimoto
@@ -37,8 +37,8 @@ class MCSMatrix:
 
 
             while i < imax:
-                print i, imax
-                print self.prout + str(lcas[i])
+                print(i, imax)
+                print(self.prout + str(lcas[i]))
                 if path.exists(self.prout + str(lcas[i])):
                     i += 1
                     continue
@@ -46,8 +46,8 @@ class MCSMatrix:
                 dTemp = {}
                 j = i
                 while j < jmax:
-                    print i, j
-                    if not lcas[j] in dTemp.keys():
+                    print(i, j)
+                    if not lcas[j] in list(dTemp.keys()):
                         fsmii = open(self.prSMI + lcas[i] + ".smi", "r")
                         smii = fsmii.readlines()[0].strip()
                         fsmii.close()
@@ -63,7 +63,7 @@ class MCSMatrix:
                 # write temp matrix
                 filout = open(self.prout + str(lcas[i]), "w")
                 filout.write("CAS\tMCS\tMax atoms\n")
-                for k in dTemp.keys():
+                for k in list(dTemp.keys()):
                     filout.write(str(k) + "\t" + str(dTemp[k][0]) + "\t" + str(dTemp[k][1]) + "\n")
                 filout.close()
 
@@ -116,12 +116,12 @@ class MCSMatrix:
         daff = self.Aff
         dMax = {}
 
-        print len(dTanimoto.keys())
-        for cpID in dTanimoto.keys():
+        print(len(list(dTanimoto.keys())))
+        for cpID in list(dTanimoto.keys()):
             if float(dTanimoto[cpID]) < tanimotocutoff:
                 del dTanimoto[cpID]
 
-        lcID = dTanimoto.keys()
+        lcID = list(dTanimoto.keys())
         dTanimoto = {}
 
 
@@ -177,8 +177,8 @@ class MCSMatrix:
 
         for lineCluster in llinesCluster[1:]:
             cluster = lineCluster.strip().split(",")[-1].replace("\"", "")
-            print cluster
-            if not cluster in dcluster.keys():
+            print(cluster)
+            if not cluster in list(dcluster.keys()):
                 dcluster[cluster] = []
             compoundID = lineCluster.strip().split("\"")[1]
             dcluster[cluster].append(compoundID)
@@ -187,7 +187,7 @@ class MCSMatrix:
         daff = self.Aff
 
         # reduce matrix
-        for cluster in dcluster.keys():
+        for cluster in list(dcluster.keys()):
             lcpd = dcluster[cluster]
             # tanimoto temp
             dtanimotocluster = {}
@@ -221,7 +221,7 @@ class MCSMatrix:
 
 
             for cID in lcpd:
-                if not cID in dtanimotocluster.keys():
+                if not cID in list(dtanimotocluster.keys()):
                     continue
                 filoutTanimoto.write(str(cID) + "\t" + "\t".join([str(dtanimotocluster[cID][i]) for i in lcpd]) + "\n")
                 filoutDMAX.write(str(cID) + "\t" + "\t".join([str(dMaxcluster[cID][i]) for i in lcpd]) + "\n")
@@ -297,7 +297,7 @@ class MCSMatrix:
                 filout.write(str(self.sdata[i]["CMPD_CHEMBLID"]) + "\t" + str(self.sdata[i]["CANONICAL_SMILES"]) + "\t"
                              + str(tanimoto[0]) + "\t" + str(tanimoto[1]) + "\n")
                 lout = deepcopy(self.sdata[i])
-            print i, nbcp
+            print(i, nbcp)
             i += 1
 
         filout.close()
@@ -328,8 +328,8 @@ def get_Tanimoto(smile1, smile2):
     #print sim11, d_atoms11
 
     #test similarity
-    sizeMCS = len(d_atoms12.keys())
-    nbatomdiff = max([len(d_atoms11.keys()), len(d_atoms22.keys())]) - len(d_atoms12.keys())
+    sizeMCS = len(list(d_atoms12.keys()))
+    nbatomdiff = max([len(list(d_atoms11.keys())), len(list(d_atoms22.keys()))]) - len(list(d_atoms12.keys()))
     text = str(sizeMCS) + "-" + str(nbatomdiff)
     #print nbatomdiff
 

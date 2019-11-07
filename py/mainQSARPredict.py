@@ -28,24 +28,24 @@ def formatPRModels(PRMODELS):
     lfile = []
     for f1 in lf1:
         for f2 in listdir(PRMODELS + f1):
-            print f2, "f2"
+            print(f2, "f2")
             lfile.append(PRMODELS + f1 + "/" + f2)
             for f3 in listdir(PRMODELS + f1 + "/" + f2):
                 lfile.append(PRMODELS + f1 + "/" + f2 + "/" + f3)
-                print f3, "f3"
+                print(f3, "f3")
                 if path.exists(PRMODELS + f1 + "/" + f2 + "/" + f3 + "/"):
                     for f4 in listdir(PRMODELS + f1 + "/" + f2 + "/" + f3):
-                        print f4, "f4"
+                        print(f4, "f4")
                         lfile.append(PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4)
                         if path.exists(PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/"):
                             for f5 in listdir(PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4):
-                                print f5, "f5"
+                                print(f5, "f5")
                                 #lfile.append(PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/" + f5)
                                 if not f5 == "model.RData":
-                                    print "del", PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/" + f5
+                                    print("del", PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/" + f5)
                                     remove(PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/" + f5)
                                 else:
-                                    print "rename", PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/model" + f2 + ".Rdata"
+                                    print("rename", PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/model" + f2 + ".Rdata")
                                     pathFolder.createFolder(PRMODELS + f1 + "/" + f3 + "/" + f4 + "/")
                                     move(PRMODELS + f1 + "/" + f2 + "/" + f3 + "/" + f4 + "/model.RData", PRMODELS + f1 + "/" + f3 + "/" + f4 + "/model" + f2 + ".Rdata")
 
@@ -74,12 +74,12 @@ def applyModel(pdesc, prmodels, prout):
 
 
 
-    for typeModel in dmodel.keys():
+    for typeModel in list(dmodel.keys()):
         pathFolder.createFolder(prout + typeModel + "/")
-        for color in dmodel[typeModel].keys():
+        for color in list(dmodel[typeModel].keys()):
             pathFolder.createFolder(prout + typeModel + "/" + color + "/")
             dperf = {}
-            for ML in dmodel[typeModel][color].keys():
+            for ML in list(dmodel[typeModel][color].keys()):
                 proutbyRmodel = pathFolder.createFolder(prout + typeModel + "/" + color + "/" + ML + "/")
                 lpredict = []
                 for modelR in dmodel[typeModel][color][ML]:
@@ -91,7 +91,7 @@ def applyModel(pdesc, prmodels, prout):
                 for ppredict in lpredict:
                     try: dpredict = toolbox.loadMatrix(ppredict, sep=",")
                     except: continue
-                    for chem in dpredict.keys():
+                    for chem in list(dpredict.keys()):
                         if not chem in dprob:
                             dprob[chem] = {}
                             dprob[chem]["Pred"] = []
@@ -102,7 +102,7 @@ def applyModel(pdesc, prmodels, prout):
                 pfsumML = proutbyRmodel + "sumProb"
                 fsumML = open(pfsumML, "w")
                 fsumML.write("ID,Mpred,SDpred,Real\n")
-                for chem in dprob.keys():
+                for chem in list(dprob.keys()):
                     if len(dprob[chem]["Pred"]) == 0:
                         fsumML.write("%s,NA,NA,%s\n"%(chem, dprob[chem]["Aff"]))
                     else:
@@ -116,7 +116,7 @@ def applyModel(pdesc, prmodels, prout):
             fsum = open(pfsum, "w")
             lh = ["TP", "TN", "FP", "FN", "acc", "se", "sp", "mcc", "MpbTP", "SDpbTP", "MpbTN", "SDpbTN", "MpbFP", "SDpbFP", "MpbFN", "SDpbFN"]
             fsum.write("Model," + ",".join(lh) + "\n")
-            for ML in dperf.keys():
+            for ML in list(dperf.keys()):
                 lw = [dperf[ML][h]["x"]for h in lh]
                 i = 0
                 imax = len(lw)
@@ -148,33 +148,33 @@ def combineResult(cIn, prout):
                 lsubsubfolder = listdir(prout + folder + "/" + subfolder + "/")
                 for subsubfolder in lsubsubfolder:
                     if subsubfolder == "RFclass":
-                        if not folder in dpred.keys():
+                        if not folder in list(dpred.keys()):
                             dpred[folder] = {}
-                        if not subfolder in dpred[folder].keys():
+                        if not subfolder in list(dpred[folder].keys()):
                             dpred[folder][subfolder] = {}
                         dpred[folder][subfolder][subsubfolder] = toolbox.loadMatrixToDict(prout + folder + "/" + subfolder + "/" + subsubfolder + "/sumProb", sep = ",")
 
 
     dw = {}
-    for k1 in dpred.keys():
+    for k1 in list(dpred.keys()):
         dw[k1] = {}
-        for k2 in dpred[k1].keys():
-            for k3 in dpred[k1][k2].keys():
-                if not k3 in dw[k1].keys():
+        for k2 in list(dpred[k1].keys()):
+            for k3 in list(dpred[k1][k2].keys()):
+                if not k3 in list(dw[k1].keys()):
                     dw[k1][k3] = {}
-                if not k2 in dw[k1][k3].keys():
+                if not k2 in list(dw[k1][k3].keys()):
                     dw[k1][k3][k2] = {}
                     dw[k1][k3][k2]["Prob"] = []
                     dw[k1][k3][k2]["ID"] = []
                     dw[k1][k3][k2]["Abs"] = []
 
 
-                labs = cIn.values()
+                labs = list(cIn.values())
                 labs.sort()
 
                 ltemp = []
                 for Abs in labs:
-                    for ID in cIn.keys():
+                    for ID in list(cIn.keys()):
                         if Abs == cIn[ID] and ID not in ltemp:
                             dw[k1][k3][k2]["Prob"].append(str(dpred[k1][k2][k3][ID]["Mpred"]))
                             dw[k1][k3][k2]["ID"].append(ID)
@@ -182,19 +182,19 @@ def combineResult(cIn, prout):
                             ltemp.append(ID)
 
 
-    for k1 in dw.keys():
-        for k2 in dw[k1].keys():
+    for k1 in list(dw.keys()):
+        for k2 in list(dw[k1].keys()):
             pfiloutProb = prout + k1 + "_" + k2 + "predict_prob.csv"
             pfiloutPred = prout + k1 + "_" + k2 + "predict.csv"
 
             filoutProb = open(pfiloutProb, "w")
             filoutPred = open(pfiloutPred, "w")
 
-            lk3 = dw[k1][k2].keys()
+            lk3 = list(dw[k1][k2].keys())
             filoutPred.write("ID\tAbs\t" + "\t".join(lk3) + "\n")
             filoutProb.write("ID\tAbs\t" + "\t".join(lk3) + "\n")
             i = 0
-            imax = len(dw[k1][k2][dw[k1][k2].keys()[0]]["ID"])
+            imax = len(dw[k1][k2][list(dw[k1][k2].keys())[0]]["ID"])
             while i < imax:
                 filoutPred.write(dw[k1][k2][lk3[0]]["ID"][i] + "\t" + dw[k1][k2][lk3[0]]["Abs"][i])
                 filoutProb.write(dw[k1][k2][lk3[0]]["ID"][i] + "\t" + dw[k1][k2][lk3[0]]["Abs"][i])

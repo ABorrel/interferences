@@ -15,7 +15,7 @@ import cytox
 # MAIN  #
 #########
 
-prMain = "/home/borrela2/interference/"
+prMain = "/home/borrela2/interference2/"
 PRTESTING = prMain + "testing/"
 #prMain = "c://Users/Aborrel/Desktop/NIEHS-work/interference/"
 
@@ -71,32 +71,32 @@ cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 # for hepg2
 #=> no filter
 chepg2.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> curve filter
 chepg2.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> efficacy
 chepg2.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> curve filter and burst
 chepg2.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
-#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 
 # for hek293
 #=> no filter
 chek293.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> curve filter
 chek293.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> efficacy
 chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> curve filter and burst
 chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
-#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 
-
+fff
 ###############
 # analyse DYE #
 ###############
@@ -111,10 +111,10 @@ chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
 ####################
 # analyse spectrum #
 ####################
-import photoChemDB
+#import photoChemDB
 
-pphotochem = prMain + "data/PhotochemCAD3/PCAD3CompdDatabase2018/2018_03PCAD3.db"
-prSpectrum = pathFolder.createFolder(prMain + "SPECTRUM_analysis/")
+#pphotochem = prMain + "data/PhotochemCAD3/PCAD3CompdDatabase2018/2018_03PCAD3.db"
+#prSpectrum = pathFolder.createFolder(prMain + "SPECTRUM_analysis/")
 
 #cSpectrum = photoChemDB.photoChem(pphotochem, [chepg2, chek293], prSpectrum)
 #cSpectrum.crossSpectrumAssays()
@@ -124,26 +124,26 @@ prSpectrum = pathFolder.createFolder(prMain + "SPECTRUM_analysis/")
 #########################################
 
 pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
-#prhist = pathFolder.createFolder(prresults + "hist/")
-#assayResults.histogramAC50(pAC50All, prhist)
+prhist = pathFolder.createFolder(prresults + "hist/")
+assayResults.histogramAC50(pAC50All, prhist)
 
 # plot correlation #
 ####################
-#cluc.cor3assays(chepg2, chek293)
+cluc.cor3assays(chepg2, chek293)
 
 
 # plot response curves #
 ########################
-#cluc.responseCurves(drawn=1)
-#chek293.responseCurves(drawn=1)
-#chepg2.responseCurves(drawn=1)
+cluc.responseCurves(drawn=1)
+chek293.responseCurves(drawn=1)
+chepg2.responseCurves(drawn=1)
 
 
 # cross curve by color and type of assays #
 ############################################
-#prCrossCurve = prresults + "crossCurvesResponse/"
-#pathFolder.createFolder(prCrossCurve)
-#chepg2.crossResponseCurves(chek293, prCrossCurve)
+prCrossCurve = prresults + "crossCurvesResponse/"
+pathFolder.createFolder(prCrossCurve)
+chepg2.crossResponseCurves(chek293, prCrossCurve)
 
 
 # extract chemical with type of curve
@@ -171,9 +171,9 @@ pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
 
 # IC50 hist -> by cell #
 ########################
-#cluc.AC50Distribution()
-#chek293.AC50Distribution()
-#chepg2.AC50Distribution()
+cluc.AC50Distribution()
+chek293.AC50Distribution()
+chepg2.AC50Distribution()
 
 
 #############################################=> first round
@@ -183,8 +183,8 @@ pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
 
 # Create folder with smi and sdf files
 cluc.extractChemical(pSDFTox21)
-#chek293.extractChemical(pSDFTox21)
-#chepg2.extractChemical(pSDFTox21)
+chek293.extractChemical(pSDFTox21)
+chepg2.extractChemical(pSDFTox21)
 
 
 prSMI = prMain + "SMI/"
@@ -198,7 +198,7 @@ pathFolder.createFolder(prlogDesc)
 
 cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
 cDesc.computeDesc(opera=1, RDkitPhysico=1, pOperaDesc=pOperaDesc)
-#cDesc.generatePNG()
+cDesc.generatePNG()
 
 
 # set FP for different parameters #
@@ -271,11 +271,11 @@ nbCV = 10
 ##### analysis for all Chemical ######
 # Double clustering on the main data #
 ######################################
-distMeth = "euclidean"
-aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
-clusterType = "hclust"#"hclust", "kmeans"
-optimalCluster = "silhouette"#"gap_stat", "silhouette", "wss", "gap_stat"
-doubleclustering = 0
+#distMeth = "euclidean"
+#aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
+#clusterType = "hclust"#"hclust", "kmeans"
+#optimalCluster = "silhouette"#"gap_stat", "silhouette", "wss", "gap_stat"
+#doubleclustering = 0
 
 
 #laggregtype = ["ward.D2", "complete", "single", "average"]
@@ -327,88 +327,87 @@ doubleclustering = 0
 # Student Tests #
 #################
 
-#prTtest = pathFolder.createFolder(prresults + "Ttest/")
-#nbNA = 500
-#cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prTtest)
-#cDesc.Ttest(pAC50All, prTtest)
+prTtest = pathFolder.createFolder(prresults + "Ttest/")
+nbNA = 500
+cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prTtest)
+cDesc.Ttest(pAC50All, prTtest)
 
 
 ###############
 # MAIN - SOM  #
 ###############
-#prSOM = prresults + "SOM/"
-#pathFolder.createFolder(prSOM)
-#nbNA = 100
-#cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prSOM)
-#pmodelSOM = cDesc.MainSOM(15)
+prSOM = prresults + "SOM/"
+pathFolder.createFolder(prSOM)
+nbNA = 100
+cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prSOM)
+pmodelSOM = cDesc.MainSOM(15)
 
 # SOM active  #
 ###############
 # for luciferase
-#prSOMAct = prresults + "SOMactiveluc/"
-#pathFolder.createFolder(prSOMAct)
+prSOMAct = prresults + "SOMactiveluc/"
+pathFolder.createFolder(prSOMAct)
 
-#nbNA = 100
-#cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=1)
-#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
-#cDesc.extractActivebySOM()
+nbNA = 100
+cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=1)
+cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+cDesc.extractActivebySOM()
 
 # for autofluorescence
-#prSOMAct = prresults + "SOMactivefluo/"
-#pathFolder.createFolder(prSOMAct)
-#cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=0)
-#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
-#cDesc.extractActivebySOM()
+prSOMAct = prresults + "SOMactivefluo/"
+pathFolder.createFolder(prSOMAct)
+cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=0)
+cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+cDesc.extractActivebySOM()
 
 
 ### for luc  ###
 ################
 ################
 # prep
-#nbNA = 1000
-#pranalysis = cluc.proutSP + "Stat/"
-#pathFolder.createFolder(pranalysis)
-#cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, nbNA, pranalysis)
-#cluc.summarize(pranalysis)
+nbNA = 1000
+pranalysis = cluc.proutSP + "Stat/"
+pathFolder.createFolder(pranalysis)
+cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, nbNA, pranalysis)
+cluc.summarize(pranalysis)
 #ranking chemical based on AC50
-#cDesc.rankingAC50()
-#prRank = cluc.proutSP + "ranking/"
-#pathFolder.createFolder(prRank)
-#cluc.rankingTop(100, prPNG, prRank)
-#prRank = cluc.proutSP + "rankinggood/"
-#pathFolder.createFolder(prRank)
-#cluc.rankingTop(100, prPNG, prRank, 1)
-
+cDesc.rankingAC50()
+prRank = cluc.proutSP + "ranking/"
+pathFolder.createFolder(prRank)
+cluc.rankingTop(100, prPNG, prRank)
+prRank = cluc.proutSP + "rankinggood/"
+pathFolder.createFolder(prRank)
+cluc.rankingTop(100, prPNG, prRank, 1)
 
 # for HEPG #
 ############
 ############
-#nbNA = 500
-#pranalysis = chepg2.proutSP + "Stat/"
-#pathFolder.createFolder(pranalysis)
-#cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, nbNA, pranalysis)
+nbNA = 500
+pranalysis = chepg2.proutSP + "Stat/"
+pathFolder.createFolder(pranalysis)
+cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, nbNA, pranalysis)
 
-#prVenn = pathFolder.createFolder(pranalysis + "Venn/")
-#chepg2.drawVennPlot(prVenn, prPNG)
+prVenn = pathFolder.createFolder(pranalysis + "Venn/")
+chepg2.drawVennPlot(prVenn, prPNG)
 
 # cor with different AC50 available
 ###################################
-#chepg2.corAC50()
+chepg2.corAC50()
 # rank AC50
-#prRank = chepg2.proutSP + "ranking/"
-#pathFolder.createFolder(prRank)
-#chepg2.rankingTop(100, prPNG, prRank)
+prRank = chepg2.proutSP + "ranking/"
+pathFolder.createFolder(prRank)
+chepg2.rankingTop(100, prPNG, prRank)
 
-#prRank = chepg2.proutSP + "rankinggood/"
-#pathFolder.createFolder(prRank)
-#chepg2.rankingTop(100, prPNG, prRank, 1)
-#cDesc.rankingAC50()
+prRank = chepg2.proutSP + "rankinggood/"
+pathFolder.createFolder(prRank)
+chepg2.rankingTop(100, prPNG, prRank, 1)
+cDesc.rankingAC50()
 
 # clustering
-disttype = "euc"
-aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
-clusterType = "hclust"#"hclust", "kmeans"
-optimalCluster = "wss"#"silhouette", "wss", "gap_stat"
+#disttype = "euc"
+#aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
+#clusterType = "hclust"#"hclust", "kmeans"
+#optimalCluster = "wss"#"silhouette", "wss", "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
 optimalCluster = "silhouette"
@@ -531,7 +530,7 @@ optimalCluster = "gap_stat"
 #pathFolder.createFolder(prMDS)
 #chek293.createMDS(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, prMDS)
 
- ##### QSAR modeling ######
+##### QSAR modeling ######
 ##########################
 ratioAct = 0.3
 nbRepeat = 10

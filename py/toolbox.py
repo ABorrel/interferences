@@ -20,12 +20,12 @@ def selectMinimalEnergyLigPrep(psdfin, psdfout):
         lenergy = []
         for sdfin in lsdf:
             energy = sdfin.split("> <r_lp_Energy>\n")[-1].split("\n")[0]
-            print energy
+            print(energy)
             lenergy.append(float(energy))
 
         # take minimal energy
         ibest = lenergy.index(min(lenergy))
-        print ibest
+        print(ibest)
         filout = open(psdfout, "w")
         filout.write(lsdf[ibest] + "$$$$\n")
         filout.close()
@@ -151,8 +151,8 @@ def loadMatrix(pmatrixIn, sep = "\t"):
         dout[kin] = {}
         j = 0
         if len(lvalues) != len(lheaders):
-            print lvalues
-            print lheaders
+            print(lvalues)
+            print(lheaders)
         jmax = len(lheaders)
         while j < jmax:
             try:dout[kin][lheaders[j]] = lvalues[j]
@@ -188,12 +188,12 @@ def loadMatrixToDict(pmatrixIn, sep ="\t"):
         dout[kin] = {}
         j = 0
         if len(lvalues) != len(lheaders):
-            print lineMat
-            print llinesMat[i]
-            print lvalues
-            print "Error => nb element", i
-            print len(lvalues)
-            print len(lheaders)
+            print(lineMat)
+            print(llinesMat[i])
+            print(lvalues)
+            print("Error => nb element", i)
+            print(len(lvalues))
+            print(len(lheaders))
             ddd
 
         jmax = len(lheaders)
@@ -236,7 +236,7 @@ def writeMatrix(ddesc, pdescAct, sep = "\t"):
 
 
     filout = open(pdescAct, "w")
-    lheader = ddesc[ddesc.keys()[0]].keys()
+    lheader = list(ddesc[list(ddesc.keys())[0]].keys())
 
     # put header in first
 
@@ -248,12 +248,12 @@ def writeMatrix(ddesc, pdescAct, sep = "\t"):
         lheader = ["CASID"] + lheader
     else:
         lheader = ["CASID"] + lheader
-        for casID in ddesc.keys():
+        for casID in list(ddesc.keys()):
             ddesc[casID]["CASID"] = casID
 
 
     filout.write(sep.join(lheader) + "\n")
-    for casID in ddesc.keys():
+    for casID in list(ddesc.keys()):
         lval = [str(ddesc[casID][i]) for i in lheader]
         filout.write(sep.join(lval) + "\n")
     filout.close()

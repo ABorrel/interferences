@@ -20,7 +20,7 @@ def parsepdf(prcytox, prresult):
 
     dtable = toolbox.loadMatrix(ptable, sep=",")
     lCASID = []
-    for chem in dtable.keys():
+    for chem in list(dtable.keys()):
         lCASID.append(dtable[chem]["CASRN"])
 
     dout = {}
@@ -55,7 +55,7 @@ def parsepdf(prcytox, prresult):
 
     filout = open(pfilout, "w")
     filout.write("CAS\tCytoxMin\tCytoxMedian\n")
-    for CASID in dout.keys():
+    for CASID in list(dout.keys()):
         filout.write(str(CASID) + "\t" + str(dout[CASID]["CytoxMin"]) + "\t"  + str(dout[CASID]["CytoxMedian"])  + "\n")
     filout.close()
 

@@ -87,9 +87,9 @@ LOPERA = ["MolWeight", "nbAtoms", "nbHeavyAtoms", "nbC", "nbO", "nbH", "nbAromAt
 
 def transformOPERAList(ddesc):
 
-    for chem in ddesc.keys():
+    for chem in list(ddesc.keys()):
         ldel = []
-        for desc in ddesc[chem].keys():
+        for desc in list(ddesc[chem].keys()):
             if desc == "MW":
                 new = "MolWeight"
                 ddesc[chem][new] = ddesc[chem][desc]
@@ -213,15 +213,15 @@ def getLdesc (typeDesc, RKitPhyco=1):
     lout = []
     if typeDesc == "1D2D" and RKitPhyco == 1:
         # listdesc
-        lout = lout + constitution._constitutional.keys() + ["nheavy"] + LMOLPROP + topology._Topology.keys() + \
-               connectivity._connectivity.keys() + LKAPA + LBUCUT + basak._basak.keys() + LESTATE + LMOREAUBROTO + \
-               LMORAN + LGEARY + charge._Charge.keys() + LMOE
+        lout = lout + list(constitution._constitutional.keys()) + ["nheavy"] + LMOLPROP + list(topology._Topology.keys()) + \
+               list(connectivity._connectivity.keys()) + LKAPA + LBUCUT + list(basak._basak.keys()) + LESTATE + LMOREAUBROTO + \
+               LMORAN + LGEARY + list(charge._Charge.keys()) + LMOE
 
     elif typeDesc == "1D2D" and RKitPhyco == 0:
         # listdesc
-        lout = lout + constitution._constitutional.keys() + ["nheavy"] + topology._Topology.keys() + \
-               connectivity._connectivity.keys() + LKAPA + LBUCUT + basak._basak.keys() + LESTATE + LMOREAUBROTO + \
-               LMORAN + LGEARY + charge._Charge.keys() + LMOE
+        lout = lout + list(constitution._constitutional.keys()) + ["nheavy"] + list(topology._Topology.keys()) + \
+               list(connectivity._connectivity.keys()) + LKAPA + LBUCUT + list(basak._basak.keys()) + LESTATE + LMOREAUBROTO + \
+               LMORAN + LGEARY + list(charge._Charge.keys()) + LMOE
 
     if typeDesc == "Opera":
         lout = LOPERA
@@ -353,7 +353,7 @@ class chemical:
             return 1
         else:
             self.mol = loader.ReadMolFromSmile(self.smiclean)
-            print self.smiclean
+            print(self.smiclean)
 
             try:
                 self.consti = constitution.GetConstitutional(self.mol)
@@ -477,20 +477,20 @@ class chemical:
 
             ddesc2D = toolbox.loadMatrix(pdesc2D, sep = ",")
             transformOPERAList(ddesc2D)
-            for desc2D in ddesc2D[ddesc2D.keys()[0]].keys():
+            for desc2D in list(ddesc2D[list(ddesc2D.keys())[0]].keys()):
                 if desc2D in LOPERA:
-                    dopera[desc2D] = ddesc2D[ddesc2D.keys()[0]][desc2D]
+                    dopera[desc2D] = ddesc2D[list(ddesc2D.keys())[0]][desc2D]
 
             lpdesc = runExternalSoft.runOPERA(psdf, pdesc2D, prOPERA)
 
             for pdesc in lpdesc:
                 try:ddesc = toolbox.loadMatrix(pdesc, ",")
                 except:
-                    print pdesc
+                    print(pdesc)
                     dddd
-                for desc in ddesc[ddesc.keys()[0]].keys():
+                for desc in list(ddesc[list(ddesc.keys())[0]].keys()):
                     if desc in LOPERA:
-                        dopera[desc] = ddesc[ddesc.keys()[0]][desc]
+                        dopera[desc] = ddesc[list(ddesc.keys())[0]][desc]
 
             self.opera = dopera
             self.allDesc.update(deepcopy(self.opera))
@@ -500,8 +500,8 @@ class chemical:
 
     def loadOperaDesc(self, dOperaAll,flog):
 
-        if not self.name in dOperaAll.keys():
-            print self.name, "Not in Opera table"
+        if not self.name in list(dOperaAll.keys()):
+            print(self.name, "Not in Opera table")
             flog.write(self.name + "\n")
             return
 
@@ -572,9 +572,9 @@ class chemical:
 
             ptable = prDescbyCAS + self.name + ".txt"
             ftable = open(ptable, "w")
-            ftable.write("CAS\t" + "\t".join(self.allDesc.keys()) + "\n")
+            ftable.write("CAS\t" + "\t".join(list(self.allDesc.keys())) + "\n")
             ftable.write(self.name)
-            for desc in self.allDesc.keys():
+            for desc in list(self.allDesc.keys()):
                 ftable.write("\t" + str(self.allDesc[desc]))
             ftable.write("\n")
             ftable.close()
@@ -593,9 +593,9 @@ class chemical:
             if path.exists(ptable) and update == 0:
                 return 0
             ftable = open(ptable, "w")
-            ftable.write("ID\t" + "\t".join(self.allDesc.keys()) + "\n")
+            ftable.write("ID\t" + "\t".join(list(self.allDesc.keys())) + "\n")
             ftable.write(self.name)
-            for desc in self.allDesc.keys():
+            for desc in list(self.allDesc.keys()):
                 ftable.write("\t" + str(self.allDesc[desc]))
             ftable.write("\n")
             ftable.close()

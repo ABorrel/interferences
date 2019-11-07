@@ -126,7 +126,7 @@ class assays:
                 if abs(float(self.dresponse[CAS][chem["SAMPLE_DATA_TYPE"]]["EFFICACY"])) < self.effcutoff:
                     chem["AC50"] = "NA"
 
-            if not CAS in dAC50.keys():
+            if not CAS in list(dAC50.keys()):
                 dAC50[CAS] = {}
             dAC50[CAS][chem["SAMPLE_DATA_TYPE"]] = chem["AC50"]
             if not chem["SAMPLE_DATA_TYPE"] in lsample:
@@ -140,18 +140,18 @@ class assays:
             self.filterCytox(dcytox, dAC50)
 
 
-        lsamples = dAC50[dAC50.keys()[0]].keys()
+        lsamples = list(dAC50[list(dAC50.keys())[0]].keys())
         filout = open(pfilout, "w")
         feff = open(peff, "w")
         filout.write("CAS\t" + "\t".join(lsamples) + "\n")
         feff.write("CAS\t" + "\t".join([str(s + "\t" + s + "_eff") for s in lsamples]) + "\n")
-        for casID in dAC50.keys():
+        for casID in list(dAC50.keys()):
             if casID == "":
                 continue
             lw = []
             lweff = []
             for sample in lsamples:
-                if sample in dAC50[casID].keys():
+                if sample in list(dAC50[casID].keys()):
                     lw.append(str(dAC50[casID][sample]))
                     lweff.append(str(dAC50[casID][sample]))
                 else:
@@ -159,7 +159,7 @@ class assays:
                     lweff.append("NA")
                 if sample == "IC50":
                     leff = []
-                    for setIC50 in self.dresponse[casID].keys():
+                    for setIC50 in list(self.dresponse[casID].keys()):
                         leff.append(float(self.dresponse[casID][setIC50]["EFFICACY"]))
                     lweff.append(str(abs(mean(leff))))
                 else:
@@ -200,14 +200,14 @@ class assays:
 
         dAC50out = {}
 
-        lsample = dAC50[dAC50.keys()[0]].keys()
+        lsample = list(dAC50[list(dAC50.keys())[0]].keys())
 
-        for casID in dAC50.keys():
+        for casID in list(dAC50.keys()):
             if casID == "":
                 continue
             lM = []
             for sample in lsample:
-                if sample in dAC50[casID].keys():
+                if sample in list(dAC50[casID].keys()):
                     if dAC50[casID][sample] != "NA":
                         lM.append(float(dAC50[casID][sample]))
             if len(lM) < 3:
@@ -236,7 +236,7 @@ class assays:
 
         for chem in self.lchem:
             casID = chem["CAS"]
-            if not casID in dtypecurve.keys():
+            if not casID in list(dtypecurve.keys()):
                 dtypecurve[casID] = {}
                 for typefluo in ltypefluo:
                     dtypecurve[casID][typefluo] = "NA"
@@ -246,7 +246,7 @@ class assays:
         fcurve = open(pcurve, "w")
         fcurve.write("CAS" + "\t" + "\t".join(ltypefluo) + "\n")
 
-        for casID in dtypecurve.keys():
+        for casID in list(dtypecurve.keys()):
             fcurve.write(casID + "\t" + "\t".join([str(dtypecurve[casID][k]) for k in ltypefluo]) + "\n")
         fcurve.close()
 
@@ -266,14 +266,14 @@ class assays:
 
         for chem in self.lchem:
             if chem["AC50"] != "":
-                if not chem["CAS"] in dAC50.keys():
+                if not chem["CAS"] in list(dAC50.keys()):
                     dAC50[chem["CAS"]] = {}
                     dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]] = {}
 
                     dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][self.name] = chem["AC50"]
                     dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][assay2.name] = "NA"
                 else:
-                    if not chem["SAMPLE_DATA_TYPE"] in dAC50[chem["CAS"]].keys():
+                    if not chem["SAMPLE_DATA_TYPE"] in list(dAC50[chem["CAS"]].keys()):
                         dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]] = {}
                         dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][self.name] = chem["AC50"]
                         dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][assay2.name] = "NA"
@@ -281,9 +281,9 @@ class assays:
 
         for chem2 in assay2.lchem:
             if chem2["AC50"] != "":
-                if chem2["CAS"] in dAC50.keys():
+                if chem2["CAS"] in list(dAC50.keys()):
 
-                    if chem2["SAMPLE_DATA_TYPE"] in dAC50[chem2["CAS"]].keys():
+                    if chem2["SAMPLE_DATA_TYPE"] in list(dAC50[chem2["CAS"]].keys()):
                         dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]][assay2.name] = chem2["AC50"]
                     else:
                         dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]] = {}
@@ -303,16 +303,16 @@ class assays:
         dfiles["global"] = open(pfiloutGlobal, "w")
         dfiles["global"].write("CAS\tAC50_1\tAC50_2\n")
 
-        for casID in dAC50.keys():
-            for sample in dAC50[casID].keys():
-                if not sample in dfiles.keys():
+        for casID in list(dAC50.keys()):
+            for sample in list(dAC50[casID].keys()):
+                if not sample in list(dfiles.keys()):
                     psample = prcor + str(self.name + "_" + assay2.name + "_" + str(sample))
                     dfiles[sample] = open(psample, "w")
                     dfiles[sample].write("CAS\tAC50_1\tAC50_2\n")
                 dfiles[sample].write(str(casID) + "\t" + str(dAC50[casID][sample][self.name]) + "\t" + str(dAC50[casID][sample][assay2.name]) + "\n")
             dfiles["global"].write(str(casID) + "\t" + str(dAC50[casID][sample][self.name]) + "\t" + str(dAC50[casID][sample][assay2.name]) + "\n")
 
-        for filin in dfiles.keys():
+        for filin in list(dfiles.keys()):
             pfilin = dfiles[filin].name
             dfiles[filin].close()
             runExternalSoft.corplotR(pfilin)
@@ -343,7 +343,7 @@ class assays:
                 continue
             typein = chem["SAMPLE_DATA_TYPE"]
 
-            if not casID in dresponse.keys():
+            if not casID in list(dresponse.keys()):
                 dresponse[casID] = {}
             dresponse[casID][typein] = {}
             dresponse[casID][typein]["DATA"] = []
@@ -368,12 +368,12 @@ class assays:
             while i < 16:
                 kdata = "DATA" + str(i)
                 kconc = "CONC" + str(i)
-                if not kdata in chem.keys() or chem[kdata] == "":
+                if not kdata in list(chem.keys()) or chem[kdata] == "":
                     dresponse[casID][typein]["DATA"].append("NA")
                 else:
                     dresponse[casID][typein]["DATA"].append(chem["DATA" + str(i)])
 
-                if not kconc in chem.keys() or chem[kconc] == "":
+                if not kconc in list(chem.keys()) or chem[kconc] == "":
                     dresponse[casID][typein]["CONC"].append("NA")
                 else:
                     dresponse[casID][typein]["CONC"].append(chem["CONC" + str(i)])
@@ -381,7 +381,7 @@ class assays:
                 i += 1
 
         # compute response curves
-        for CASID in dresponse.keys():
+        for CASID in list(dresponse.keys()):
             pCASout = prresponse + str(CASID)
             if path.exists(pCASout) and path.getsize(pCASout) > 10:
                 continue
@@ -391,7 +391,7 @@ class assays:
 
             i = 0
             while i < 16:
-                for sample in dresponse[CASID].keys():
+                for sample in list(dresponse[CASID].keys()):
                     filout.write(str(dresponse[CASID][sample]["CONC"][i]) + "\t" + str(
                         dresponse[CASID][sample]["DATA"][i]) + "\t" + str(sample) + "\t" + str(
                         dresponse[CASID][sample]["CURVE_CLASS2"]) + "\n")
@@ -430,9 +430,9 @@ class assays:
         dfile = {}
         dfile["all"] = open(prout + "all", "w")
         dfile["all"].write("CASID\tCurves\tAff\n")
-        for CASID in self.dresponse.keys():
-            for sample in self.dresponse[CASID].keys():
-                if not sample in dfile.keys():
+        for CASID in list(self.dresponse.keys()):
+            for sample in list(self.dresponse[CASID].keys()):
+                if not sample in list(dfile.keys()):
                     dfile[sample] = open(prout + str(sample), "w")
                     dfile[sample].write("CASID\tCurves\tAff\n")
 
@@ -455,7 +455,7 @@ class assays:
                 dfile["all"].write(str(CASID) + "\t" + str(self.dresponse[CASID][sample]["CURVE_CLASS2"]) + "\t" + str(self.dresponse[CASID][sample]["AC50"]) + "\n")
 
 
-        for sample in dfile.keys():
+        for sample in list(dfile.keys()):
             pfile = dfile[sample].name
             dfile[sample].close()
             runExternalSoft.barplotCurve(pfile)
@@ -530,17 +530,17 @@ class assays:
             self.responseCurves(drawn=0)
 
         dval = {}
-        for CASID in self.dAC50.keys():
-            for sample in self.dAC50[CASID].keys():
-                if not sample in dval.keys():
+        for CASID in list(self.dAC50.keys()):
+            for sample in list(self.dAC50[CASID].keys()):
+                if not sample in list(dval.keys()):
                     dval[sample] = []
-                print sample, CASID
+                print((sample, CASID))
                 dval[sample].append(self.dAC50[CASID][sample])
-        for sample in dval.keys():
+        for sample in list(dval.keys()):
             dval[sample] = sorted(dval[sample])
 
 
-        for sample in dval.keys():
+        for sample in list(dval.keys()):
             prsample = prresult + str(sample) + "/"
             pathFolder.createFolder(prsample)
 
@@ -549,12 +549,12 @@ class assays:
             for val in dval[sample]:
                 if val =="NA":
                     break
-                for cas in self.dAC50.keys():
+                for cas in list(self.dAC50.keys()):
                     if cas in lcasflag:
                         continue
                     elif self.dAC50[cas][sample] == val:
 
-                        if not sample in self.dresponse[cas].keys():
+                        if not sample in list(self.dresponse[cas].keys()):
                             curve = self.dresponse[cas]["set1"]["CURVE_CLASS2"]
                         else:
                             curve = self.dresponse[cas][sample]["CURVE_CLASS2"]
@@ -596,7 +596,7 @@ class assays:
     def summarize(self, prout):
 
         dsum = {}
-        lsample = self.dAC50[self.dAC50.keys()[0]].keys()
+        lsample = list(self.dAC50[list(self.dAC50.keys())[0]].keys())
         if "CASID" in lsample:
             del lsample[lsample.index("CASID")]
         for sample in lsample:
@@ -606,7 +606,7 @@ class assays:
             dsum[sample]["act"] = []
             dsum[sample]["inact"] = []
 
-        for CASID in self.dAC50.keys():
+        for CASID in list(self.dAC50.keys()):
             for sample in lsample:
                 if self.dAC50[CASID][sample] == "NA":
                     dsum[sample]["inact"].append(CASID)
@@ -618,7 +618,7 @@ class assays:
 
         filout = open(pfilout, "w")
         filout.write("Raw\tNb Chemical\tNb active\tNb inactive\tMean(AC50)\tSD(AC50)\tMean(-(logAC50))\tSD(-log(AC50))\n")
-        for sample in dsum.keys():
+        for sample in list(dsum.keys()):
             filout.write("%s\t%d\t%d\t%d\t%.2f\t%.2f\t%.2f\t%.2f\n"% (sample,
                          len(dsum[sample]["act"])+len(dsum[sample]["inact"]),
                              len(dsum[sample]["act"]), len(dsum[sample]["inact"]), mean(dsum[sample]["act"]),
@@ -633,7 +633,7 @@ class assays:
         if not "dresponse" in self.__dict__:
             self.responseCurves(drawn=0)
 
-        lsample = self.dresponse[self.dresponse.keys()[0]].keys()
+        lsample = list(self.dresponse[list(self.dresponse.keys())[0]].keys())
 
         i = 0
         imax = len(lsample)
@@ -644,7 +644,7 @@ class assays:
                 sample2 = lsample[j]
 
                 prsubpng = pathFolder.createFolder(pranalysis + str(sample1) + "-" + str(sample2) + "/")
-                for CASID in self.dresponse.keys():
+                for CASID in list(self.dresponse.keys()):
                     if self.dresponse[CASID][sample1]["AC50"] == "NA":
                         continue
                     if abs(float(self.dresponse[CASID][sample1]["CURVE_CLASS2"])) >= self.curveCutoff:
@@ -672,7 +672,7 @@ class assays:
                 # preproc
                 runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, nbNA, prPCA)
             else:
-                print "Error ->", pdesc1D2D
+                print(("Error ->", pdesc1D2D))
 
         runExternalSoft.drawPCA(pdesc1D2Dclean, pAC50, prPCA)
 
@@ -689,7 +689,7 @@ class assays:
                 # preproc
                 runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, prMDS)
             else:
-                print "Error ->", pdesc1D2D
+                print(("Error ->", pdesc1D2D))
 
         runExternalSoft.drawMDS(pdesc1D2Dclean, pAC50, prMDS)
 
@@ -698,10 +698,10 @@ class assays:
 
 
         linter = list(set(dcytox.keys()) & set(dAC50.keys()))
-        print len(linter), "-> l662"
+        print((len(linter), "-> l662"))
 
         for CASinter in linter:
-            for channel in dAC50[CASinter].keys():
+            for channel in list(dAC50[CASinter].keys()):
                 if dAC50[CASinter][channel] != "NA":
                     if float(dAC50[CASinter][channel]) > float(dcytox[CASinter]["CytoxMin"]): # or cytoxMin
                         dAC50[CASinter][channel] = "NA"
@@ -733,19 +733,19 @@ def mergeAssays(cluc, chepg2, chek293):
                 "cell_red", "cell_blue_n", "cell_green_n", "cell_red_n"]
     filout.write("\t".join(lheader) + "\n")
 
-    lCAS = list(set(cluc.dAC50.keys() + chepg2.dAC50.keys()))
-    lCAS = list(set(lCAS + chek293.dAC50.keys()))
+    lCAS = list(set(list(cluc.dAC50.keys()) + list(chepg2.dAC50.keys())))
+    lCAS = list(set(lCAS + list(chek293.dAC50.keys())))
     for casID in lCAS:
         #print chepg2.dAC50[casID]
         #print chek293.dAC50[casID]
-        if not casID in chepg2.dAC50.keys():
+        if not casID in list(chepg2.dAC50.keys()):
             chepg2.dAC50[casID] = {}
             for i in lchannel:
                 chepg2.dAC50[casID][i] = "NA"
-        if not casID in cluc.dAC50.keys():
+        if not casID in list(cluc.dAC50.keys()):
             cluc.dAC50[casID] = {}
             cluc.dAC50[casID]["IC50"] = "NA"
-        if not casID in chek293.dAC50.keys():
+        if not casID in list(chek293.dAC50.keys()):
             chek293.dAC50[casID] = {}
             for i in lchannel:
                 chek293.dAC50[casID][i] = "NA"
@@ -791,8 +791,8 @@ def ChemByCurve(cassay, ppng, prout):
     if not "dresponse" in dir(cassay):
         cassay.responseCurves(drawn=0)
 
-    for CASID in cassay.dresponse.keys():
-        for condition in cassay.dresponse[CASID].keys():
+    for CASID in list(cassay.dresponse.keys()):
+        for condition in list(cassay.dresponse[CASID].keys()):
             curveclass = cassay.dresponse[CASID][condition]['CURVE_CLASS2']
             AC50 = cassay.dresponse[CASID][condition]['AC50']
             prcurve = prout + condition + "/" + curveclass + "/"
