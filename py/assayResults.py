@@ -257,66 +257,55 @@ class assays:
         return
 
 
-    def corAssay(self, assay2):
+    def corAssay(self, cassay2):
 
         prcor = pathFolder.createFolder(self.prout + "cor/")
 
         #merge assays
-        dAC50 = {}
-
+        dAC50_1 = {}
+        lassays1 = []
         for chem in self.lchem:
+            if not chem["CAS"] in list(dAC50_1.keys()):
+                dAC50_1[chem["CAS"]] = {}
+            assayAC50 = chem["SAMPLE_DATA_TYPE"] + "---" + self.name
+            if not assayAC50 in lassays1:
+                lassays1.append(assayAC50)
             if chem["AC50"] != "":
-                if not chem["CAS"] in list(dAC50.keys()):
-                    dAC50[chem["CAS"]] = {}
-                    dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]] = {}
+                dAC50_1[chem["CAS"]][assayAC50] = chem["AC50"]
+            else:
+                dAC50_1[chem["CAS"]][assayAC50] = "NA"
 
-                    dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][self.name] = chem["AC50"]
-                    dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][assay2.name] = "NA"
-                else:
-                    if not chem["SAMPLE_DATA_TYPE"] in list(dAC50[chem["CAS"]].keys()):
-                        dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]] = {}
-                        dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][self.name] = chem["AC50"]
-                        dAC50[chem["CAS"]][chem["SAMPLE_DATA_TYPE"]][assay2.name] = "NA"
-
-
-        for chem2 in assay2.lchem:
+        dAC50_2 = {}
+        lassays2 = []
+        for chem2 in cassay2.lchem:
+            if not chem2["CAS"] in list(dAC50_2.keys()):
+                dAC50_2[chem2["CAS"]] = {}
+            assayAC50 = chem2["SAMPLE_DATA_TYPE"] + "---" + cassay2.name
+            if not assayAC50 in lassays2:
+                lassays2.append(assayAC50)
             if chem2["AC50"] != "":
-                if chem2["CAS"] in list(dAC50.keys()):
+                dAC50_2[chem2["CAS"]][assayAC50] = chem2["AC50"]
+            else:
+                dAC50_2[chem2["CAS"]][assayAC50] = "NA"
 
-                    if chem2["SAMPLE_DATA_TYPE"] in list(dAC50[chem2["CAS"]].keys()):
-                        dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]][assay2.name] = chem2["AC50"]
-                    else:
-                        dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]] = {}
-                        dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]][assay2.name] = chem2["AC50"]
-                        dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]][self.name] = "NA"
-
-                else:
-                    dAC50[chem2["CAS"]] = {}
-                    dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]] = {}
-                    dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]][assay2.name] = chem2["AC50"]
-                    dAC50[chem2["CAS"]][chem2["SAMPLE_DATA_TYPE"]][self.name] = "NA"
 
 
         # open different file
-        dfiles = {}
-        pfiloutGlobal = prcor + str(self.name + "_" + assay2.name)
-        dfiles["global"] = open(pfiloutGlobal, "w")
-        dfiles["global"].write("CAS\tAC50_1\tAC50_2\n")
+        for assay1 in lassays1:
+            for assay2 in lassays2:
+                pfilout = prcor + "%s___%s"%(assay1, assay2)
+                filout = open(pfilout, "w")
+                filout.write("CAS\tAC50_1\tAC50_2\n")
 
-        for casID in list(dAC50.keys()):
-            for sample in list(dAC50[casID].keys()):
-                if not sample in list(dfiles.keys()):
-                    psample = prcor + str(self.name + "_" + assay2.name + "_" + str(sample))
-                    dfiles[sample] = open(psample, "w")
-                    dfiles[sample].write("CAS\tAC50_1\tAC50_2\n")
-                dfiles[sample].write(str(casID) + "\t" + str(dAC50[casID][sample][self.name]) + "\t" + str(dAC50[casID][sample][assay2.name]) + "\n")
-            dfiles["global"].write(str(casID) + "\t" + str(dAC50[casID][sample][self.name]) + "\t" + str(dAC50[casID][sample][assay2.name]) + "\n")
+                for casID in dAC50_1.keys():
+                    try:ac50_2 = dAC50_2[casID][assay2]
+                    except: ac50_2 = "NA"
 
-        for filin in list(dfiles.keys()):
-            pfilin = dfiles[filin].name
-            dfiles[filin].close()
-            runExternalSoft.corplotR(pfilin)
 
+                    filout.write("%s\t%s\t%s\n"%(casID, dAC50_1[casID][assay1], ac50_2))
+
+                filout.close()
+                runExternalSoft.corplotR(pfilout)
 
 
     def AC50Distribution(self):
@@ -470,16 +459,16 @@ class assays:
 
 
 
-    def extractChemical(self, pSDFTox21):
+    def extractChemical(self, pSDFTox21, prdesc):
 
-        prSMI = self.prout + "SMI/"
+        prSMI = prdesc + "SMI_origin/"
         pathFolder.createFolder(prSMI)
 
-        prSDF = self.prout + "SDF/"
+        prSDF = prdesc + "SDF_origin/"
         pathFolder.createFolder(prSDF)
 
         # load DB
-        db = loadDB.sdfDB(pSDFTox21, "CASRN", self.prout)
+        db = loadDB.sdfDB(pSDFTox21, "CASRN", prdesc)
         db.parseAll()
 
         # extract chemical
@@ -720,7 +709,7 @@ def histogramAC50(pAC50All, prhist):
 def mergeAssays(cluc, chepg2, chek293):
 
     pfilout = cluc.prout + "AC50_all"
-    if path.exists(pfilout):
+    if path.exists(pfilout) and path.getsize(pfilout) > 500:
         return pfilout
     filout = open(pfilout, "w")
     lheader = ["CASID", "Luc_IC50", "hepg2_med_blue", "hepg2_med_green", "hepg2_med_red", "hepg2_med_blue_n",

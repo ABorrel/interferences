@@ -4,37 +4,41 @@ import pathFolder
 from scipy import stats
 from shutil import copyfile
 from copy import deepcopy
-
-#import chemical
+from random import shuffle
 import runExternalSoft
 import toolbox
 from re import search
 
+#=> to import MD library
+import sys
+sys.path.insert(0, "/home/borrela2/development/descriptor/")
+#sys.path.insert(0, "C:\\Users\\borrela2\\development\\molecular-descriptors\\")
+import Chemical
 
 
-def loadAllOperaDesc(pOperaDesc):
-    dDTX = toolbox.loadMatrix(pOperaDesc, ',')
-    dCAS = {}
-    for DTXID in list(dDTX.keys()):
-        CASID = dDTX[DTXID]["CASRN"]
-        dCAS[CASID] = {}
-        for desc in chemical.LOPERA:
-            if dDTX[DTXID][desc] == "NaN":
-                dDTX[DTXID][desc] = "NA"
-            dCAS[CASID][desc] = dDTX[DTXID][desc]
-    return dCAS
+
+#def loadAllOperaDesc(pOperaDesc):
+#    dDTX = toolbox.loadMatrix(pOperaDesc, ',')
+#    dCAS = {}
+#    for DTXID in list(dDTX.keys()):
+#        CASID = dDTX[DTXID]["CASRN"]
+#        dCAS[CASID] = {}
+#        for desc in chemical.LOPERA:
+#            if dDTX[DTXID][desc] == "NaN":
+#                dDTX[DTXID][desc] = "NA"
+#            dCAS[CASID][desc] = dDTX[DTXID][desc]
+#    return dCAS
 
 
 
 
 class Descriptors:
 
-    def __init__(self, prSMI, prDesc, prPNG, prout, prlog):
-        self.prSMI = prSMI
+    def __init__(self, prDesc, prChemSMI, prout, prlog):
+        self.prChemSMI = prChemSMI
         self.prDesc = prDesc
         self.prlog = prlog
         self.prout = prout
-        self.prPNG = prPNG
 
 
 
@@ -143,8 +147,6 @@ class Descriptors:
             return [self.pdescCleanActive, self.pAC50AllActive]
 
 
-
-
     def createActiveSOM(self, sizeMap, prout, pmodelAll):
 
         import clusteringDB
@@ -218,71 +220,90 @@ class Descriptors:
                             break
 
 
+    def computeAllDesc(self, compute = 1):
 
-
-    def computeDesc(self, opera=0, RDkitPhysico=1, pOperaDesc=""):
-
-        pdesc1D2D = self.prDesc + "tableDesc1D2D"
-        self.pdesc1D2D = pdesc1D2D
-
-        if opera == 1:
-            pdesc1D2D = pdesc1D2D + "Opera"
-            self.pdesc1D2D = pdesc1D2D
-
-        if RDkitPhysico == 0:
-            pdesc1D2D = pdesc1D2D + "NoRDKITPhyChem"
-            self.pdesc1D2D = pdesc1D2D
-
-
-        prSMIclean = self.prDesc + "SMIclean/"
-        pathFolder.createFolder(prSMIclean)
-        self.prSMIclean = prSMIclean
-
-        prDescbyCAS = self.prDesc + "DESCbyCAS/"
-        pathFolder.createFolder(prDescbyCAS)
-        self.prDescByCAS = prDescbyCAS
-
+        # RDKIT
+        pdesc1D2D = self.prDesc + "Desc_1D2D_OPERA.csv"
+        self.prSMIclean = pathFolder.createFolder(self.prDesc + "SMI/")
+        self.prPNG = pathFolder.createFolder(self.prDesc + "PNG/")
 
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
+            self.pdesc1D2D = pdesc1D2D
             return pdesc1D2D
-        else:
-            plog = self.prDesc + "log.log"
-            flog = open(plog, "w")
-            print((pdesc1D2D, "No found"))
-            fdesc1D2D = open(pdesc1D2D, "w")
-            if opera == 0:
-                ldesc = chemical.getLdesc("1D2D", RDkitPhysico)
-                fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
-            else:
-                ldesc = chemical.getLdesc("1D2D", RDkitPhysico)
-                ldesc = ldesc + chemical.getLdesc("Opera", RDkitPhysico)
-                doperaDesc = loadAllOperaDesc(pOperaDesc)
-                fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
 
+        if compute == 1:
+            pflog = self.prlog + "compute_desc.log"
+            flog = open(pflog, "w")
+            # compute desc
+            lpsmi = listdir(self.prChemSMI)
+            shuffle(lpsmi)
 
-        for pSMI in listdir(self.prSMI):
-        #for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
-            cas = pSMI.split("/")[-1].split(".")[0]
-
-            psmiles = self.prSMI + cas + ".smi"
-            if path.exists(self.prSMI + cas + ".smi"):
+            for pSMI in lpsmi:
+                cas = pSMI.split("/")[-1].split(".")[0]
+                psmiles = self.prChemSMI + pSMI
                 fsmiles = open(psmiles, "r")
                 smiles = fsmiles.readlines()[0].strip()
                 fsmiles.close()
 
                 # chemical
-                chem = chemical.chemical(cas, smiles)
-                chem.prepareChem(prSMIclean)
-                chem.compute1D2DDesc(prDescbyCAS)
-                if opera == 1:
-                    chem.loadOperaDesc(doperaDesc, flog)
-                err = chem.writeTablesDescCAS(prDescbyCAS)#
-                if err == 1: chem.writelog(self.prlog)
-                #Write in the table
-                chem.writeDesc(ldesc, fdesc1D2D)
-        fdesc1D2D.close()
-        flog.close()
+                cchem = Chemical.Chemical(smiles, self.prDesc)
+                cchem.prepChem()
+                
+                if cchem.err == 1: 
+                    flog.write("%s: ERROR clean structure\n"%(cas))
+                    continue
+                
+                inch = cchem.generateInchiKey()
+                cchem.writeSMIClean()
+                cchem.computeAll2D(update = 0)
+                cchem.writeMatrix("2D")
+                if cchem.err == 1:
+                    flog.write("%s: ERROR 2D Descriptor Computation\n"%(cas))
+                pxml = "./desc_fp.xml"# file uses by OPERA for babel descriptor
+                pxml = path.abspath(pxml)
+                cchem.computeOperaDesc(pxml)
+                cchem.computePNG()
+                if cchem.err == 1:
+                    flog.write("%s: ERROR OPERA Descriptor Computation\n"%(cas))
+            flog.close()
+        
+        # write main table and generate PNG
+        lpsmi = listdir(self.prChemSMI) # smiles original
+        shuffle(lpsmi)
+        pr2Ddesc = self.prDesc + "2D/"
+        prOPERA = self.prDesc + "OPERA/"
+        lf2Ddesc = listdir(pr2Ddesc)
+        lfOPERA = listdir(prOPERA)
 
+        ldesc_1D2D = Chemical.getLdesc("1D2D")
+        ldesc_OPERA = Chemical.getLdesc("OPERA")
+        filout = open(pdesc1D2D, "w")
+        filout.write("CAS\t%s\t%s\n"%("\t".join(ldesc_1D2D), "\t".join(ldesc_OPERA)))
+
+        for pSMI in lpsmi:
+            cas = pSMI.split("/")[-1].split(".")[0]
+            psmiles = self.prChemSMI + pSMI
+            fsmiles = open(psmiles, "r")
+            smiles = fsmiles.readlines()[0].strip()
+            fsmiles.close()
+
+            # chemical
+            cchem = Chemical.Chemical(smiles, self.prDesc)
+            cchem.prepChem()
+            if cchem.err == 1:
+                continue
+            inch = cchem.generateInchiKey()
+            fname = inch + ".csv"
+            if fname in lf2Ddesc and fname in lfOPERA:
+                d2D = toolbox.loadMatrixToDict(pr2Ddesc + fname)
+                dOPERA = toolbox.loadMatrixToDict(prOPERA + fname, sep=",")
+                filout.write("%s\t%s\t%s\n"%(cas, "\t".join(str(d2D[list(d2D.keys())[0]][d2]) for d2 in ldesc_1D2D), "\t".join(str(dOPERA[list(dOPERA.keys())[0]][opera]) for opera in ldesc_OPERA)))
+        
+                # generate PNG
+                runExternalSoft.molconvert(self.prSMIclean + inch + ".smi", self.prPNG + cas + "png")
+        
+        filout.close()
+        self.pdesc1D2D = pdesc1D2D
 
 
     def computeFP(self, FPtype):
@@ -418,18 +439,6 @@ class Descriptors:
             i += 1
         filout.close()
         self.pFP = pfilout
-
-
-
-    def generatePNG(self):
-
-        pathFolder.createFolder(self.prPNG)
-        lnSMIs = listdir(self.prSMIclean)
-
-        for nSMI in lnSMIs:
-            runExternalSoft.molconvert(self.prSMIclean + nSMI, self.prPNG + nSMI[:-3] + "png")
-
-
 
 
     def setConstantPreproc(self, pAC50, corval, maxQuantile, nbNA, prAnalysis):

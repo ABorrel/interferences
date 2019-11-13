@@ -21,7 +21,6 @@ PRTESTING = prMain + "testing/"
 
 pSDFToxCast = "/home/borrela2/ToxCast_release20151019/DSSTox_ToxCastRelease_20151019.sdf"
 pSDFTox21 = "/home/borrela2/data/Tox21/TOX21SL.sdf"
-pOperaDesc = prMain + "data/OPERA_pred_Tox21.csv"
 prCytox = prMain + "data/Judson_2016-cytotox/"
 
 pluc = prMain + "data/luc/tox21-luc-biochem-p1/tox21-luc-biochem-p1.txt"
@@ -49,20 +48,20 @@ pathFolder.createFolder(prPNG)
 
 # for luc
 #=> no filter
-cluc.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> combine
-cluc.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=1)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=1)
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> curve filter
-cluc.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> efficacy filter
-cluc.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 #=> combining
 cluc.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=1)
-cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
+#cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 
 #======> curve filter and burst // not applied
 #cluc.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=1)
@@ -70,33 +69,32 @@ cluc.summarize(pathFolder.createFolder(cluc.proutSP + "Stat/"))
 
 # for hepg2
 #=> no filter
-chepg2.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> curve filter
-chepg2.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> efficacy
-chepg2.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 #=> curve filter and burst
 chepg2.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
-chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
+#chepg2.summarize(pathFolder.createFolder(chepg2.proutSP + "Stat/"))
 
 # for hek293
 #=> no filter
-chek293.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+#chek293.writeAC50(filtercurvefit=0, filterefficacy=0, filterburst=0, combine=0)
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> curve filter
-chek293.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+#chek293.writeAC50(filtercurvefit=1, filterefficacy=0, filterburst=0, combine=0)
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> efficacy
-chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+#chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=0, combine=0)
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 #=> curve filter and burst
 chek293.writeAC50(filtercurvefit=1, filterefficacy=1, filterburst=1, combine=0)
-chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
+#chek293.summarize(pathFolder.createFolder(chek293.proutSP + "Stat/"))
 
-fff
 ###############
 # analyse DYE #
 ###############
@@ -124,27 +122,29 @@ fff
 #########################################
 
 pAC50All = assayResults.mergeAssays(cluc, chepg2, chek293)
-prhist = pathFolder.createFolder(prresults + "hist/")
-assayResults.histogramAC50(pAC50All, prhist)
+#prhist = pathFolder.createFolder(prresults + "hist/")
+#assayResults.histogramAC50(pAC50All, prhist)
 
 # plot correlation #
 ####################
-cluc.cor3assays(chepg2, chek293)
-
+#cluc.cor3assays(chepg2, chek293)
 
 # plot response curves #
 ########################
-cluc.responseCurves(drawn=1)
-chek293.responseCurves(drawn=1)
-chepg2.responseCurves(drawn=1)
+
+####### => no tested
+#cluc.responseCurves(drawn=1)
+#chek293.responseCurves(drawn=1)
+#chepg2.responseCurves(drawn=1)
 
 
 # cross curve by color and type of assays #
 ############################################
-prCrossCurve = prresults + "crossCurvesResponse/"
-pathFolder.createFolder(prCrossCurve)
-chepg2.crossResponseCurves(chek293, prCrossCurve)
+#prCrossCurve = prresults + "crossCurvesResponse/"
+#pathFolder.createFolder(prCrossCurve)
+#chepg2.crossResponseCurves(chek293, prCrossCurve)
 
+#ddd
 
 # extract chemical with type of curve
 ######################################
@@ -171,9 +171,12 @@ chepg2.crossResponseCurves(chek293, prCrossCurve)
 
 # IC50 hist -> by cell #
 ########################
-cluc.AC50Distribution()
-chek293.AC50Distribution()
-chepg2.AC50Distribution()
+#cluc.AC50Distribution()
+#chek293.AC50Distribution()
+#chepg2.AC50Distribution()
+
+#dd
+####### => no tested
 
 
 #############################################=> first round
@@ -181,24 +184,18 @@ chepg2.AC50Distribution()
 # MOLECULAR DESCRIPTOR #
 ########################
 
+prDesc = pathFolder.createFolder(prMain + "Desc/")
+
 # Create folder with smi and sdf files
-cluc.extractChemical(pSDFTox21)
-chek293.extractChemical(pSDFTox21)
-chepg2.extractChemical(pSDFTox21)
-
-
-prSMI = prMain + "SMI/"
-# compute descriptors
-prDesc = prMain + "Desc/"
-pathFolder.createFolder(prDesc)
+#cluc.extractChemical(pSDFTox21, prDesc)
+#chek293.extractChemical(pSDFTox21, prDesc)
+#chepg2.extractChemical(pSDFTox21, prDesc)
 
 prlogDesc = prMain + "log/"
 pathFolder.createFolder(prlogDesc)
 
-
-cDesc = analyseDB.Descriptors(prSMI, prDesc, prPNG, prresults, prlogDesc)
-cDesc.computeDesc(opera=1, RDkitPhysico=1, pOperaDesc=pOperaDesc)
-cDesc.generatePNG()
+cDesc = analyseDB.Descriptors(prDesc, prDesc + "SMI_origin/", prresults, prlogDesc)
+cDesc.computeAllDesc(compute=0)
 
 
 # set FP for different parameters #
@@ -329,9 +326,8 @@ nbCV = 10
 
 prTtest = pathFolder.createFolder(prresults + "Ttest/")
 nbNA = 500
-cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prTtest)
-cDesc.Ttest(pAC50All, prTtest)
-
+#cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prTtest)
+#cDesc.Ttest(pAC50All, prTtest)
 
 ###############
 # MAIN - SOM  #
@@ -341,6 +337,7 @@ pathFolder.createFolder(prSOM)
 nbNA = 100
 cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prSOM)
 pmodelSOM = cDesc.MainSOM(15)
+sss
 
 # SOM active  #
 ###############
@@ -410,10 +407,10 @@ cDesc.rankingAC50()
 #optimalCluster = "wss"#"silhouette", "wss", "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
-optimalCluster = "silhouette"
+#optimalCluster = "silhouette"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
-optimalCluster = "gap_stat"
+#optimalCluster = "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
 

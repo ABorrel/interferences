@@ -8,7 +8,7 @@ library(ggplot2)
 args <- commandArgs(TRUE)
 pfilin = args[1]
 
-#pfilin = "/home/borrela2/interference/spDataAnalysis/cor/tox21-spec-hek293-p1_tox21-spec-hepg2-p1"
+#pfilin = "/home/borrela2/interference2/spDataAnalysis/cor/tox21-luc-biochem-p1_tox21-spec-hepg2-p1_cell_blue"
 
 # open affinity file #
 ######################
