@@ -324,8 +324,8 @@ nbCV = 10
 # Student Tests #
 #################
 
-prTtest = pathFolder.createFolder(prresults + "Ttest/")
-nbNA = 500
+#prTtest = pathFolder.createFolder(prresults + "Ttest/")
+#nbNA = 500
 #cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prTtest)
 #cDesc.Ttest(pAC50All, prTtest)
 
@@ -337,68 +337,68 @@ pathFolder.createFolder(prSOM)
 nbNA = 100
 cDesc.setConstantPreproc("0", corval, maxQuantile, nbNA, prSOM)
 pmodelSOM = cDesc.MainSOM(15)
-sss
+
 
 # SOM active  #
 ###############
 # for luciferase
-prSOMAct = prresults + "SOMactiveluc/"
-pathFolder.createFolder(prSOMAct)
+#prSOMAct = prresults + "SOMactiveluc/"
+#pathFolder.createFolder(prSOMAct)
 
-nbNA = 100
-cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=1)
-cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
-cDesc.extractActivebySOM()
+#nbNA = 100
+#cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=1)
+#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+#cDesc.extractActivebySOM()
 
 # for autofluorescence
-prSOMAct = prresults + "SOMactivefluo/"
-pathFolder.createFolder(prSOMAct)
-cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=0)
-cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
-cDesc.extractActivebySOM()
+#prSOMAct = prresults + "SOMactivefluo/"
+#pathFolder.createFolder(prSOMAct)
+#cDesc.prepareActiveMatrix(corval, maxQuantile, nbNA, pAC50All, prSOMAct, luciferase=0)
+#cDesc.createActiveSOM(15, prSOMAct, pmodelSOM)
+#cDesc.extractActivebySOM()
 
 
 ### for luc  ###
 ################
 ################
 # prep
-nbNA = 1000
-pranalysis = cluc.proutSP + "Stat/"
-pathFolder.createFolder(pranalysis)
-cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, nbNA, pranalysis)
-cluc.summarize(pranalysis)
-#ranking chemical based on AC50
-cDesc.rankingAC50()
-prRank = cluc.proutSP + "ranking/"
-pathFolder.createFolder(prRank)
-cluc.rankingTop(100, prPNG, prRank)
-prRank = cluc.proutSP + "rankinggood/"
-pathFolder.createFolder(prRank)
-cluc.rankingTop(100, prPNG, prRank, 1)
+#nbNA = 1000
+#pranalysis = cluc.proutSP + "Stat/"
+#pathFolder.createFolder(pranalysis)
+#cDesc.setConstantPreproc(cluc.pAC50, corval, maxQuantile, nbNA, pranalysis)
+#cluc.summarize(pranalysis)
+##ranking chemical based on AC50
+#cDesc.rankingAC50()
+#prRank = cluc.proutSP + "ranking/"
+#pathFolder.createFolder(prRank)
+#cluc.rankingTop(100, prPNG, prRank)
+#prRank = cluc.proutSP + "rankinggood/"
+#pathFolder.createFolder(prRank)
+#cluc.rankingTop(100, prPNG, prRank, 1)
 
 # for HEPG #
 ############
 ############
-nbNA = 500
-pranalysis = chepg2.proutSP + "Stat/"
-pathFolder.createFolder(pranalysis)
-cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, nbNA, pranalysis)
+#nbNA = 500
+#pranalysis = chepg2.proutSP + "Stat/"
+#pathFolder.createFolder(pranalysis)
+#cDesc.setConstantPreproc(chepg2.pAC50, corval, maxQuantile, nbNA, pranalysis)
 
-prVenn = pathFolder.createFolder(pranalysis + "Venn/")
-chepg2.drawVennPlot(prVenn, prPNG)
+#prVenn = pathFolder.createFolder(pranalysis + "Venn/")
+#chepg2.drawVennPlot(prVenn, prPNG)
 
 # cor with different AC50 available
 ###################################
-chepg2.corAC50()
+#chepg2.corAC50()
 # rank AC50
-prRank = chepg2.proutSP + "ranking/"
-pathFolder.createFolder(prRank)
-chepg2.rankingTop(100, prPNG, prRank)
+#prRank = chepg2.proutSP + "ranking/"
+#pathFolder.createFolder(prRank)
+#chepg2.rankingTop(100, prPNG, prRank)
 
-prRank = chepg2.proutSP + "rankinggood/"
-pathFolder.createFolder(prRank)
-chepg2.rankingTop(100, prPNG, prRank, 1)
-cDesc.rankingAC50()
+#prRank = chepg2.proutSP + "rankinggood/"
+#pathFolder.createFolder(prRank)
+#chepg2.rankingTop(100, prPNG, prRank, 1)
+#cDesc.rankingAC50()
 
 # clustering
 #disttype = "euc"
@@ -439,16 +439,16 @@ cDesc.rankingAC50()
 #chek293.rankingTop(100, prPNG, prRank, 1)
 
 # clustering
-disttype = "euc"
-aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
-clusterType = "hclust"#"hclust", "kmeans"
-optimalCluster = "wss"#"silhouette", "wss", "gap_stat"
+#disttype = "euc"
+#aggregtype = "ward.D2"#"ward.D2", "complete", "single", "average"
+#clusterType = "hclust"#"hclust", "kmeans"
+#optimalCluster = "wss"#"silhouette", "wss", "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
-optimalCluster = "silhouette"
+#optimalCluster = "silhouette"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
-optimalCluster = "gap_stat"
+#optimalCluster = "gap_stat"
 #cDesc.clustering(disttype, aggregtype, clusterType, optimalCluster)
 
 
@@ -475,14 +475,14 @@ optimalCluster = "gap_stat"
 #nbNA = 500
 #prSOM = chepg2.proutSP + "SOM/"
 #pathFolder.createFolder(prSOM)
-#clusteringDB.createSOM(cDesc.pdesc1D2D, chepg2.pAC50, corval, maxQuantile, pmodelSOM, nbNA, prSOM)
+#clusteringDB.createSOM(cDesc.pdesc1D2D, pAC50All, corval, maxQuantile, pmodelSOM, nbNA, prSOM)
 
 #### for HEK293  ####
 #####################
 #nbNA = 500
 #prSOM = chek293.proutSP + "SOM/"
 #pathFolder.createFolder(prSOM)
-#clusteringDB.createSOM(cDesc.pdesc1D2D, chek293.pAC50, corval, maxQuantile, pmodelSOM, nbNA, prSOM)
+#clusteringDB.createSOM(cDesc.pdesc1D2D, pAC50All, corval, maxQuantile, pmodelSOM, nbNA, prSOM)
 
 
 ####################
@@ -541,10 +541,10 @@ typeQSAR = "class"
 # for each chanel and cell line #
 #################################
 typeData = "all"
-QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
-QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, cluc, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "Luc", ["IC50"], typeData, cluc.proutSP + "QSARclass/")
+#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hepg2", ltypeCellChannel, typeData, chepg2.proutSP + "QSARclass/")
 QSARModel.runQSARClass(cDesc, chek293, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"hek293", ltypeCellChannel, typeData, chek293.proutSP + "QSARclass/")
-fff
+ss
 
 # for each chanel and favorize active chemical #
 ################################################
@@ -556,15 +556,15 @@ fff
 ##################
 typeData = "color"
 nbNA = 500
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
-
+QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA,"blue", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "green", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat,nbNA, "red", ltypeCellChannel, typeData, prresults + "QSARclassColor/")
+ddd
 # for all color #
 ##################
 typeData = "crosscolor"
 nbNA = 500
-#QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "all", ltypeCellChannel, typeData, prresults + "QSARclassCrossColor/")
+QSARModel.runQSARClass(cDesc, chepg2, pAC50All, corval, maxQuantile, splitratio, nbCV, ratioAct, nbRepeat, nbNA, "all", ltypeCellChannel, typeData, prresults + "QSARclassCrossColor/")
 
 
 

@@ -300,7 +300,7 @@ class Descriptors:
                 filout.write("%s\t%s\t%s\n"%(cas, "\t".join(str(d2D[list(d2D.keys())[0]][d2]) for d2 in ldesc_1D2D), "\t".join(str(dOPERA[list(dOPERA.keys())[0]][opera]) for opera in ldesc_OPERA)))
         
                 # generate PNG
-                runExternalSoft.molconvert(self.prSMIclean + inch + ".smi", self.prPNG + cas + "png")
+                runExternalSoft.molconvert(self.prSMIclean + inch + ".smi", self.prPNG + cas + ".png")
         
         filout.close()
         self.pdesc1D2D = pdesc1D2D

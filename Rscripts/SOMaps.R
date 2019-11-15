@@ -191,6 +191,8 @@ generateEnrichCurve = function(ddesc, dAC50, nmax, prout){
 
 mergeAC50 = function(dAC50, lcol){
   
+  print(colnames(dAC50))
+
   lCAS = rownames(dAC50)
   imax = dim(dAC50)[1]
   i = 1
@@ -275,10 +277,11 @@ if(pAC50 == "0"){
   lAC50 = colnames(dAC50)
   lAC50 = lAC50[-1]
   
+
   # merge all aff
   # case only luc
-  if(dim(dAC50)[2] == 3){
-    lchannel = c("Luc_IC50")
+  if(dim(dAC50)[2] == 2){
+    lchannel = c("IC50")
     dAC50temp = mergeAC50(dAC50, lchannel)
   }else{
     dAC50temp = mergeAC50(dAC50, lchannel)  
@@ -297,7 +300,7 @@ if(pAC50 == "0"){
 }
 
 # no apply for luciferase
-if(lchannel[1] != "Luc_IC50"){
+if(lchannel[1] != "IC50"){
   # by color
   cbluehek293 = c("hek293_med_blue_n", "hek293_cell_blue_n")
   cgreenhek293 = c("hek293_med_green_n", "hek293_cell_green_n")

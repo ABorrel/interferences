@@ -463,13 +463,13 @@ def runQSARClass(cDesc, cAssay, pAC50All, corval, maxQuantile, splitratio, nbCV,
         cModel.buildQSARClass()
 
 
-    prQSARAV = pathFolder.createFolder(prout + "Average/")
-    prQSARProb = pathFolder.createFolder(prout + "Prob/")
-    mergeProba(prout, "RF", prQSARProb)
-    mergeResults(prout, prQSARAV)
-    prDescAV = pathFolder.createFolder(prout + "descImportance/")
-    mergeDescInvolve(prout, "LDA", 10, prDescAV)
-    mergeDescInvolve(prout, "RF", 10,  prDescAV)
+    #prQSARAV = pathFolder.createFolder(prout + "Average/")
+    #prQSARProb = pathFolder.createFolder(prout + "Prob/")
+    #mergeProba(prout, "RF", prQSARProb)
+    #mergeResults(prout, prQSARAV)
+    #prDescAV = pathFolder.createFolder(prout + "descImportance/")
+    #mergeDescInvolve(prout, "LDA", 10, prDescAV)
+    #mergeDescInvolve(prout, "RF", 10,  prDescAV)
 
 def mergeDescInvolve(prin, ML, nbdesc, prout):
 
