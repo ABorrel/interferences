@@ -11,3 +11,4 @@ The interference project sources includes scripts to reproduce and analyze Tox21
 
 # Update
 - 10/27/19: Add QSAR prediction script inside the project
+- 11/05/19: Change optimization of QSAR model and added SVM - kernels on the QSAR modeling

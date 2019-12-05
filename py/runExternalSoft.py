@@ -10,6 +10,7 @@ PADEL = "/home/borrela2/softwares/padel/PaDEL-Descriptor.jar"
 
 def runRCMD(cmd, out = 0):
 
+    workdir = getcwd()
     chdir("./../Rscripts/")
     print cmd
     if out == 0:
@@ -18,7 +19,7 @@ def runRCMD(cmd, out = 0):
     else:
         import subprocess
         output = subprocess.check_output(cmd, shell=True)
-    chdir("./../fluo/")
+    chdir(workdir)
     return output
 
 
