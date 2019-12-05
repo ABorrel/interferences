@@ -1,4 +1,4 @@
-from urllib import urlretrieve
+from urllib.request import urlretrieve
 from os import path
 from shutil import move
 from re import search
@@ -6,7 +6,7 @@ from random import shuffle
 
 import runExternalSoft
 import toolbox
-import chemical
+#import chemical
 
 
 def formatPubChemTable(pfilin, PRPUBCHEM, prout, update = 0):
@@ -20,7 +20,7 @@ def formatPubChemTable(pfilin, PRPUBCHEM, prout, update = 0):
         dchem = toolbox.loadMatrix(pfilin, sep=",")
         #print dchem.keys()
 
-        for chemID in dchem.keys():
+        for chemID in list(dchem.keys()):
             cpubmed = Chem(chemID, PRPUBCHEM)
             SMILES = cpubmed.getSMILE()
             if search("Error", SMILES):
@@ -34,7 +34,7 @@ def formatPubChemTable(pfilin, PRPUBCHEM, prout, update = 0):
             
             # add filter 
             #print dchem[chemID]["Log of MaxDyeEquivalency"], dchem[chemID]["PUBCHEM_ACTIVITY_OUTCOME"]
-            if "Log of MaxDyeEquivalency" in dchem[chemID].keys():
+            if "Log of MaxDyeEquivalency" in list(dchem[chemID].keys()):
                 if float(dchem[chemID]["Log of MaxDyeEquivalency"]) < -7:
                     dchem[chemID]["PUBCHEM_ACTIVITY_OUTCOME"] = "Inactive"
             filout.write("%s\t%s\t%s\n"%(chemID, SMILES, dchem[chemID]["PUBCHEM_ACTIVITY_OUTCOME"]))
@@ -56,7 +56,7 @@ def computeDesc(passay, PRDESC, PRSMI, prout, nbfile = 1, update = 0):
 
 
     dchem = toolbox.loadMatrix(passay)
-    lchemID = dchem.keys()
+    lchemID = list(dchem.keys())
     try:lchemID.remove("RESULT_UNIT")
     except:pass
     shuffle(lchemID)
@@ -113,7 +113,7 @@ def computeDesc(passay, PRDESC, PRSMI, prout, nbfile = 1, update = 0):
         fildesc.write("ID," + ",".join(ldesc) + ",Aff" +"\n")
 
         for chemID in lchemID:
-            print chemID
+            print(chemID)
             if dchem[chemID]["Active"] == "Active":
                 aff = 1
             else:
@@ -123,7 +123,7 @@ def computeDesc(passay, PRDESC, PRSMI, prout, nbfile = 1, update = 0):
                 ddesc = toolbox.loadMatrix(pdesc)
                 lval = []
                 for desc in ldesc:
-                    if not desc in ddesc[chemID].keys():
+                    if not desc in list(ddesc[chemID].keys()):
                         lval.append("NA")
                     else:
                         lval.append(str(ddesc[chemID][desc]))
@@ -142,7 +142,7 @@ def computeDesc(passay, PRDESC, PRSMI, prout, nbfile = 1, update = 0):
         filaff.write("ID\tAff\n")
 
         for chemID in lchemID:
-            print chemID
+            print(chemID)
             if dchem[chemID]["Active"] == "Active":
                 aff = 1
             else:
@@ -152,7 +152,7 @@ def computeDesc(passay, PRDESC, PRSMI, prout, nbfile = 1, update = 0):
                 ddesc = toolbox.loadMatrix(pdesc)
                 lval = []
                 for desc in ldesc:
-                    if not desc in ddesc[chemID].keys():
+                    if not desc in list(ddesc[chemID].keys()):
                         lval.append("NA")
                     else:
                         lval.append(str(ddesc[chemID][desc]))
@@ -199,7 +199,7 @@ class Chem:
                 move(presult[0], psdf)
                 self.psdf = psdf
             else:
-                print "Error: PubChemRequest"
+                print("Error: PubChemRequest")
                 return "None"
 
 
@@ -211,13 +211,13 @@ class Chem:
 
 
         SMILES = runExternalSoft.babelConvertSDFtoSMILE(self.psdf)
-        print SMILES
+        print(SMILES)
 
         if SMILES != "":
             self.smi = SMILES
             return SMILES
         else:
-            print "Error SMILES"
+            print("Error SMILES")
             return "Error: SMILES generation"
 
 

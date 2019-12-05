@@ -18,15 +18,15 @@ class DYE:
 
         for cassays in self.lassays:
             name = cassays.name.split("-")[2]
-            print name
+            print(name)
             lsample =  ["cell_blue_n", "cell_green_n", "cell_red_n", "med_blue_n", "med_green_n", "med_red_n"]
 
             pfilout = self.prout + "DYE_" + name + ".csv"
             filout = open(pfilout,'w')
             filout.write("CAS\tColor\t" + "\t".join(lsample) + "\n")
 
-            for dye in self.dDye.keys():
-                print self.dDye[dye]["casrn"]
+            for dye in list(self.dDye.keys()):
+                print(self.dDye[dye]["casrn"])
                 try: filout.write("%s\t%s\t%s\n"%(self.dDye[dye]["casrn"], self.dDye[dye]["color"], "\t".join([str(cassays.dAC50[self.dDye[dye]["casrn"]][sample]) for sample in lsample])))
                 except: pass
 
@@ -37,7 +37,7 @@ class DYE:
 
         ddesc = {}
         dcolor = {}
-        for chemID in self.dDye.keys():
+        for chemID in list(self.dDye.keys()):
             chem = self.dDye[chemID]
             CASID = chem["casrn"]
             color = chem["color"]
@@ -52,15 +52,15 @@ class DYE:
 
         pdesc = self.prout + "descMat"
         fildesc = open(self.prout + "descMat", "w")
-        ldesc = ddesc[ddesc.keys()[0]].keys()
-        print ldesc
-        print CASID
+        ldesc = list(ddesc[list(ddesc.keys())[0]].keys())
+        print(ldesc)
+        print(CASID)
         del ldesc[ldesc.index("CAS")]
         fildesc.write("ID," + ",".join(ldesc) + ",Aff\n")
-        for CASID in ddesc.keys():
+        for CASID in list(ddesc.keys()):
             lw = []
             for desc in ldesc:
-                if desc in ddesc[CASID].keys():
+                if desc in list(ddesc[CASID].keys()):
                     lw.append(str(ddesc[CASID][desc]))
                 else:
                     lw.append("NA")

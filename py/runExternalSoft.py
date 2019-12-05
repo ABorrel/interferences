@@ -12,14 +12,15 @@ def runRCMD(cmd, out = 0):
 
     workdir = getcwd()
     chdir("./../Rscripts/")
-    print cmd
+    wrkdir = getcwd()
+    print(cmd)
     if out == 0:
         system(cmd)
         output = 0
     else:
         import subprocess
         output = subprocess.check_output(cmd, shell=True)
-    chdir(workdir)
+    chdir(wrkdir)
     return output
 
 
@@ -297,13 +298,13 @@ def preciseEnrichmentIndex(pdesc, presult, pAC50All, ptable, methCluster, methDi
 def finalClustering(pmatrixIn, pAC50Full, pcluster, channel, distMeth, aggMeth, prtemp, verbose = 0):
 
     if verbose == 1:
-        print pmatrixIn, ": matrix in"
-        print pAC50Full, ": AC50 full"
-        print pcluster, ": cluster"
-        print channel, "chanell"
-        print distMeth, "dist meth"
-        print aggMeth, "aggregation"
-        print prtemp, "path out"
+        print((pmatrixIn, ": matrix in"))
+        print((pAC50Full, ": AC50 full"))
+        print((pcluster, ": cluster"))
+        print((channel, "chanell"))
+        print((distMeth, "dist meth"))
+        print((aggMeth, "aggregation"))
+        print((prtemp, "path out"))
 
 
     cmd = "./finalCluster.R " + pmatrixIn + " " + str(pAC50Full) + " " + pcluster + " " + channel + " " + str(distMeth) + " " + aggMeth + " " + prtemp
@@ -373,7 +374,7 @@ def runPadel(prin=""):
         return "ERROR - Padel Input"
     else:
         cmd = "java -jar " + PADEL + " -maxruntime 10000 -2d -dir " + str(prin) + " -file " + pfilout
-        print cmd
+        print(cmd)
         system(cmd)
 
     return pfilout
@@ -388,7 +389,7 @@ def runOPERA(psdf, p2Ddesc, prtemp):
     if len (listdir(prtemp)) == 2:
         ppred = prtemp + path.basename(psdf)[:-3] + "csv"
         cmd = "%s %s -d %s -o %s -a -x" % (OPERA, MATLAB, p2Ddesc, ppred)
-        print cmd
+        print(cmd)
         chdir(prtemp)
         system(cmd)
         chdir(PRSOURCE)

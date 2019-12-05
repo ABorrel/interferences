@@ -4,37 +4,41 @@ import pathFolder
 from scipy import stats
 from shutil import copyfile
 from copy import deepcopy
-
-import chemical
+from random import shuffle
 import runExternalSoft
 import toolbox
 from re import search
 
+#=> to import MD library
+import sys
+sys.path.insert(0, "/home/borrela2/development/descriptor/")
+#sys.path.insert(0, "C:\\Users\\borrela2\\development\\molecular-descriptors\\")
+import Chemical
 
 
-def loadAllOperaDesc(pOperaDesc):
-    dDTX = toolbox.loadMatrix(pOperaDesc, ',')
-    dCAS = {}
-    for DTXID in dDTX.keys():
-        CASID = dDTX[DTXID]["CASRN"]
-        dCAS[CASID] = {}
-        for desc in chemical.LOPERA:
-            if dDTX[DTXID][desc] == "NaN":
-                dDTX[DTXID][desc] = "NA"
-            dCAS[CASID][desc] = dDTX[DTXID][desc]
-    return dCAS
+
+#def loadAllOperaDesc(pOperaDesc):
+#    dDTX = toolbox.loadMatrix(pOperaDesc, ',')
+#    dCAS = {}
+#    for DTXID in list(dDTX.keys()):
+#        CASID = dDTX[DTXID]["CASRN"]
+#        dCAS[CASID] = {}
+#        for desc in chemical.LOPERA:
+#            if dDTX[DTXID][desc] == "NaN":
+#                dDTX[DTXID][desc] = "NA"
+#            dCAS[CASID][desc] = dDTX[DTXID][desc]
+#    return dCAS
 
 
 
 
 class Descriptors:
 
-    def __init__(self, prSMI, prDesc, prPNG, prout, prlog):
-        self.prSMI = prSMI
+    def __init__(self, prDesc, prChemSMI, prout, prlog):
+        self.prChemSMI = prChemSMI
         self.prDesc = prDesc
         self.prlog = prlog
         self.prout = prout
-        self.prPNG = prPNG
 
 
 
@@ -76,19 +80,18 @@ class Descriptors:
 
         if luciferase == 0:
             i = 0
-            imax = len(ddesc.keys())
+            imax = len(list(ddesc.keys()))
 
             while i < imax:
-                casID = dAC50All.keys()[i]
+                casID = list(dAC50All.keys())[i]
                 nbNA = 0
-                for kAC50 in dAC50All[casID].keys():
+                for kAC50 in list(dAC50All[casID].keys()):
                     if kAC50 == "CASID" or kAC50 == "Luc_IC50":# not considered luciferase
                         continue
                     else:
                         if dAC50All[casID][kAC50] == "NA":
                             nbNA += 1
-                #print nbNA, len(dAC50All[casID].keys())
-                if nbNA == (len(dAC50All[casID].keys()) -2):
+                if nbNA == (len(list(dAC50All[casID].keys())) -2):
                     del dAC50All[casID]
                     try:
                         del ddesc[casID]
@@ -111,16 +114,16 @@ class Descriptors:
 
         else:
             i = 0
-            imax = len(dAC50All.keys())
+            imax = len(list(dAC50All.keys()))
 
             while i < imax:
-                casID = dAC50All.keys()[i]
-                if not casID in ddesc.keys():
+                casID = list(dAC50All.keys())[i]
+                if not casID in list(ddesc.keys()):
                     del dAC50All[casID]
                     imax = imax - 1
                     i = i - 1
                     continue
-                for kAC50 in dAC50All[casID].keys():
+                for kAC50 in list(dAC50All[casID].keys()):
                     if kAC50 != "Luc_IC50" and kAC50 != "CASID":  # not considered luciferase
                         del dAC50All[casID][kAC50]
                     else:
@@ -142,8 +145,6 @@ class Descriptors:
             self.pAC50AllActive = lpdescActClean[1]
 
             return [self.pdescCleanActive, self.pAC50AllActive]
-
-
 
 
     def createActiveSOM(self, sizeMap, prout, pmodelAll):
@@ -188,9 +189,8 @@ class Descriptors:
                 clust = lchemClust[-1]
                 if CAS == "NA":
                     continue
-                #print CAS, clust
 
-                if assay in dAC50all[CAS].keys():
+                if assay in list(dAC50all[CAS].keys()):
                     if dAC50all[CAS][assay] != "NA":
                         pclust = pathFolder.createFolder(prin + assay + "/" + str(clust) + "/")
                         copyfile(self.prPNG + CAS + ".png", pclust + CAS + ".png")
@@ -220,73 +220,90 @@ class Descriptors:
                             break
 
 
+    def computeAllDesc(self, compute = 1):
 
-
-    def computeDesc(self, opera=0, RDkitPhysico=1, pOperaDesc=""):
-
-        pdesc1D2D = self.prDesc + "tableDesc1D2D"
-        self.pdesc1D2D = pdesc1D2D
-
-        if opera == 1:
-            pdesc1D2D = pdesc1D2D + "Opera"
-            self.pdesc1D2D = pdesc1D2D
-
-        if RDkitPhysico == 0:
-            pdesc1D2D = pdesc1D2D + "NoRDKITPhyChem"
-            self.pdesc1D2D = pdesc1D2D
-
-
-        prSMIclean = self.prDesc + "SMIclean/"
-        pathFolder.createFolder(prSMIclean)
-        self.prSMIclean = prSMIclean
-
-        prDescbyCAS = self.prDesc + "DESCbyCAS/"
-        pathFolder.createFolder(prDescbyCAS)
-        self.prDescByCAS = prDescbyCAS
-
+        # RDKIT
+        pdesc1D2D = self.prDesc + "Desc_1D2D_OPERA.csv"
+        self.prSMIclean = pathFolder.createFolder(self.prDesc + "SMI/")
+        self.prPNG = pathFolder.createFolder(self.prDesc + "PNG/")
 
         if path.exists(pdesc1D2D) and path.getsize(pdesc1D2D) > 100:
+            self.pdesc1D2D = pdesc1D2D
             return pdesc1D2D
-        else:
-            plog = self.prDesc + "log.log"
-            flog = open(plog, "w")
-            print pdesc1D2D, "No found"
-            fdesc1D2D = open(pdesc1D2D, "w")
-            if opera == 0:
-                ldesc = chemical.getLdesc("1D2D", RDkitPhysico)
-                fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
-            else:
-                ldesc = chemical.getLdesc("1D2D", RDkitPhysico)
-                ldesc = ldesc + chemical.getLdesc("Opera", RDkitPhysico)
-                doperaDesc = loadAllOperaDesc(pOperaDesc)
-                fdesc1D2D.write("CAS\t" + "\t".join(ldesc) + "\n")
-                #print ldesc
 
+        if compute == 1:
+            pflog = self.prlog + "compute_desc.log"
+            flog = open(pflog, "w")
+            # compute desc
+            lpsmi = listdir(self.prChemSMI)
+            shuffle(lpsmi)
 
-        for pSMI in listdir(self.prSMI):
-        #for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
-            cas = pSMI.split("/")[-1].split(".")[0]
-            #print cas
-
-            psmiles = self.prSMI + cas + ".smi"
-            if path.exists(self.prSMI + cas + ".smi"):
+            for pSMI in lpsmi:
+                cas = pSMI.split("/")[-1].split(".")[0]
+                psmiles = self.prChemSMI + pSMI
                 fsmiles = open(psmiles, "r")
                 smiles = fsmiles.readlines()[0].strip()
                 fsmiles.close()
 
                 # chemical
-                chem = chemical.chemical(cas, smiles)
-                chem.prepareChem(prSMIclean)
-                chem.compute1D2DDesc(prDescbyCAS)
-                if opera == 1:
-                    chem.loadOperaDesc(doperaDesc, flog)
-                err = chem.writeTablesDescCAS(prDescbyCAS)#
-                if err == 1: chem.writelog(self.prlog)
-                #Write in the table
-                chem.writeDesc(ldesc, fdesc1D2D)
-        fdesc1D2D.close()
-        flog.close()
+                cchem = Chemical.Chemical(smiles, self.prDesc)
+                cchem.prepChem()
+                
+                if cchem.err == 1: 
+                    flog.write("%s: ERROR clean structure\n"%(cas))
+                    continue
+                
+                inch = cchem.generateInchiKey()
+                cchem.writeSMIClean()
+                cchem.computeAll2D(update = 0)
+                cchem.writeMatrix("2D")
+                if cchem.err == 1:
+                    flog.write("%s: ERROR 2D Descriptor Computation\n"%(cas))
+                pxml = "./desc_fp.xml"# file uses by OPERA for babel descriptor
+                pxml = path.abspath(pxml)
+                cchem.computeOperaDesc(pxml)
+                cchem.computePNG()
+                if cchem.err == 1:
+                    flog.write("%s: ERROR OPERA Descriptor Computation\n"%(cas))
+            flog.close()
+        
+        # write main table and generate PNG
+        lpsmi = listdir(self.prChemSMI) # smiles original
+        shuffle(lpsmi)
+        pr2Ddesc = self.prDesc + "2D/"
+        prOPERA = self.prDesc + "OPERA/"
+        lf2Ddesc = listdir(pr2Ddesc)
+        lfOPERA = listdir(prOPERA)
 
+        ldesc_1D2D = Chemical.getLdesc("1D2D")
+        ldesc_OPERA = Chemical.getLdesc("OPERA")
+        filout = open(pdesc1D2D, "w")
+        filout.write("CAS\t%s\t%s\n"%("\t".join(ldesc_1D2D), "\t".join(ldesc_OPERA)))
+
+        for pSMI in lpsmi:
+            cas = pSMI.split("/")[-1].split(".")[0]
+            psmiles = self.prChemSMI + pSMI
+            fsmiles = open(psmiles, "r")
+            smiles = fsmiles.readlines()[0].strip()
+            fsmiles.close()
+
+            # chemical
+            cchem = Chemical.Chemical(smiles, self.prDesc)
+            cchem.prepChem()
+            if cchem.err == 1:
+                continue
+            inch = cchem.generateInchiKey()
+            fname = inch + ".csv"
+            if fname in lf2Ddesc and fname in lfOPERA:
+                d2D = toolbox.loadMatrixToDict(pr2Ddesc + fname)
+                dOPERA = toolbox.loadMatrixToDict(prOPERA + fname, sep=",")
+                filout.write("%s\t%s\t%s\n"%(cas, "\t".join(str(d2D[list(d2D.keys())[0]][d2]) for d2 in ldesc_1D2D), "\t".join(str(dOPERA[list(dOPERA.keys())[0]][opera]) for opera in ldesc_OPERA)))
+        
+                # generate PNG
+                runExternalSoft.molconvert(self.prSMIclean + inch + ".smi", self.prPNG + cas + ".png")
+        
+        filout.close()
+        self.pdesc1D2D = pdesc1D2D
 
 
     def computeFP(self, FPtype):
@@ -302,7 +319,7 @@ class Descriptors:
         for pSMI in listdir(self.prSMI): # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             # for pSMI in ["/home/borrela2/interference/spDataAnalysis/Desc/SMIclean/1212-72-2.smi"]: # to verify for one chem
             cas = pSMI.split("/")[-1].split(".")[0]
-            print cas, i, len(listdir(self.prSMI))
+            print((cas, i, len(listdir(self.prSMI))))
             i += 1
 
             psmiles = self.prSMI + cas + ".smi"
@@ -317,7 +334,7 @@ class Descriptors:
                 error = chem.computeFP(FPtype)
 
                 if error == 1:
-                    print "ERROR FP"
+                    print ("ERROR FP")
                     continue
                 else:
                     dFP[cas] = chem.FP
@@ -342,19 +359,19 @@ class Descriptors:
 
         if FPtype == "pairs" or FPtype == "Torsion" or FPtype == "Morgan":
             if typeMetric != "Dice":
-                print "Similarity metric incompatible for ", FPtype, typeMetric
+                print(("Similarity metric incompatible for ", FPtype, typeMetric))
                 return 1
 
-        lcas = self.dFP.keys()
+        lcas = list(self.dFP.keys())
         dmetric = {}
         i = 0
-        imax = len(self.dFP.keys())
+        imax = len(list(self.dFP.keys()))
         while i < imax:
-            if not lcas[i] in dmetric.keys():
+            if not lcas[i] in list(dmetric.keys()):
                 dmetric[lcas[i]] = {}
             j = i
             while j < imax:
-                if not lcas[j] in dmetric[lcas[i]].keys():
+                if not lcas[j] in list(dmetric[lcas[i]].keys()):
                     dmetric[lcas[i]][lcas[j]] = {}
 
                 if typeMetric == 'Tanimoto':
@@ -424,18 +441,6 @@ class Descriptors:
         self.pFP = pfilout
 
 
-
-    def generatePNG(self):
-
-        pathFolder.createFolder(self.prPNG)
-        lnSMIs = listdir(self.prSMIclean)
-
-        for nSMI in lnSMIs:
-            runExternalSoft.molconvert(self.prSMIclean + nSMI, self.prPNG + nSMI[:-3] + "png")
-
-
-
-
     def setConstantPreproc(self, pAC50, corval, maxQuantile, nbNA, prAnalysis):
 
         self.corval = corval
@@ -494,7 +499,7 @@ class Descriptors:
 
         dout = {}
         if not "pFP" in self.__dict__:
-            print "Error: no FP computed"
+            print ("Error: no FP computed")
             return 1
         else:
             filin = open(self.pFP, "r")
@@ -512,7 +517,7 @@ class Descriptors:
                 while i < imax:
                     dout[cas][lcas[i-1]] = lscore[i]
                     i += 1
-                print j
+                print (j)
                 j += 1
             self.FP = dout
         return 0
@@ -593,7 +598,7 @@ class Descriptors:
             frank.write(lchemac50[0])
 
 
-            lisorted = sorted(range(len(dstock[i])), key=lambda k: dstock[i][k])
+            lisorted = sorted(list(range(len(dstock[i]))), key=lambda k: dstock[i][k])
 
             for isorted in lisorted:
                 j = 1
@@ -611,8 +616,8 @@ class Descriptors:
         dAC50 = toolbox.loadMatrix(pAC50All, sep="\t")
         ddesc = toolbox.loadMatrix(self.pdesc1D2Dclean, sep=",")
 
-        print ddesc.keys()[:20]
-        print dAC50.keys()[:20]
+        print((list(ddesc.keys())[:20]))
+        print((list(dAC50.keys())[:20]))
 
         runExternalSoft.TtestDesc(self.pdesc1D2Dclean, pAC50All, presult)
 
@@ -622,7 +627,7 @@ class Descriptors:
 def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
 
 
-    lsample = chepg2.dAC50[chepg2.dAC50.keys()[0]].keys()
+    lsample = list(chepg2.dAC50[list(chepg2.dAC50.keys())[0]].keys())
 
     if "CAS" in lsample:
         del lsample[lsample.index("CAS")]
@@ -635,7 +640,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
     for sample in lsample:
         prsub = pathFolder.createFolder(prout + str(sample) + "/")
 
-        for CASID in chepg2.dAC50.keys():
+        for CASID in list(chepg2.dAC50.keys()):
             if chepg2.dAC50[CASID][sample] == "NA" or chek293.dAC50[CASID][sample] == "NA": # have to look if open good
                 continue
 
@@ -646,9 +651,9 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
     for color in lcolor:
         prsub = pathFolder.createFolder(prout + str(color) + "/")
 
-        if verbose == 1: print len(chepg2.dAC50.keys())
+        if verbose == 1: print(len(list(chepg2.dAC50.keys())))
 
-        for CASID in chepg2.dAC50.keys():
+        for CASID in list(chepg2.dAC50.keys()):
             if chepg2.dAC50[CASID]["cell_" + color] == "NA" or chek293.dAC50[CASID]["cell_" + color] == "NA"\
                     or chepg2.dAC50[CASID]["med_" + color] == "NA" or chek293.dAC50[CASID]["med_" + color] == "NA":
                 continue
@@ -661,7 +666,7 @@ def VennCross(cluc, chepg2, chek293, prPNG, prout, verbose = 0):
     # all active
     prsub = pathFolder.createFolder(prout + "all/")
 
-    for CASID in chepg2.dAC50.keys():
+    for CASID in list(chepg2.dAC50.keys()):
         flag = 1
         for color in lcolor:
             if chepg2.dAC50[CASID]["med_" + color] != "NA":
@@ -700,7 +705,7 @@ def PCACross(pdesc, pAC50_hepg2, pAC50_hek293, nbNA, corval, maxQuantile, prCros
             # preproc
             runExternalSoft.dataManager(pdesc, 0, corval, maxQuantile, nbNA, prCrossPCA)
         else:
-            print "Error ->", pdesc
+            print(("Error ->", pdesc))
 
     runExternalSoft.drawPCACross(pdesc1D2Dclean, pAC50_hepg2, pAC50_hek293, prCrossPCA)
 

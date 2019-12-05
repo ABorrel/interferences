@@ -18,7 +18,7 @@ class photoChem():
 
         for cassays in self.lassays:
             name = cassays.name.split("-")[2]
-            print name
+            print(name)
             lsample = ["cell_blue_n", "cell_green_n", "cell_red_n", "med_blue_n", "med_green_n", "med_red_n"]
 
             pfilout = self.prout + "Spectrum_" + name + ".csv"
@@ -27,7 +27,7 @@ class photoChem():
 
             lwave = []
             llw = []
-            for chemID in self.DB.keys():
+            for chemID in list(self.DB.keys()):
                 chem = self.DB[chemID]
                 CASID = chem["Structure"].split("_")[1]
                 Abs = chem["Wavelength"]
@@ -57,7 +57,7 @@ class photoChem():
 
         ddesc = {}
         dwave = {}
-        for chemID in self.DB.keys():
+        for chemID in list(self.DB.keys()):
             chem = self.DB[chemID]
             CASID = chem["Structure"].split("_")[1]
             Abs = chem["Wavelength"]
@@ -72,15 +72,15 @@ class photoChem():
 
         pdesc = self.prout + "descMat"
         fildesc = open(self.prout + "descMat", "w")
-        ldesc = ddesc[ddesc.keys()[0]].keys()
-        print ldesc
-        print CASID
+        ldesc = list(ddesc[list(ddesc.keys())[0]].keys())
+        print(ldesc)
+        print(CASID)
         del ldesc[ldesc.index("CAS")]
         fildesc.write("ID," + ",".join(ldesc) + ",Aff\n")
-        for CASID in ddesc.keys():
+        for CASID in list(ddesc.keys()):
             lw = []
             for desc in ldesc:
-                if desc in ddesc[CASID].keys():
+                if desc in list(ddesc[CASID].keys()):
                     lw.append(str(ddesc[CASID][desc]))
                 else:
                     lw.append("NA")

@@ -62,9 +62,9 @@ pdesc = args[1]
 pAC50 = args[2]
 presult = args[3]
 
-pdesc = "/home/borrela2/interference/spDataAnalysis/Ttest/descClean.csv"
-pAC50 = "/home/borrela2/interference/spDataAnalysis/AC50_all"
-presult = "/home/borrela2/interference/spDataAnalysis/Ttest/"
+#pdesc = "/home/borrela2/interference/spDataAnalysis/Ttest/descClean.csv"
+#pAC50 = "/home/borrela2/interference/spDataAnalysis/AC50_all"
+#presult = "/home/borrela2/interference/spDataAnalysis/Ttest/"
 
 # AC50
 dAC50 = read.csv(pAC50, sep="\t", header = TRUE)
@@ -99,7 +99,6 @@ computeTableSignif(ddesc, dcross, prresult)
 
 dAC50color = cbind(mergeCol(dAC50, ltypeCellBlue), mergeCol(dAC50, ltypeCellGreen))
 dAC50color = cbind(dAC50color, mergeCol(dAC50, ltypeCellRed))
-dAC50color = cbind(dAC50color, mergeCol(dAC50, lcross, delNA = 0))
 colnames(dAC50color) = c("blue", "green", "red")
 
 # for color

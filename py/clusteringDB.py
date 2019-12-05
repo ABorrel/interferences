@@ -63,7 +63,7 @@ class clustering:
                 else:
                     runExternalSoft.dataManager(self.cdesc.pdesc1D2D, 0, self.corval, self.maxquantile, self.prCluster)
             else:
-                print "Error ->", self.cdesc.pdesc1D2D
+                print("Error ->", self.cdesc.pdesc1D2D)
 
         pcluster = self.prCluster + "cluster.csv"
         if not path.exists(pcluster):
@@ -111,7 +111,7 @@ class clustering:
                                 dclust[chemID].append(clust2)
 
                 #write main cluster
-                for chemID in dclust.keys():
+                for chemID in list(dclust.keys()):
                     if len(dclust[chemID]) == 1:
                         dclust[chemID].append("1")
                     fclustersFinal.write(str(chemID) + "," + ",".join(dclust[chemID]) + "\n")
@@ -127,7 +127,7 @@ class clustering:
 
 
         if not "pclusters" in self.__dict__:
-            print "ERROR: clustering should be create before"
+            print("ERROR: clustering should be create before")
         else:
             runExternalSoft.enrichmentCluster(self.pclusters, pallAC50, self.prCluster)
 
@@ -187,10 +187,10 @@ class clustering:
 
 
         prFinalClustering = pathFolder.createFolder(prresult + "FinalClustering/")
-        print prFinalClustering
+        print(prFinalClustering)
 
         if not "proptimal" in self.__dict__:
-            print "Error clustering no load"
+            print("Error clustering no load")
         else:
             lfileopt = listdir(self.proptimal)
             for fileopt in lfileopt:
@@ -225,14 +225,14 @@ class clustering:
             ID = chemical[0]
             cluster = chemical[1]
 
-            if not cluster in dclust.keys():
+            if not cluster in list(dclust.keys()):
                 dclust[cluster] = []
             dclust[cluster].append(ID)
 
         #do different for FP and descriptor
         if self.distmeth == None:
             # write cluster and chemical
-            for cluster in dclust.keys():
+            for cluster in list(dclust.keys()):
                 prcluster = self.prCluster + "Clust" + str(cluster) + "/"
                 if not path.exists(prcluster + "cluster.csv"):
                     pathFolder.createFolder(prcluster)
@@ -252,7 +252,7 @@ class clustering:
 
 
             #write cluster and chemical
-            for cluster in dclust.keys():
+            for cluster in list(dclust.keys()):
                 prcluster = self.prCluster + "Clust" + str(cluster) + "/"
                 if not path.exists(prcluster + "cluster.csv"):
                     pathFolder.createFolder(prcluster)
@@ -286,16 +286,16 @@ class clustering:
             chemID = chem[0]
             cluster = str(chem[1])
 
-            if not cluster in dclust.keys():
+            if not cluster in list(dclust.keys()):
                 dclust[cluster] = []
             dclust[cluster].append(chemID)
-        print dclust
+        print(dclust)
 
         prclusterSub = prclusterApplied + "clusterSub/"
         pathFolder.createFolder(prclusterSub)
 
-        for clust in dclust.keys():
-            print clust
+        for clust in list(dclust.keys()):
+            print(clust)
             prbyclust = prclusterSub + "clust" + str(clust) + "/"
             pathFolder.createFolder(prbyclust)
 
@@ -334,7 +334,7 @@ class clustering:
 
             chemID =clusters[0]
             clustname = str(clusters[1]) + "_" + str(clusters[2])
-            if not clustname in dclust.keys():
+            if not clustname in list(dclust.keys()):
                 dclust[clustname] = []
 
             dclust[clustname].append(chemID)
@@ -350,7 +350,7 @@ class clustering:
             ddesc[chemID] = chemdesc
 
 
-        for cluster in dclust.keys():
+        for cluster in list(dclust.keys()):
             prclustsub = pathFolder.createFolder(prInterfer + str(cluster) + "/")
 
             #file descriptors
@@ -364,7 +364,7 @@ class clustering:
                 if path.exists(ppng):
                     copyfile(ppng, prclustsub + chemical + ".png")
                 #desc
-                if chemical in ddesc.keys():
+                if chemical in list(ddesc.keys()):
                     filedesc.write(ddesc[chemical])
             fdesc.close()
 
@@ -385,7 +385,7 @@ def createSOM(pdesc1D2D, pAC50, corval, maxQuantile, pModel, nbNA, prSOM):
             # preproc
             runExternalSoft.dataManager(pdesc1D2D, 0, corval, maxQuantile, nbNA, prSOM)
         else:
-            print "Error ->", pdesc1D2D
+            print("Error ->", pdesc1D2D)
 
 
     runExternalSoft.drawEnrichSOM(pdesc1D2Dclean, pAC50, pModel, prSOM)
